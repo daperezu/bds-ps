@@ -1,0 +1,45 @@
+@model FundingPlatform.Web.ViewModels.AddItemViewModel
+
+@{
+    ViewData["Title"] = "Add Item";
+}
+
+<h2>Add Item</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-controller="Item" asp-action="Add" asp-route-appId="@Model.ApplicationId" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <input type="hidden" asp-for="ApplicationId" />
+
+            <div class="mb-3">
+                <label asp-for="ProductName" class="form-label"></label>
+                <input asp-for="ProductName" class="form-control" />
+                <span asp-validation-for="ProductName" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="CategoryId" class="form-label"></label>
+                <select asp-for="CategoryId" asp-items="Model.Categories" class="form-select">
+                    <option value="">-- Select Category --</option>
+                </select>
+                <span asp-validation-for="CategoryId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="TechnicalSpecifications" class="form-label"></label>
+                <textarea asp-for="TechnicalSpecifications" class="form-control" rows="5"></textarea>
+                <span asp-validation-for="TechnicalSpecifications" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Add Item</button>
+            <a asp-controller="Application" asp-action="Details" asp-route-id="@Model.ApplicationId" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,55 @@
+@model FundingPlatform.Web.ViewModels.SystemConfigurationViewModel
+
+@{
+    ViewData["Title"] = "System Configuration";
+}
+
+<h2>System Configuration</h2>
+
+<div class="mb-3">
+    <a asp-action="Index" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+
+@if (Model.Configurations.Count == 0)
+{
+    <div class="alert alert-info">No system configurations found.</div>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-10">
+            <form asp-action="Configuration" method="post">
+                @Html.AntiForgeryToken()
+
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Key</th>
+                            <th>Value</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Configurations.Count; i++)
+                        {
+                            <tr>
+                                <td>
+                                    <input type="hidden" name="Configurations[@i].Id" value="@Model.Configurations[i].Id" />
+                                    <input type="hidden" name="Configurations[@i].Key" value="@Model.Configurations[i].Key" />
+                                    <input type="hidden" name="Configurations[@i].Description" value="@Model.Configurations[i].Description" />
+                                    <strong>@Model.Configurations[i].Key</strong>
+                                </td>
+                                <td>
+                                    <input name="Configurations[@i].Value" value="@Model.Configurations[i].Value" class="form-control" required />
+                                </td>
+                                <td class="text-muted">@(Model.Configurations[i].Description ?? "-")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <button type="submit" class="btn btn-primary">Save Configuration</button>
+            </form>
+        </div>
+    </div>
+}

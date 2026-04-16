@@ -1,0 +1,19 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.2.0">
+
+  <ItemGroup>
+    <ProjectReference Include="..\FundingPlatform.Web\FundingPlatform.Web.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.SqlServer" Version="13.2.2" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>e5507dcb-4fb8-492c-b094-a2c7be052bde</UserSecretsId>
+  </PropertyGroup>
+
+</Project>

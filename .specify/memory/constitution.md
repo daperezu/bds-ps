@@ -1,50 +1,152 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+==================
+Version change: (template) → 1.0.0
+Modified principles: N/A (initial creation)
+Added sections:
+  - Core Principles (6 principles)
+  - Technology Standards
+  - Development Workflow
+  - Governance
+Removed sections: None
+Templates requiring updates:
+  - .specify/templates/plan-template.md — ✅ no update needed (Constitution Check section is generic)
+  - .specify/templates/spec-template.md — ✅ no update needed (structure aligns with principles)
+  - .specify/templates/tasks-template.md — ✅ no update needed (story-based organization and E2E test expectations align)
+  - .specify/templates/checklist-template.md — ✅ no update needed (generic structure)
+  - .specify/templates/agent-file-template.md — ✅ no update needed (generic structure)
+Follow-up TODOs: None
+-->
+
+# FundingPlatform Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Clean Architecture
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+All features MUST follow Clean Architecture with four core layers and strict dependency rules:
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+- **Domain**: Entities, value objects, enums, repository interfaces. Zero external dependencies.
+- **Application**: Use cases (commands/queries), DTOs, service interfaces. Depends only on Domain.
+- **Infrastructure**: EF Core persistence, file storage, Identity configuration. Depends on Application (and transitively Domain).
+- **Web**: ASP.NET MVC controllers, views, view models. Depends on Application and Infrastructure.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+The dependency rule is non-negotiable: dependencies MUST point inward. Web and Infrastructure MUST NOT be referenced by Domain or Application. Cross-cutting concerns (Aspire ServiceDefaults) are the sole exception.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### II. Rich Domain Model
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+Domain entities MUST encapsulate their own business rules and invariants. Validation logic, state transitions, and collection management belong in the entity, not in service or controller layers.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- State transitions (e.g., Draft → Submitted) MUST be gated by domain validation methods on the entity itself.
+- Entities MUST expose behavior methods (e.g., `AddItem()`, `Submit()`, `Validate()`) rather than exposing raw state for external manipulation.
+- Anemic models with logic scattered across services are prohibited.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+### III. End-to-End Testing (NON-NEGOTIABLE)
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+Every feature MUST have Playwright end-to-end tests that validate user flows through the browser. This is the primary quality gate.
+
+- E2E tests run against the full Aspire-orchestrated stack (AppHost → Web → SQL Server).
+- Every user story MUST have corresponding E2E tests covering the golden path and key error scenarios.
+- Page Object Model pattern MUST be used for test maintainability.
+- Tests MUST be independently runnable per user story.
+- Unit and integration tests complement E2E tests but do not replace them.
+
+### IV. Schema-First Database Management
+
+The SQL Server Database Project (dacpac) is the single source of truth for ALL database schema, including ASP.NET Identity tables.
+
+- EF Core is used for data access only. EF migrations and `EnsureCreated` are prohibited.
+- Schema changes MUST be made by editing `.sql` files in the Database project.
+- The dacpac handles deployment, diffing, and schema upgrades across environments.
+- Seed data MUST be managed via post-deployment scripts in the Database project.
+
+### V. Specification-Driven Development
+
+Every feature MUST follow the structured specification workflow before implementation begins:
+
+- **Spec** (`spec.md`): User stories with priorities, acceptance scenarios, functional requirements, success criteria.
+- **Plan** (`plan.md`): Technical design, project structure, constitution check, complexity tracking.
+- **Tasks** (`tasks.md`): Phased task list organized by user story with explicit dependencies and parallel opportunities.
+- **Implementation**: Code written against the spec and plan, not ad-hoc.
+
+User stories MUST be independently testable and deliverable. Each story MUST be a standalone slice of functionality that can be developed, tested, and demonstrated independently.
+
+### VI. Simplicity and Progressive Complexity
+
+Start with the simplest viable approach. Complexity MUST be justified and tracked.
+
+- YAGNI: Do not build for hypothetical future requirements. Defer explicitly (e.g., "deferred to a later spec").
+- Sensible defaults MUST be provided for all configurable values; missing configuration MUST NOT crash the system.
+- Abstractions MUST serve a current need, not a speculative one. The interface-based file storage design is justified because storage backend changes are planned, not speculative.
+- When complexity is unavoidable, document the justification in the plan's Complexity Tracking section.
+
+## Technology Standards
+
+The following technology stack is mandated for all features in this project:
+
+| Component | Technology | Constraint |
+|-----------|-----------|------------|
+| Runtime | .NET 8+ (latest LTS) | All projects target this version |
+| Web Framework | ASP.NET MVC | Server-side rendering, no SPA frameworks |
+| Orchestration | .NET Aspire | Service discovery, health checks, telemetry |
+| Database | SQL Server | Aspire-managed container for dev, persistent instance for prod |
+| Schema Management | SQL Server Database Project (dacpac) | No EF migrations |
+| ORM | Entity Framework Core | Data access only, Code First model mapping |
+| Authentication | ASP.NET Identity | Self-managed users with role-based authorization |
+| E2E Testing | Playwright for .NET | NUnit test runner, Page Object Model pattern |
+| File Storage | Local file system (initial) | Interface-based for future swap to cloud storage |
+
+Adding new technologies or frameworks MUST be documented in the feature plan and justified against existing stack capabilities.
+
+## Development Workflow
+
+### Feature Lifecycle
+
+1. **Brainstorm** → Capture requirements and constraints
+2. **Specify** → Write spec.md with user stories, acceptance scenarios, requirements
+3. **Plan** → Write plan.md with technical design, constitution check, structure
+4. **Tasks** → Write tasks.md organized by user story with dependencies
+5. **Implement** → Code against spec and plan, commit after each task or logical group
+6. **Test** → E2E tests MUST pass for every user story before the feature is complete
+7. **Review** → Verify all acceptance scenarios and success criteria are met
+
+### Quality Gates
+
+- Constitution Check MUST pass before research begins and again after design (documented in plan.md).
+- Every user story MUST have passing E2E tests covering golden path and error scenarios.
+- All validation errors MUST be collected and displayed at once (not one at a time).
+- Optimistic concurrency MUST be used for entities with concurrent edit risk.
+- Authorization checks MUST verify resource ownership (e.g., applicant owns the application).
+
+### Commit Discipline
+
+- Commit after each task or logical group of tasks.
+- Each user story should be independently completable and testable at its checkpoint.
+- Stop at any checkpoint to validate the story independently before proceeding.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution supersedes all ad-hoc practices. All development work MUST comply with the principles defined above.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+### Amendment Procedure
+
+1. Propose the change with rationale in a constitution update.
+2. Document the version bump (MAJOR for incompatible changes, MINOR for additions, PATCH for clarifications).
+3. Update the Sync Impact Report with affected templates and artifacts.
+4. Propagate changes to dependent templates and active specs as needed.
+
+### Versioning Policy
+
+The constitution version follows semantic versioning:
+
+- **MAJOR**: Backward-incompatible principle removals or redefinitions.
+- **MINOR**: New principle or section added, or materially expanded guidance.
+- **PATCH**: Clarifications, wording, typo fixes, non-semantic refinements.
+
+### Compliance Review
+
+- The plan.md Constitution Check section MUST evaluate all principles before implementation begins.
+- Complexity violations MUST be tracked in plan.md's Complexity Tracking table.
+- Refer to CLAUDE.md for runtime development guidance and active command reference.
+
+**Version**: 1.0.0 | **Ratified**: 2026-04-15 | **Last Amended**: 2026-04-15

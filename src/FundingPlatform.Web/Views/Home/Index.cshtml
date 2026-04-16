@@ -1,0 +1,22 @@
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Funding Request Platform</h1>
+    <p class="lead">Submit and manage your funding applications.</p>
+
+    @if (User.Identity?.IsAuthenticated != true)
+    {
+        <div class="mt-4">
+            <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-lg me-2">Register</a>
+            <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary btn-lg">Login</a>
+        </div>
+    }
+    else
+    {
+        <div class="mt-4">
+            <a asp-controller="Application" asp-action="Index" class="btn btn-primary btn-lg">My Applications</a>
+        </div>
+    }
+</div>

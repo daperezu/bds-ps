@@ -1,0 +1,182 @@
+@model FundingPlatform.Web.ViewModels.EditImpactTemplateViewModel
+
+@{
+    ViewData["Title"] = "Edit Impact Template";
+}
+
+<h2>Edit Impact Template</h2>
+
+<div class="row">
+    <div class="col-md-10">
+        <form asp-action="EditTemplate" method="post" id="templateForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label">Template Name</label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label">Description</label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <div class="form-check">
+                    <input asp-for="IsActive" class="form-check-input" />
+                    <label asp-for="IsActive" class="form-check-label">Active</label>
+                </div>
+            </div>
+
+            <hr />
+            <h4>Parameters</h4>
+            <div id="parametersContainer">
+                @if (Model.Parameters.Count > 0)
+                {
+                    for (int i = 0; i < Model.Parameters.Count; i++)
+                    {
+                        <div class="card mb-3 parameter-row" data-index="@i">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">Parameter @(i + 1)</h6>
+                                    <button type="button" class="btn btn-sm btn-danger remove-parameter">Remove</button>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-2">
+                                        <label class="form-label">Name</label>
+                                        <input name="Parameters[@i].Name" value="@Model.Parameters[i].Name" class="form-control" required />
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <label class="form-label">Display Label</label>
+                                        <input name="Parameters[@i].DisplayLabel" value="@Model.Parameters[i].DisplayLabel" class="form-control" required />
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <label class="form-label">Data Type</label>
+                                        <select name="Parameters[@i].DataType" class="form-select" required>
+                                            <option value="Text" selected="@(Model.Parameters[i].DataType == "Text" ? "selected" : null)">Text</option>
+                                            <option value="Decimal" selected="@(Model.Parameters[i].DataType == "Decimal" ? "selected" : null)">Decimal</option>
+                                            <option value="Integer" selected="@(Model.Parameters[i].DataType == "Integer" ? "selected" : null)">Integer</option>
+                                            <option value="Date" selected="@(Model.Parameters[i].DataType == "Date" ? "selected" : null)">Date</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check mt-4">
+                                            <input name="Parameters[@i].IsRequired" type="checkbox" class="form-check-input" value="true"
+                                                   @(Model.Parameters[i].IsRequired ? "checked" : "") />
+                                            <label class="form-check-label">Required</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5 mb-2">
+                                        <label class="form-label">Validation Rules</label>
+                                        <input name="Parameters[@i].ValidationRules" value="@Model.Parameters[i].ValidationRules" class="form-control" />
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <label class="form-label">Sort Order</label>
+                                        <input name="Parameters[@i].SortOrder" type="number" value="@Model.Parameters[i].SortOrder" class="form-control" required />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+
+            <button type="button" class="btn btn-outline-primary mb-3" id="addParameter">Add Parameter</button>
+
+            <div>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <a asp-action="ImpactTemplates" class="btn btn-secondary ms-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let parameterIndex = @Model.Parameters.Count;
+            const container = document.getElementById('parametersContainer');
+            const addBtn = document.getElementById('addParameter');
+
+            addBtn.addEventListener('click', function () {
+                const idx = parameterIndex;
+                const card = document.createElement('div');
+                card.className = 'card mb-3 parameter-row';
+                card.setAttribute('data-index', idx);
+                card.innerHTML = `
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">Parameter ${idx + 1}</h6>
+                            <button type="button" class="btn btn-sm btn-danger remove-parameter">Remove</button>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-2">
+                                <label class="form-label">Name</label>
+                                <input name="Parameters[${idx}].Name" class="form-control" required />
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <label class="form-label">Display Label</label>
+                                <input name="Parameters[${idx}].DisplayLabel" class="form-control" required />
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <label class="form-label">Data Type</label>
+                                <select name="Parameters[${idx}].DataType" class="form-select" required>
+                                    <option value="Text">Text</option>
+                                    <option value="Decimal">Decimal</option>
+                                    <option value="Integer">Integer</option>
+                                    <option value="Date">Date</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3 mb-2">
+                                <div class="form-check mt-4">
+                                    <input name="Parameters[${idx}].IsRequired" type="checkbox" class="form-check-input" value="true" />
+                                    <label class="form-check-label">Required</label>
+                                </div>
+                            </div>
+                            <div class="col-md-5 mb-2">
+                                <label class="form-label">Validation Rules</label>
+                                <input name="Parameters[${idx}].ValidationRules" class="form-control" />
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <label class="form-label">Sort Order</label>
+                                <input name="Parameters[${idx}].SortOrder" type="number" value="${idx}" class="form-control" required />
+                            </div>
+                        </div>
+                    </div>`;
+                container.appendChild(card);
+                parameterIndex++;
+            });
+
+            container.addEventListener('click', function (e) {
+                if (e.target.classList.contains('remove-parameter')) {
+                    e.target.closest('.parameter-row').remove();
+                    reindexParameters();
+                }
+            });
+
+            function reindexParameters() {
+                const rows = container.querySelectorAll('.parameter-row');
+                rows.forEach(function (row, idx) {
+                    row.setAttribute('data-index', idx);
+                    row.querySelector('h6').textContent = 'Parameter ' + (idx + 1);
+                    const inputs = row.querySelectorAll('input, select');
+                    inputs.forEach(function (input) {
+                        const name = input.getAttribute('name');
+                        if (name) {
+                            input.setAttribute('name', name.replace(/Parameters\[\d+\]/, 'Parameters[' + idx + ']'));
+                        }
+                    });
+                });
+                parameterIndex = rows.length;
+            }
+        });
+    </script>
+}

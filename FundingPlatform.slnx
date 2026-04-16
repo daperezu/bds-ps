@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FundingPlatform.AppHost/FundingPlatform.AppHost.csproj" />
+    <Project Path="src/FundingPlatform.Application/FundingPlatform.Application.csproj" />
+    <Project Path="src/FundingPlatform.Database/FundingPlatform.Database.sqlproj" Type="42ea0dbd-9cf1-443e-919e-be9c484e4577" />
+    <Project Path="src/FundingPlatform.Domain/FundingPlatform.Domain.csproj" />
+    <Project Path="src/FundingPlatform.Infrastructure/FundingPlatform.Infrastructure.csproj" />
+    <Project Path="src/FundingPlatform.ServiceDefaults/FundingPlatform.ServiceDefaults.csproj" />
+    <Project Path="src/FundingPlatform.Web/FundingPlatform.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FundingPlatform.Tests.E2E/FundingPlatform.Tests.E2E.csproj" />
+    <Project Path="tests/FundingPlatform.Tests.Integration/FundingPlatform.Tests.Integration.csproj" />
+    <Project Path="tests/FundingPlatform.Tests.Unit/FundingPlatform.Tests.Unit.csproj" />
+  </Folder>
+</Solution>

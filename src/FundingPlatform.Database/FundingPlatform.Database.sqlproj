@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build">
+  <Sdk Name="Microsoft.Build.Sql" Version="2.1.0" />
+  <PropertyGroup>
+    <Name>FundingPlatform.Database</Name>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
+    <ModelCollation>1033, CI</ModelCollation>
+    <ProjectGuid>F6F85550-AAEB-405C-920A-DF2C68F25170</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="PostDeployment\SeedData.sql" />
+    <PostDeploy Include="PostDeployment\SeedData.sql" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,54 @@
+@model FundingPlatform.Web.ViewModels.ImpactTemplateAdminViewModel
+
+@{
+    ViewData["Title"] = "Impact Templates";
+}
+
+<h2>Impact Templates</h2>
+
+<div class="mb-3">
+    <a asp-action="CreateTemplate" class="btn btn-success">Create New Template</a>
+    <a asp-action="Index" class="btn btn-secondary ms-2">Back to Dashboard</a>
+</div>
+
+@if (Model.Templates.Count == 0)
+{
+    <div class="alert alert-info">No impact templates have been created yet.</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Parameters</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var template in Model.Templates)
+            {
+                <tr>
+                    <td>@template.Name</td>
+                    <td>@(template.Description ?? "-")</td>
+                    <td>@template.ParameterCount</td>
+                    <td>
+                        @if (template.IsActive)
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactive</span>
+                        }
+                    </td>
+                    <td>
+                        <a asp-action="EditTemplate" asp-route-id="@template.Id" class="btn btn-sm btn-primary">Edit</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
