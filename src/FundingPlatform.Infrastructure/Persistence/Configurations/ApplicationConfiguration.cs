@@ -1,0 +1,37 @@
+using FundingPlatform.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace FundingPlatform.Infrastructure.Persistence.Configurations;
+
+public class ApplicationConfiguration : IEntityTypeConfiguration<AppEntity>
+{
+    public void Configure(EntityTypeBuilder<AppEntity> builder)
+    {
+        builder.ToTable("Applications");
+
+        builder.HasKey(a => a.Id);
+
+        builder.Property(a => a.ApplicantId).IsRequired();
+        builder.HasIndex(a => a.ApplicantId).HasDatabaseName("IX_Applications_ApplicantId");
+
+        builder.Property(a => a.State).IsRequired();
+        builder.HasIndex(a => a.State).HasDatabaseName("IX_Applications_State");
+
+        builder.Property(a => a.CreatedAt).IsRequired();
+        builder.Property(a => a.UpdatedAt).IsRequired();
+        builder.Property(a => a.SubmittedAt);
+
+        builder.Property(a => a.RowVersion).IsRowVersion();
+
+        builder.HasMany(a => a.Items)
+            .WithOne()
+            .HasForeignKey(i => i.ApplicationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(a => a.VersionHistory)
+            .WithOne(v => v.Application)
+            .HasForeignKey(v => v.ApplicationId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+}

@@ -1,0 +1,26 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h2>Admin Dashboard</h2>
+
+<div class="row mt-4">
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Impact Templates</h5>
+                <p class="card-text">Create and manage impact assessment templates and their parameters.</p>
+                <a asp-action="ImpactTemplates" class="btn btn-primary">Manage Templates</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">System Configuration</h5>
+                <p class="card-text">View and update system-wide configuration settings.</p>
+                <a asp-action="Configuration" class="btn btn-primary">Manage Configuration</a>
+            </div>
+        </div>
+    </div>
+</div>

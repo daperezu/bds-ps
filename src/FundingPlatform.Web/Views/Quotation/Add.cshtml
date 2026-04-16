@@ -1,0 +1,51 @@
+@model FundingPlatform.Web.ViewModels.AddQuotationViewModel
+
+@{
+    ViewData["Title"] = "Add Quotation";
+}
+
+<h2>Add Quotation</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-controller="Quotation" asp-action="Add" asp-route-appId="@Model.ApplicationId" asp-route-itemId="@Model.ItemId" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <input type="hidden" asp-for="ApplicationId" />
+            <input type="hidden" asp-for="ItemId" />
+            <input type="hidden" asp-for="SupplierId" />
+            <input type="hidden" asp-for="SupplierName" />
+
+            <div class="mb-3">
+                <label class="form-label">Supplier</label>
+                <input type="text" class="form-control" value="@Model.SupplierName" readonly />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Price" class="form-label"></label>
+                <input asp-for="Price" class="form-control" type="number" step="0.01" min="0.01" />
+                <span asp-validation-for="Price" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ValidUntil" class="form-label"></label>
+                <input asp-for="ValidUntil" class="form-control" type="date" />
+                <span asp-validation-for="ValidUntil" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="QuotationFile" class="form-label"></label>
+                <input asp-for="QuotationFile" class="form-control" type="file" />
+                <span asp-validation-for="QuotationFile" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Add Quotation</button>
+            <a asp-controller="Application" asp-action="Details" asp-route-id="@Model.ApplicationId" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,18 @@
+CREATE TABLE [dbo].[Applicants]
+(
+    [Id]               INT            IDENTITY(1,1) NOT NULL,
+    [UserId]           NVARCHAR(450)  NOT NULL,
+    [LegalId]          NVARCHAR(50)   NOT NULL,
+    [FirstName]        NVARCHAR(100)  NOT NULL,
+    [LastName]         NVARCHAR(100)  NOT NULL,
+    [Email]            NVARCHAR(256)  NOT NULL,
+    [Phone]            NVARCHAR(20)   NULL,
+    [PerformanceScore] DECIMAL(5,2)   NULL,
+    [CreatedAt]        DATETIME2      NOT NULL CONSTRAINT [DF_Applicants_CreatedAt] DEFAULT (GETUTCDATE()),
+    [UpdatedAt]        DATETIME2      NOT NULL,
+
+    CONSTRAINT [PK_Applicants] PRIMARY KEY CLUSTERED ([Id]),
+    CONSTRAINT [UX_Applicants_UserId] UNIQUE ([UserId]),
+    CONSTRAINT [UX_Applicants_LegalId] UNIQUE ([LegalId]),
+    CONSTRAINT [FK_Applicants_AspNetUsers] FOREIGN KEY ([UserId]) REFERENCES [dbo].[AspNetUsers] ([Id]) ON DELETE NO ACTION
+);

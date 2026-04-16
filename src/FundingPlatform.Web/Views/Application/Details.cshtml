@@ -1,0 +1,132 @@
+@model FundingPlatform.Web.ViewModels.ApplicationViewModel
+
+@{
+    ViewData["Title"] = $"Application #{Model.Id}";
+}
+
+<h2>Application #@Model.Id</h2>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @successMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ValidationErrors"] is string validationErrorsJson)
+{
+    var errors = System.Text.Json.JsonSerializer.Deserialize<List<string>>(validationErrorsJson);
+    if (errors is not null && errors.Count > 0)
+    {
+        <div class="alert alert-danger" role="alert">
+            <strong>Cannot submit application:</strong>
+            <ul class="mb-0 mt-1">
+                @foreach (var error in errors)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+        </div>
+    }
+}
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <strong>Status:</strong>
+                <span class="badge @(Model.State == "Draft" ? "bg-secondary" : "bg-success")">
+                    @Model.State
+                </span>
+            </div>
+            <div class="col-md-3">
+                <strong>Created:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+            </div>
+            <div class="col-md-3">
+                <strong>Updated:</strong> @Model.UpdatedAt.ToString("yyyy-MM-dd HH:mm")
+            </div>
+            @if (Model.SubmittedAt.HasValue)
+            {
+                <div class="col-md-3">
+                    <strong>Submitted:</strong> @Model.SubmittedAt.Value.ToString("yyyy-MM-dd HH:mm")
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>Items</h4>
+    @if (Model.State == "Draft")
+    {
+        <a asp-controller="Item" asp-action="Add" asp-route-appId="@Model.Id" class="btn btn-primary">Add Item</a>
+    }
+</div>
+
+@if (Model.Items.Count == 0)
+{
+    <div class="alert alert-info">
+        No items added yet. Click "Add Item" to add items to this application.
+    </div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Category</th>
+                <th>Quotations</th>
+                <th>Impact</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>@item.ProductName</td>
+                    <td>@item.CategoryName</td>
+                    <td>@item.QuotationCount</td>
+                    <td>
+                        @if (item.HasImpact)
+                        {
+                            <span class="badge bg-success">Complete</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        }
+                    </td>
+                    <td>
+                        @if (Model.State == "Draft")
+                        {
+                            <a asp-controller="Supplier" asp-action="Add" asp-route-appId="@Model.Id" asp-route-itemId="@item.Id" class="btn btn-sm btn-info">Add Supplier</a>
+                            <a asp-controller="Item" asp-action="Edit" asp-route-appId="@Model.Id" asp-route-itemId="@item.Id" class="btn btn-sm btn-warning">Edit</a>
+                            <a asp-controller="Item" asp-action="Impact" asp-route-appId="@Model.Id" asp-route-id="@item.Id" class="btn btn-sm btn-info">Impact</a>
+                            <form asp-controller="Item" asp-action="Delete" asp-route-appId="@Model.Id" asp-route-itemId="@item.Id" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to remove this item?')">Delete</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (Model.State == "Draft")
+{
+    <div class="mt-3">
+        <form asp-controller="Application" asp-action="Submit" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-success">Submit Application</button>
+        </form>
+    </div>
+}
+
+<div class="mt-3">
+    <a asp-action="Index" asp-controller="Application">Back to Applications</a>
+</div>

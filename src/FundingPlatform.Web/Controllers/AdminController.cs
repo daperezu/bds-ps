@@ -1,0 +1,171 @@
+using FundingPlatform.Application.Admin.Commands;
+using FundingPlatform.Application.Services;
+using FundingPlatform.Web.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace FundingPlatform.Web.Controllers;
+
+[Authorize(Roles = "Admin")]
+public class AdminController : Controller
+{
+    private readonly AdminService _adminService;
+
+    public AdminController(AdminService adminService)
+    {
+        _adminService = adminService;
+    }
+
+    [HttpGet]
+    public IActionResult Index()
+    {
+        return View();
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ImpactTemplates()
+    {
+        var templates = await _adminService.GetAllImpactTemplatesAsync();
+
+        var viewModel = new ImpactTemplateAdminViewModel
+        {
+            Templates = templates.Select(t => new ImpactTemplateListItemViewModel
+            {
+                Id = t.Id,
+                Name = t.Name,
+                Description = t.Description,
+                IsActive = t.IsActive,
+                ParameterCount = t.Parameters.Count
+            }).ToList()
+        };
+
+        return View(viewModel);
+    }
+
+    [HttpGet]
+    public IActionResult CreateTemplate()
+    {
+        var viewModel = new CreateImpactTemplateViewModel();
+        return View(viewModel);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateTemplate(CreateImpactTemplateViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var command = new CreateImpactTemplateCommand(
+            model.Name,
+            model.Description,
+            model.Parameters.Select(p => new ParameterDefinition(
+                p.Name,
+                p.DisplayLabel,
+                p.DataType,
+                p.IsRequired,
+                p.ValidationRules,
+                p.SortOrder)).ToList());
+
+        await _adminService.CreateImpactTemplateAsync(command);
+
+        TempData["SuccessMessage"] = "Impact template created successfully.";
+        return RedirectToAction(nameof(ImpactTemplates));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> EditTemplate(int id)
+    {
+        var template = await _adminService.GetImpactTemplateByIdAsync(id);
+        if (template is null)
+        {
+            return NotFound();
+        }
+
+        var viewModel = new EditImpactTemplateViewModel
+        {
+            Id = template.Id,
+            Name = template.Name,
+            Description = template.Description,
+            IsActive = template.IsActive,
+            Parameters = template.Parameters.Select(p => new ParameterDefinitionViewModel
+            {
+                Name = p.Name,
+                DisplayLabel = p.DisplayLabel,
+                DataType = p.DataType,
+                IsRequired = p.IsRequired,
+                ValidationRules = p.ValidationRules,
+                SortOrder = p.SortOrder
+            }).ToList()
+        };
+
+        return View(viewModel);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditTemplate(EditImpactTemplateViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var command = new UpdateImpactTemplateCommand(
+            model.Id,
+            model.Name,
+            model.Description,
+            model.IsActive,
+            model.Parameters.Select(p => new ParameterDefinition(
+                p.Name,
+                p.DisplayLabel,
+                p.DataType,
+                p.IsRequired,
+                p.ValidationRules,
+                p.SortOrder)).ToList());
+
+        await _adminService.UpdateImpactTemplateAsync(command);
+
+        TempData["SuccessMessage"] = "Impact template updated successfully.";
+        return RedirectToAction(nameof(ImpactTemplates));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Configuration()
+    {
+        var configs = await _adminService.GetAllSystemConfigurationsAsync();
+
+        var viewModel = new SystemConfigurationViewModel
+        {
+            Configurations = configs.Select(c => new SystemConfigurationEntryViewModel
+            {
+                Id = c.Id,
+                Key = c.Key,
+                Value = c.Value,
+                Description = c.Description
+            }).ToList()
+        };
+
+        return View(viewModel);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Configuration(SystemConfigurationViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var command = new UpdateSystemConfigurationCommand(
+            model.Configurations.Select(c => new ConfigurationUpdate(c.Id, c.Value)).ToList());
+
+        await _adminService.UpdateSystemConfigurationAsync(command);
+
+        TempData["SuccessMessage"] = "System configuration updated successfully.";
+        return RedirectToAction(nameof(Configuration));
+    }
+}

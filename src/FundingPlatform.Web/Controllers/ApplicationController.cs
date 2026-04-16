@@ -1,0 +1,152 @@
+using System.Security.Claims;
+using FundingPlatform.Application.Applications.Commands;
+using FundingPlatform.Application.Services;
+using FundingPlatform.Infrastructure.Persistence;
+using FundingPlatform.Web.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace FundingPlatform.Web.Controllers;
+
+[Authorize(Roles = "Applicant")]
+public class ApplicationController : Controller
+{
+    private readonly ApplicationService _applicationService;
+    private readonly AppDbContext _dbContext;
+
+    public ApplicationController(
+        ApplicationService applicationService,
+        AppDbContext dbContext)
+    {
+        _applicationService = applicationService;
+        _dbContext = dbContext;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Index()
+    {
+        var applicantId = await GetCurrentApplicantIdAsync();
+        var applications = await _applicationService.GetApplicationsForApplicantAsync(applicantId);
+
+        var viewModel = new ApplicationListViewModel
+        {
+            Applications = applications.Select(a => new ApplicationListItemViewModel
+            {
+                Id = a.Id,
+                State = a.State.ToString(),
+                ItemCount = a.ItemCount,
+                CreatedAt = a.CreatedAt,
+                UpdatedAt = a.UpdatedAt,
+                SubmittedAt = a.SubmittedAt
+            }).ToList()
+        };
+
+        return View(viewModel);
+    }
+
+    [HttpGet]
+    public IActionResult Create()
+    {
+        return View(new CreateApplicationViewModel());
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(CreateApplicationViewModel model)
+    {
+        var applicantId = await GetCurrentApplicantIdAsync();
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var command = new CreateApplicationCommand(applicantId);
+        var applicationId = await _applicationService.CreateApplicationAsync(command, userId);
+
+        TempData["SuccessMessage"] = "Application created successfully.";
+        return RedirectToAction(nameof(Details), new { id = applicationId });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Details(int id)
+    {
+        var applicantId = await GetCurrentApplicantIdAsync();
+        var application = await _applicationService.GetApplicationAsync(id);
+
+        if (application is null || application.ApplicantId != applicantId)
+        {
+            return NotFound();
+        }
+
+        var viewModel = MapToViewModel(application);
+        return View(viewModel);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Edit(int id)
+    {
+        var applicantId = await GetCurrentApplicantIdAsync();
+        var application = await _applicationService.GetApplicationAsync(id);
+
+        if (application is null || application.ApplicantId != applicantId)
+        {
+            return NotFound();
+        }
+
+        var viewModel = MapToViewModel(application);
+        return View(viewModel);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("Application/{id}/Submit")]
+    public async Task<IActionResult> Submit(int id)
+    {
+        var applicantId = await GetCurrentApplicantIdAsync();
+        var application = await _applicationService.GetApplicationAsync(id);
+
+        if (application is null || application.ApplicantId != applicantId)
+        {
+            return NotFound();
+        }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var command = new SubmitApplicationCommand(id);
+        var errors = await _applicationService.SubmitApplicationAsync(command, userId);
+
+        if (errors.Count > 0)
+        {
+            TempData["ValidationErrors"] = System.Text.Json.JsonSerializer.Serialize(errors);
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        TempData["SuccessMessage"] = "Application submitted successfully.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    private async Task<int> GetCurrentApplicantIdAsync()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var applicant = await _dbContext.Applicants
+            .FirstOrDefaultAsync(a => a.UserId == userId);
+
+        return applicant?.Id ?? throw new InvalidOperationException("Applicant not found for current user.");
+    }
+
+    private static ApplicationViewModel MapToViewModel(FundingPlatform.Application.DTOs.ApplicationDto dto)
+    {
+        return new ApplicationViewModel
+        {
+            Id = dto.Id,
+            State = dto.State.ToString(),
+            CreatedAt = dto.CreatedAt,
+            UpdatedAt = dto.UpdatedAt,
+            SubmittedAt = dto.SubmittedAt,
+            Items = dto.Items.Select(i => new ItemViewModel
+            {
+                Id = i.Id,
+                ProductName = i.ProductName,
+                CategoryName = i.CategoryName,
+                QuotationCount = i.Quotations.Count,
+                HasImpact = i.Impact is not null
+            }).ToList()
+        };
+    }
+}
