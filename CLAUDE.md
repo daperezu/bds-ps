@@ -1,6 +1,6 @@
 # bsd-ps Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-15
+Auto-generated from all feature plans. Last updated: 2026-04-16
 
 ## Active Technologies
 - C# / .NET 10.0 + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire (002-review-approval-workflow)
@@ -24,6 +24,7 @@ tests/
 C# / .NET 8+ (latest LTS): Follow standard conventions
 
 ## Recent Changes
+- 003-supplier-evaluation-engine: Added C# / .NET 10.0 + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire
 - 002-review-approval-workflow: Added C# / .NET 10.0 + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire
 
 - 001-core-model-submission: Added C# / .NET 8+ (latest LTS) + ASP.NET MVC, .NET Aspire, EF Core, ASP.NET Identity, Playwright
