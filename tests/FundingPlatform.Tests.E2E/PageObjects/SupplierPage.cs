@@ -17,10 +17,12 @@ public class SupplierPage
     public ILocator EmailInput => _page.Locator("[name=Email]");
     public ILocator PhoneInput => _page.Locator("[name=Phone]");
     public ILocator LocationInput => _page.Locator("[name=Location]");
-    public ILocator HasElectronicInvoiceCheckbox => _page.Locator("[name=HasElectronicInvoice]");
+    public ILocator HasElectronicInvoiceCheckbox => _page.Locator("input[type=checkbox][name=HasElectronicInvoice]");
     public ILocator ShippingDetailsInput => _page.Locator("[name=ShippingDetails]");
     public ILocator WarrantyInfoInput => _page.Locator("[name=WarrantyInfo]");
-    public ILocator ComplianceStatusInput => _page.Locator("[name=ComplianceStatus]");
+    public ILocator IsCompliantCCSSCheckbox => _page.Locator("input[type=checkbox][name=IsCompliantCCSS]");
+    public ILocator IsCompliantHaciendaCheckbox => _page.Locator("input[type=checkbox][name=IsCompliantHacienda]");
+    public ILocator IsCompliantSICOPCheckbox => _page.Locator("input[type=checkbox][name=IsCompliantSICOP]");
     public ILocator PriceInput => _page.Locator("[name=Price]");
     public ILocator ValidUntilInput => _page.Locator("[name=ValidUntil]");
     public ILocator QuotationFileInput => _page.Locator("[name=QuotationFile]");
@@ -41,7 +43,10 @@ public class SupplierPage
         string? contactName = null,
         string? email = null,
         string? phone = null,
-        string? location = null)
+        string? location = null,
+        bool isCompliantCCSS = false,
+        bool isCompliantHacienda = false,
+        bool isCompliantSICOP = false)
     {
         await SupplierLegalIdInput.FillAsync(legalId);
         await SupplierNameInput.FillAsync(name);
@@ -50,6 +55,10 @@ public class SupplierPage
         if (email is not null) await EmailInput.FillAsync(email);
         if (phone is not null) await PhoneInput.FillAsync(phone);
         if (location is not null) await LocationInput.FillAsync(location);
+
+        if (isCompliantCCSS) await IsCompliantCCSSCheckbox.CheckAsync();
+        if (isCompliantHacienda) await IsCompliantHaciendaCheckbox.CheckAsync();
+        if (isCompliantSICOP) await IsCompliantSICOPCheckbox.CheckAsync();
 
         await PriceInput.FillAsync(price.ToString());
         await ValidUntilInput.FillAsync(validUntil);

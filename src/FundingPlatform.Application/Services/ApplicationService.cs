@@ -192,7 +192,9 @@ public class ApplicationService
                 cmd.HasElectronicInvoice,
                 cmd.ShippingDetails,
                 cmd.WarrantyInfo,
-                cmd.ComplianceStatus);
+                cmd.IsCompliantCCSS,
+                cmd.IsCompliantHacienda,
+                cmd.IsCompliantSICOP);
             await _supplierRepository.AddAsync(supplier);
             await _applicationRepository.SaveChangesAsync();
         }

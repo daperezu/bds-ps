@@ -23,7 +23,9 @@ public class SupplierConfiguration : IEntityTypeConfiguration<Supplier>
         builder.Property(s => s.HasElectronicInvoice).IsRequired();
         builder.Property(s => s.ShippingDetails).HasMaxLength(500);
         builder.Property(s => s.WarrantyInfo).HasMaxLength(500);
-        builder.Property(s => s.ComplianceStatus).HasMaxLength(100);
+        builder.Property(s => s.IsCompliantCCSS).IsRequired();
+        builder.Property(s => s.IsCompliantHacienda).IsRequired();
+        builder.Property(s => s.IsCompliantSICOP).IsRequired();
         builder.Property(s => s.CreatedAt).IsRequired();
         builder.Property(s => s.UpdatedAt).IsRequired();
     }

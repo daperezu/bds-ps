@@ -108,6 +108,8 @@
                         <tr>
                             <th>Supplier</th>
                             <th>Legal ID</th>
+                            <th>Score</th>
+                            <th>Breakdown</th>
                             <th>Price</th>
                             <th>Valid Until</th>
                             <th>Document</th>
@@ -120,17 +122,23 @@
                             <tr class="quotation-row @(q.IsRecommended ? "table-success" : "")">
                                 <td>@q.SupplierName</td>
                                 <td>@q.SupplierLegalId</td>
+                                <td><span class="supplier-score">@q.Score/5</span></td>
+                                <td>
+                                    <span class="score-breakdown">
+                                        @if (q.ScoreCCSS) { <span class="badge bg-info" title="CCSS">CCSS</span> }
+                                        @if (q.ScoreHacienda) { <span class="badge bg-info" title="Hacienda">Hac</span> }
+                                        @if (q.ScoreSICOP) { <span class="badge bg-info" title="SICOP">SICOP</span> }
+                                        @if (q.ScoreElectronicInvoice) { <span class="badge bg-info" title="E-Invoice">E-Inv</span> }
+                                        @if (q.ScoreLowestPrice) { <span class="badge bg-info" title="Lowest Price">Price</span> }
+                                    </span>
+                                </td>
                                 <td>@q.Price.ToString("C")</td>
                                 <td>@q.ValidUntil.ToString("yyyy-MM-dd")</td>
                                 <td>@q.DocumentFileName</td>
                                 <td>
                                     @if (q.IsRecommended)
                                     {
-                                        <span class="badge bg-success recommended-badge">Recommended - lowest price</span>
-                                    }
-                                    else if (item.RecommendedSupplierId is null && item.Quotations.Count > 1)
-                                    {
-                                        <span class="badge bg-secondary">Tied price</span>
+                                        <span class="badge bg-success recommended-badge">Recommended</span>
                                     }
                                 </td>
                             </tr>
@@ -216,15 +224,13 @@
                                         <option value="">-- Select Supplier --</option>
                                         @foreach (var q in item.Quotations)
                                         {
-                                            var isSelected = item.SelectedSupplierId == q.SupplierId;
-                                            var label = $"{q.SupplierName} - {q.Price:C}";
+                                            var isSelected = item.SelectedSupplierId.HasValue
+                                                ? item.SelectedSupplierId == q.SupplierId
+                                                : q.IsPreSelected;
+                                            var label = $"{q.SupplierName} - {q.Price:C} ({q.Score}/5)";
                                             if (q.IsRecommended)
                                             {
-                                                label += " (Recommended - lowest price)";
-                                            }
-                                            else if (item.RecommendedSupplierId is null && item.Quotations.Count > 1)
-                                            {
-                                                label += " (Tied price)";
+                                                label += " (Recommended)";
                                             }
                                             if (isSelected)
                                             {

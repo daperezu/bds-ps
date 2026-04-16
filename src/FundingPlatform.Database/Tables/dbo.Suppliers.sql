@@ -10,7 +10,9 @@ CREATE TABLE [dbo].[Suppliers]
     [HasElectronicInvoice]  BIT            NOT NULL CONSTRAINT [DF_Suppliers_HasElectronicInvoice] DEFAULT (0),
     [ShippingDetails]       NVARCHAR(500)  NULL,
     [WarrantyInfo]          NVARCHAR(500)  NULL,
-    [ComplianceStatus]      NVARCHAR(100)  NULL,
+    [IsCompliantCCSS]       BIT            NOT NULL CONSTRAINT [DF_Suppliers_IsCompliantCCSS] DEFAULT (0),
+    [IsCompliantHacienda]   BIT            NOT NULL CONSTRAINT [DF_Suppliers_IsCompliantHacienda] DEFAULT (0),
+    [IsCompliantSICOP]      BIT            NOT NULL CONSTRAINT [DF_Suppliers_IsCompliantSICOP] DEFAULT (0),
     [CreatedAt]             DATETIME2      NOT NULL CONSTRAINT [DF_Suppliers_CreatedAt] DEFAULT (GETUTCDATE()),
     [UpdatedAt]             DATETIME2      NOT NULL,
 

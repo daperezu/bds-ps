@@ -20,7 +20,6 @@ public record ReviewItemDto(
     int? SelectedSupplierId,
     bool IsNotTechnicallyEquivalent,
     List<ReviewQuotationDto> Quotations,
-    int? RecommendedSupplierId,
     string? ImpactTemplateName,
     List<ImpactParameterDisplayDto> ImpactParameters);
 
@@ -32,7 +31,14 @@ public record ReviewQuotationDto(
     decimal Price,
     DateOnly ValidUntil,
     string DocumentFileName,
-    bool IsRecommended);
+    bool IsRecommended,
+    int Score,
+    bool ScoreCCSS,
+    bool ScoreHacienda,
+    bool ScoreSICOP,
+    bool ScoreElectronicInvoice,
+    bool ScoreLowestPrice,
+    bool IsPreSelected);
 
 public record ImpactParameterDisplayDto(
     string Name,

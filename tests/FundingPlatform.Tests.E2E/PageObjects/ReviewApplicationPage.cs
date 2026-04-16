@@ -69,4 +69,14 @@ public class ReviewApplicationPage
     {
         return ItemCard(itemId).Locator(".quotation-row");
     }
+
+    public ILocator SupplierScores(int itemId)
+    {
+        return ItemCard(itemId).Locator(".supplier-score");
+    }
+
+    public ILocator ScoreBreakdowns(int itemId)
+    {
+        return ItemCard(itemId).Locator(".score-breakdown");
+    }
 }

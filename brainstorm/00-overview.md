@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-04-15
+Last updated: 2026-04-16
 
 ## Sessions
 
@@ -8,6 +8,7 @@ Last updated: 2026-04-15
 |---|------|-------|--------|------|
 | 01 | 2026-04-15 | core-model-submission | spec-created | 001 |
 | 02 | 2026-04-15 | review-approval-workflow | spec-created | 002 |
+| 03 | 2026-04-16 | supplier-evaluation-engine | spec-created | 003 |
 
 ## Open Threads
 

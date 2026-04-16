@@ -11,4 +11,6 @@ public record SupplierDto(
     bool HasElectronicInvoice,
     string? ShippingDetails,
     string? WarrantyInfo,
-    string? ComplianceStatus);
+    bool IsCompliantCCSS,
+    bool IsCompliantHacienda,
+    bool IsCompliantSICOP);

@@ -75,7 +75,8 @@ public class AspireFixture : IAsyncDisposable
                 "/Action:Publish",
                 $"/SourceFile:\"{dacpacPath}\"",
                 $"/TargetConnectionString:\"{connectionString}\"",
-                "/p:VerifyDeployment=false"),
+                "/p:VerifyDeployment=false",
+                "/p:BlockOnPossibleDataLoss=false"),
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true
