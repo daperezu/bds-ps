@@ -22,6 +22,11 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
 
         builder.Property(i => i.TechnicalSpecifications).IsRequired();
 
+        builder.Property(i => i.ReviewStatus).IsRequired().HasDefaultValue(Domain.Enums.ItemReviewStatus.Pending);
+        builder.Property(i => i.ReviewComment).HasMaxLength(2000);
+        builder.Property(i => i.SelectedSupplierId);
+        builder.Property(i => i.IsNotTechnicallyEquivalent).IsRequired().HasDefaultValue(false);
+
         builder.Property(i => i.CreatedAt).IsRequired();
         builder.Property(i => i.UpdatedAt).IsRequired();
 
@@ -39,5 +44,10 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
             .WithOne()
             .HasForeignKey(q => q.ItemId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(i => i.SelectedSupplier)
+            .WithMany()
+            .HasForeignKey(i => i.SelectedSupplierId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

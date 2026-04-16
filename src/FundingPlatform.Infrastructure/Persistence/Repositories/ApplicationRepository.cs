@@ -49,6 +49,25 @@ public class ApplicationRepository : IApplicationRepository
             .ToListAsync();
     }
 
+    public async Task<(List<AppEntity> Items, int TotalCount)> GetByStatePagedAsync(
+        Domain.Enums.ApplicationState state, int page, int pageSize)
+    {
+        var query = _context.Applications
+            .Include(a => a.Applicant)
+            .Include(a => a.Items)
+            .Where(a => a.State == state)
+            .OrderBy(a => a.SubmittedAt);
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
+    }
+
     public async Task AddAsync(AppEntity application)
     {
         await _context.Applications.AddAsync(application);

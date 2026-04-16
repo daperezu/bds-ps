@@ -1,0 +1,80 @@
+@model FundingPlatform.Web.ViewModels.ReviewQueueViewModel
+
+@{
+    ViewData["Title"] = "Review Queue";
+}
+
+<h2>Review Queue</h2>
+<p class="text-muted page-info">@Model.TotalCount submitted application(s)</p>
+
+@if (Model.Applications.Count == 0)
+{
+    <div class="alert alert-info">
+        No applications awaiting review.
+    </div>
+}
+else
+{
+    <table class="table table-striped review-queue">
+        <thead>
+            <tr>
+                <th>Application</th>
+                <th>Applicant</th>
+                <th>Performance Score</th>
+                <th>Submitted</th>
+                <th>Items</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var app in Model.Applications)
+            {
+                <tr>
+                    <td>#@app.ApplicationId</td>
+                    <td>@app.ApplicantName</td>
+                    <td>
+                        @if (app.ApplicantPerformanceScore.HasValue)
+                        {
+                            @app.ApplicantPerformanceScore.Value.ToString("F2")
+                        }
+                        else
+                        {
+                            <span class="text-muted">N/A</span>
+                        }
+                    </td>
+                    <td>@app.SubmittedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@app.ItemCount</td>
+                    <td>
+                        <a asp-action="Review" asp-route-id="@app.ApplicationId" class="btn btn-sm btn-primary">Review</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="pagination" aria-label="Review queue pagination">
+            <ul class="pagination">
+                @if (Model.CurrentPage > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage - 1)">Previous</a>
+                    </li>
+                }
+                @for (var i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@i">@i</a>
+                    </li>
+                }
+                @if (Model.CurrentPage < Model.TotalPages)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage + 1)">Next</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+}

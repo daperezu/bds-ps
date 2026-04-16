@@ -1,0 +1,40 @@
+using FundingPlatform.Domain.Enums;
+
+namespace FundingPlatform.Application.DTOs;
+
+public record ReviewApplicationDto(
+    int ApplicationId,
+    string ApplicantName,
+    decimal? ApplicantPerformanceScore,
+    ApplicationState State,
+    DateTime? SubmittedAt,
+    List<ReviewItemDto> Items);
+
+public record ReviewItemDto(
+    int ItemId,
+    string ProductName,
+    string CategoryName,
+    string TechnicalSpecifications,
+    ItemReviewStatus ReviewStatus,
+    string? ReviewComment,
+    int? SelectedSupplierId,
+    bool IsNotTechnicallyEquivalent,
+    List<ReviewQuotationDto> Quotations,
+    int? RecommendedSupplierId,
+    string? ImpactTemplateName,
+    List<ImpactParameterDisplayDto> ImpactParameters);
+
+public record ReviewQuotationDto(
+    int QuotationId,
+    int SupplierId,
+    string SupplierName,
+    string SupplierLegalId,
+    decimal Price,
+    DateOnly ValidUntil,
+    string DocumentFileName,
+    bool IsRecommended);
+
+public record ImpactParameterDisplayDto(
+    string Name,
+    string DisplayLabel,
+    string Value);

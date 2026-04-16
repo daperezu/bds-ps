@@ -7,4 +7,5 @@ public record ItemDto(
     string CategoryName,
     string TechnicalSpecifications,
     List<QuotationDto> Quotations,
-    ImpactDto? Impact);
+    ImpactDto? Impact,
+    string? ReviewComment);

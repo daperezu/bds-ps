@@ -341,7 +341,8 @@ public class ApplicationService
                         pv.ImpactTemplateParameter?.DataType.ToString() ?? string.Empty,
                         pv.ImpactTemplateParameter?.IsRequired ?? false,
                         pv.Value)).ToList())
-                : null)).ToList();
+                : null,
+            item.ReviewComment)).ToList();
 
         return new ApplicationDto(
             application.Id,

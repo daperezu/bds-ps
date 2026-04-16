@@ -5,12 +5,17 @@ CREATE TABLE [dbo].[Items]
     [ProductName]             NVARCHAR(500)  NOT NULL,
     [CategoryId]              INT            NOT NULL,
     [TechnicalSpecifications] NVARCHAR(MAX)  NOT NULL,
+    [ReviewStatus]                INT            NOT NULL CONSTRAINT [DF_Items_ReviewStatus] DEFAULT (0),
+    [ReviewComment]               NVARCHAR(2000) NULL,
+    [SelectedSupplierId]          INT            NULL,
+    [IsNotTechnicallyEquivalent]  BIT            NOT NULL CONSTRAINT [DF_Items_IsNotTechnicallyEquivalent] DEFAULT (0),
     [CreatedAt]               DATETIME2      NOT NULL CONSTRAINT [DF_Items_CreatedAt] DEFAULT (GETUTCDATE()),
     [UpdatedAt]               DATETIME2      NOT NULL,
 
     CONSTRAINT [PK_Items] PRIMARY KEY CLUSTERED ([Id]),
     CONSTRAINT [FK_Items_Applications] FOREIGN KEY ([ApplicationId]) REFERENCES [dbo].[Applications] ([Id]) ON DELETE CASCADE,
-    CONSTRAINT [FK_Items_Categories] FOREIGN KEY ([CategoryId]) REFERENCES [dbo].[Categories] ([Id]) ON DELETE NO ACTION
+    CONSTRAINT [FK_Items_Categories] FOREIGN KEY ([CategoryId]) REFERENCES [dbo].[Categories] ([Id]) ON DELETE NO ACTION,
+    CONSTRAINT [FK_Items_Suppliers_SelectedSupplierId] FOREIGN KEY ([SelectedSupplierId]) REFERENCES [dbo].[Suppliers] ([Id])
 );
 GO
 

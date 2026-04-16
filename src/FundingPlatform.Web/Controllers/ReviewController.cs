@@ -1,0 +1,180 @@
+using System.Security.Claims;
+using FundingPlatform.Application.Services;
+using FundingPlatform.Web.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace FundingPlatform.Web.Controllers;
+
+[Authorize(Roles = "Reviewer")]
+public class ReviewController : Controller
+{
+    private readonly ReviewService _reviewService;
+
+    public ReviewController(ReviewService reviewService)
+    {
+        _reviewService = reviewService;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Index(int page = 1)
+    {
+        if (page < 1) page = 1;
+
+        var (items, totalCount) = await _reviewService.GetReviewQueueAsync(page);
+        var totalPages = (int)Math.Ceiling(totalCount / 25.0);
+
+        var viewModel = new ReviewQueueViewModel
+        {
+            Applications = items.Select(dto => new ReviewQueueItemViewModel
+            {
+                ApplicationId = dto.ApplicationId,
+                ApplicantName = dto.ApplicantName,
+                ApplicantPerformanceScore = dto.ApplicantPerformanceScore,
+                SubmittedAt = dto.SubmittedAt,
+                ItemCount = dto.ItemCount
+            }).ToList(),
+            CurrentPage = page,
+            TotalPages = totalPages,
+            TotalCount = totalCount
+        };
+
+        return View(viewModel);
+    }
+
+    [HttpGet]
+    [Route("Review/{id:int}")]
+    public async Task<IActionResult> Review(int id)
+    {
+        var dto = await _reviewService.GetApplicationForReviewAsync(id);
+        if (dto is null)
+            return NotFound();
+
+        var viewModel = MapToViewModel(dto);
+        return View(viewModel);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("Review/{id:int}/ReviewItem")]
+    public async Task<IActionResult> ReviewItem(int id, int ItemId, string Decision, string? Comment, int? SelectedSupplierId)
+    {
+        var error = await _reviewService.ReviewItemAsync(id, ItemId, Decision, Comment, SelectedSupplierId, GetUserId());
+        if (error is not null)
+            TempData["ErrorMessage"] = error;
+        else
+            TempData["SuccessMessage"] = "Item decision recorded.";
+
+        return RedirectToAction(nameof(Review), new { id });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("Review/{id:int}/FlagEquivalence")]
+    public async Task<IActionResult> FlagEquivalence(int id, int ItemId, bool IsNotEquivalent)
+    {
+        var error = await _reviewService.FlagTechnicalEquivalenceAsync(id, ItemId, IsNotEquivalent, GetUserId());
+        if (error is not null)
+            TempData["ErrorMessage"] = error;
+        else
+            TempData["SuccessMessage"] = IsNotEquivalent
+                ? "Item flagged as not technically equivalent."
+                : "Technical equivalence flag cleared.";
+
+        return RedirectToAction(nameof(Review), new { id });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("Review/{id:int}/SendBack")]
+    public async Task<IActionResult> SendBack(int id)
+    {
+        var error = await _reviewService.SendBackAsync(id, GetUserId());
+        if (error is not null)
+        {
+            TempData["ErrorMessage"] = error;
+            return RedirectToAction(nameof(Review), new { id });
+        }
+
+        TempData["SuccessMessage"] = "Application sent back to applicant.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("Review/{id:int}/Finalize")]
+    public async Task<IActionResult> Finalize(int id, bool force = false)
+    {
+        var (error, unresolvedItems) = await _reviewService.FinalizeReviewAsync(id, force, GetUserId());
+
+        if (error is not null)
+        {
+            TempData["ErrorMessage"] = error;
+            return RedirectToAction(nameof(Review), new { id });
+        }
+
+        if (unresolvedItems is not null)
+        {
+            // Show warning with unresolved items — re-render the review page
+            var dto = await _reviewService.GetApplicationForReviewAsync(id);
+            if (dto is null)
+                return NotFound();
+
+            var viewModel = MapToViewModel(dto);
+            viewModel.UnresolvedItemWarnings = unresolvedItems;
+            return View(nameof(Review), viewModel);
+        }
+
+        TempData["SuccessMessage"] = "Review finalized. Application resolved.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+    private static ReviewApplicationViewModel MapToViewModel(Application.DTOs.ReviewApplicationDto dto)
+    {
+        var hasUnresolved = dto.Items.Any(i =>
+            i.ReviewStatus == Domain.Enums.ItemReviewStatus.Pending ||
+            i.ReviewStatus == Domain.Enums.ItemReviewStatus.NeedsInfo);
+
+        return new ReviewApplicationViewModel
+        {
+            ApplicationId = dto.ApplicationId,
+            ApplicantName = dto.ApplicantName,
+            ApplicantPerformanceScore = dto.ApplicantPerformanceScore,
+            State = dto.State.ToString(),
+            SubmittedAt = dto.SubmittedAt,
+            HasUnresolvedItems = hasUnresolved,
+            Items = dto.Items.Select(item => new ReviewItemViewModel
+            {
+                ItemId = item.ItemId,
+                ProductName = item.ProductName,
+                CategoryName = item.CategoryName,
+                TechnicalSpecifications = item.TechnicalSpecifications,
+                ReviewStatus = item.ReviewStatus.ToString(),
+                ReviewComment = item.ReviewComment,
+                SelectedSupplierId = item.SelectedSupplierId,
+                IsNotTechnicallyEquivalent = item.IsNotTechnicallyEquivalent,
+                RecommendedSupplierId = item.RecommendedSupplierId,
+                ImpactTemplateName = item.ImpactTemplateName,
+                Quotations = item.Quotations.Select(q => new ReviewQuotationViewModel
+                {
+                    QuotationId = q.QuotationId,
+                    SupplierId = q.SupplierId,
+                    SupplierName = q.SupplierName,
+                    SupplierLegalId = q.SupplierLegalId,
+                    Price = q.Price,
+                    ValidUntil = q.ValidUntil,
+                    DocumentFileName = q.DocumentFileName,
+                    IsRecommended = q.IsRecommended
+                }).ToList(),
+                ImpactParameters = item.ImpactParameters.Select(p => new ImpactParameterDisplayViewModel
+                {
+                    Name = p.Name,
+                    DisplayLabel = p.DisplayLabel,
+                    Value = p.Value
+                }).ToList()
+            }).ToList()
+        };
+    }
+}
