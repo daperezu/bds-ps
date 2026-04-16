@@ -56,6 +56,17 @@ public class AuthenticatedTestBase : PageTest
         await page.FillAsync("[name=Password]", password);
         await page.Locator("form[action*='Account/Login'] button[type=submit]").ClickAsync();
     }
+
+    protected async Task AssignRoleAsync(string email, string role)
+    {
+        using var handler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+        };
+        using var client = new HttpClient(handler) { BaseAddress = new Uri(BaseUrl) };
+        var response = await client.GetAsync($"/Account/AssignRole?email={Uri.EscapeDataString(email)}&role={Uri.EscapeDataString(role)}");
+        response.EnsureSuccessStatusCode();
+    }
 }
 
 [SetUpFixture]

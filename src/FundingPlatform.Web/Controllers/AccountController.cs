@@ -128,4 +128,56 @@ public class AccountController : Controller
 
         return Ok();
     }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PromoteToReviewer(string email)
+    {
+        if (!_environment.IsDevelopment())
+        {
+            return NotFound();
+        }
+
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        if (!await _userManager.IsInRoleAsync(user, "Reviewer"))
+        {
+            await _userManager.AddToRoleAsync(user, "Reviewer");
+        }
+
+        return Ok();
+    }
+
+    [HttpGet]
+    [Route("Account/AssignRole")]
+    public async Task<IActionResult> AssignRole(string email, string role)
+    {
+        if (!_environment.IsDevelopment())
+        {
+            return NotFound();
+        }
+
+        string[] allowedRoles = ["Admin", "Reviewer"];
+        if (!allowedRoles.Contains(role))
+        {
+            return BadRequest("Invalid role.");
+        }
+
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        if (!await _userManager.IsInRoleAsync(user, role))
+        {
+            await _userManager.AddToRoleAsync(user, role);
+        }
+
+        return Ok($"Role '{role}' assigned to '{email}'.");
+    }
 }

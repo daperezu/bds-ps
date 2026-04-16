@@ -17,4 +17,5 @@ public class ItemViewModel
     public string CategoryName { get; set; } = string.Empty;
     public int QuotationCount { get; set; }
     public bool HasImpact { get; set; }
+    public string? ReviewComment { get; set; }
 }

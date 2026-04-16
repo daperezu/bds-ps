@@ -145,7 +145,8 @@ public class ApplicationController : Controller
                 ProductName = i.ProductName,
                 CategoryName = i.CategoryName,
                 QuotationCount = i.Quotations.Count,
-                HasImpact = i.Impact is not null
+                HasImpact = i.Impact is not null,
+                ReviewComment = i.ReviewComment
             }).ToList()
         };
     }

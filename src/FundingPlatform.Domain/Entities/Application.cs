@@ -111,4 +111,82 @@ public class Application
 
         return errors;
     }
+
+    /// <summary>
+    /// Transitions the application from Submitted to Under Review.
+    /// Idempotent — no-op if already Under Review.
+    /// </summary>
+    public void StartReview()
+    {
+        if (State == ApplicationState.UnderReview)
+            return;
+
+        if (State != ApplicationState.Submitted)
+        {
+            throw new InvalidOperationException(
+                $"Cannot start review: application is in '{State}' state, expected 'Submitted'.");
+        }
+
+        State = ApplicationState.UnderReview;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Sends the application back to Draft. Resets all item review statuses to Pending.
+    /// Preserves item review comments.
+    /// </summary>
+    public void SendBack()
+    {
+        if (State != ApplicationState.UnderReview)
+        {
+            throw new InvalidOperationException(
+                $"Cannot send back: application is in '{State}' state, expected 'UnderReview'.");
+        }
+
+        State = ApplicationState.Draft;
+        SubmittedAt = null;
+        UpdatedAt = DateTime.UtcNow;
+
+        foreach (var item in _items)
+        {
+            item.ResetReviewStatus();
+        }
+    }
+
+    /// <summary>
+    /// Finalizes the review, transitioning the application to Resolved.
+    /// If force is false and there are unresolved items (Pending or NeedsInfo), throws an exception.
+    /// If force is true, unresolved items are implicitly rejected.
+    /// </summary>
+    public void Finalize(bool force)
+    {
+        if (State != ApplicationState.UnderReview)
+        {
+            throw new InvalidOperationException(
+                $"Cannot finalize: application is in '{State}' state, expected 'UnderReview'.");
+        }
+
+        var unresolvedItems = _items
+            .Where(i => i.ReviewStatus == Enums.ItemReviewStatus.Pending
+                     || i.ReviewStatus == Enums.ItemReviewStatus.NeedsInfo)
+            .ToList();
+
+        if (unresolvedItems.Count > 0 && !force)
+        {
+            var itemNames = string.Join(", ", unresolvedItems.Select(i => $"'{i.ProductName}'"));
+            throw new InvalidOperationException(
+                $"Cannot finalize: the following items are unresolved: {itemNames}. Use force to implicitly reject them.");
+        }
+
+        if (force)
+        {
+            foreach (var item in unresolvedItems)
+            {
+                item.Reject("Implicitly rejected during finalization");
+            }
+        }
+
+        State = ApplicationState.Resolved;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

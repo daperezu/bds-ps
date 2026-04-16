@@ -14,6 +14,10 @@ IF NOT EXISTS (SELECT 1 FROM [dbo].[AspNetRoles] WHERE [NormalizedName] = N'ADMI
     INSERT INTO [dbo].[AspNetRoles] ([Id], [Name], [NormalizedName], [ConcurrencyStamp])
     VALUES (NEWID(), N'Admin', N'ADMIN', NEWID());
 
+IF NOT EXISTS (SELECT 1 FROM [dbo].[AspNetRoles] WHERE [NormalizedName] = N'REVIEWER')
+    INSERT INTO [dbo].[AspNetRoles] ([Id], [Name], [NormalizedName], [ConcurrencyStamp])
+    VALUES (NEWID(), N'Reviewer', N'REVIEWER', NEWID());
+
 -- =============================================================================
 -- Categories
 -- =============================================================================

@@ -1,3 +1,5 @@
+using FundingPlatform.Domain.Enums;
+
 namespace FundingPlatform.Domain.Entities;
 
 public class Item
@@ -9,11 +11,16 @@ public class Item
     public string ProductName { get; private set; } = string.Empty;
     public int CategoryId { get; private set; }
     public string TechnicalSpecifications { get; private set; } = string.Empty;
+    public ItemReviewStatus ReviewStatus { get; private set; } = ItemReviewStatus.Pending;
+    public string? ReviewComment { get; private set; }
+    public int? SelectedSupplierId { get; private set; }
+    public bool IsNotTechnicallyEquivalent { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 
     public Category Category { get; private set; } = null!;
     public Impact? Impact { get; private set; }
+    public Supplier? SelectedSupplier { get; private set; }
 
     public IReadOnlyList<Quotation> Quotations => _quotations.AsReadOnly();
 
@@ -92,5 +99,85 @@ public class Item
     public bool HasCompleteImpact()
     {
         return Impact is not null && Impact.ParameterValues.Count > 0;
+    }
+
+    /// <summary>
+    /// Approves the item with a selected supplier and optional comment.
+    /// </summary>
+    public void Approve(int supplierId, string? comment)
+    {
+        if (IsNotTechnicallyEquivalent)
+        {
+            throw new InvalidOperationException(
+                "Cannot approve an item flagged as not technically equivalent.");
+        }
+
+        if (!_quotations.Any(q => q.SupplierId == supplierId))
+        {
+            throw new InvalidOperationException(
+                "Selected supplier must have a quotation on this item.");
+        }
+
+        ReviewStatus = ItemReviewStatus.Approved;
+        SelectedSupplierId = supplierId;
+        ReviewComment = comment;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Rejects the item with an optional comment.
+    /// </summary>
+    public void Reject(string? comment)
+    {
+        ReviewStatus = ItemReviewStatus.Rejected;
+        ReviewComment = comment;
+        SelectedSupplierId = null;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Requests more information on the item with an optional comment.
+    /// </summary>
+    public void RequestMoreInfo(string? comment)
+    {
+        ReviewStatus = ItemReviewStatus.NeedsInfo;
+        ReviewComment = comment;
+        SelectedSupplierId = null;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Flags this item's quotations as not technically equivalent, automatically rejecting it.
+    /// </summary>
+    public void FlagNotEquivalent()
+    {
+        IsNotTechnicallyEquivalent = true;
+        ReviewStatus = ItemReviewStatus.Rejected;
+        ReviewComment = "Rejected: quotations are not technically equivalent";
+        SelectedSupplierId = null;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Clears the not-technically-equivalent flag and resets the review status to Pending.
+    /// </summary>
+    public void ClearNotEquivalentFlag()
+    {
+        IsNotTechnicallyEquivalent = false;
+        ReviewStatus = ItemReviewStatus.Pending;
+        ReviewComment = null;
+        SelectedSupplierId = null;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Resets review status to Pending for a new review round. Preserves ReviewComment.
+    /// </summary>
+    public void ResetReviewStatus()
+    {
+        ReviewStatus = ItemReviewStatus.Pending;
+        SelectedSupplierId = null;
+        IsNotTechnicallyEquivalent = false;
+        UpdatedAt = DateTime.UtcNow;
     }
 }

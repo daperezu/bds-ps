@@ -38,6 +38,11 @@ using (var scope = app.Services.CreateScope())
     try
     {
         await FundingPlatform.Infrastructure.Identity.IdentityConfiguration.SeedRolesAsync(scope.ServiceProvider);
+
+        if (app.Environment.IsDevelopment())
+        {
+            await FundingPlatform.Infrastructure.Identity.IdentityConfiguration.SeedUsersAsync(scope.ServiceProvider);
+        }
     }
     catch (Microsoft.Data.SqlClient.SqlException ex)
     {

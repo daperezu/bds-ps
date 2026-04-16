@@ -64,9 +64,13 @@ public class AspireFixture : IAsyncDisposable
 
         var dacpacPath = FindDacpac();
 
+        var sqlpackagePath = FindOnPath("sqlpackage")
+            ?? throw new FileNotFoundException(
+                "sqlpackage not found. Install it with: dotnet tool install -g microsoft.sqlpackage");
+
         var psi = new ProcessStartInfo
         {
-            FileName = "sqlpackage",
+            FileName = sqlpackagePath,
             Arguments = string.Join(" ",
                 "/Action:Publish",
                 $"/SourceFile:\"{dacpacPath}\"",
@@ -76,6 +80,14 @@ public class AspireFixture : IAsyncDisposable
             RedirectStandardOutput = true,
             RedirectStandardError = true
         };
+
+        // Ensure DOTNET_ROOT is set so sqlpackage can find the .NET runtime
+        var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT")
+            ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".dotnet");
+        if (Directory.Exists(dotnetRoot))
+        {
+            psi.Environment["DOTNET_ROOT"] = dotnetRoot;
+        }
 
         using var proc = Process.Start(psi)
             ?? throw new InvalidOperationException("Failed to start sqlpackage");
@@ -105,6 +117,27 @@ public class AspireFixture : IAsyncDisposable
             throw new FileNotFoundException($"Dacpac not found at {dacpac}. Run 'dotnet build src/FundingPlatform.Database' first.");
 
         return dacpac;
+    }
+
+    private static string? FindOnPath(string executable)
+    {
+        // Check well-known .NET tools directory first
+        var dotnetToolsDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".dotnet", "tools");
+        var dotnetToolPath = Path.Combine(dotnetToolsDir, executable);
+        if (File.Exists(dotnetToolPath))
+            return dotnetToolPath;
+
+        // Fall back to PATH search
+        var pathVar = Environment.GetEnvironmentVariable("PATH") ?? "";
+        foreach (var dir in pathVar.Split(Path.PathSeparator))
+        {
+            var candidate = Path.Combine(dir, executable);
+            if (File.Exists(candidate))
+                return candidate;
+        }
+
+        return null;
     }
 
     public async ValueTask DisposeAsync()

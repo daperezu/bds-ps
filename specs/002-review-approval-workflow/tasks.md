@@ -19,14 +19,14 @@
 
 **Purpose**: Domain enums, entity modifications, and database schema changes that all user stories depend on
 
-- [ ] T001 Add UnderReview and Resolved values to ApplicationState enum in src/FundingPlatform.Domain/Enums/ApplicationState.cs
-- [ ] T002 Create ItemReviewStatus enum (Pending, Approved, Rejected, NeedsInfo) in src/FundingPlatform.Domain/Enums/ItemReviewStatus.cs
-- [ ] T003 Add review fields to Item entity (ReviewStatus, ReviewComment, SelectedSupplierId, IsNotTechnicallyEquivalent) and review methods (Approve, Reject, RequestMoreInfo, FlagNotEquivalent, ClearNotEquivalentFlag, ResetReviewStatus) in src/FundingPlatform.Domain/Entities/Item.cs
-- [ ] T004 Add review state transition methods to Application entity (StartReview, SendBack, Finalize) in src/FundingPlatform.Domain/Entities/Application.cs
-- [ ] T005 Add review columns (ReviewStatus, ReviewComment, SelectedSupplierId, IsNotTechnicallyEquivalent) to Items table definition in src/FundingPlatform.Database/Tables/Items.sql
-- [ ] T006 Add Reviewer role to seed data in src/FundingPlatform.Database/PostDeployment/SeedData.sql
-- [ ] T007 Update ItemConfiguration with review field mappings and SelectedSupplier navigation in src/FundingPlatform.Infrastructure/Persistence/Configurations/ItemConfiguration.cs
-- [ ] T008 [P] Add Reviewer role creation to IdentityConfiguration.SeedRolesAsync in src/FundingPlatform.Infrastructure/Identity/IdentityConfiguration.cs
+- [X] T001 Add UnderReview and Resolved values to ApplicationState enum in src/FundingPlatform.Domain/Enums/ApplicationState.cs
+- [X] T002 Create ItemReviewStatus enum (Pending, Approved, Rejected, NeedsInfo) in src/FundingPlatform.Domain/Enums/ItemReviewStatus.cs
+- [X] T003 Add review fields to Item entity (ReviewStatus, ReviewComment, SelectedSupplierId, IsNotTechnicallyEquivalent) and review methods (Approve, Reject, RequestMoreInfo, FlagNotEquivalent, ClearNotEquivalentFlag, ResetReviewStatus) in src/FundingPlatform.Domain/Entities/Item.cs
+- [X] T004 Add review state transition methods to Application entity (StartReview, SendBack, Finalize) in src/FundingPlatform.Domain/Entities/Application.cs
+- [X] T005 Add review columns (ReviewStatus, ReviewComment, SelectedSupplierId, IsNotTechnicallyEquivalent) to Items table definition in src/FundingPlatform.Database/Tables/Items.sql
+- [X] T006 Add Reviewer role to seed data in src/FundingPlatform.Database/PostDeployment/SeedData.sql
+- [X] T007 Update ItemConfiguration with review field mappings and SelectedSupplier navigation in src/FundingPlatform.Infrastructure/Persistence/Configurations/ItemConfiguration.cs
+- [X] T008 [P] Add Reviewer role creation to IdentityConfiguration.SeedRolesAsync in src/FundingPlatform.Infrastructure/Identity/IdentityConfiguration.cs
 
 **Checkpoint**: Domain model and database schema ready. All review enums, entity methods, and EF configurations in place.
 
@@ -36,13 +36,13 @@
 
 **Purpose**: ReviewService, DTOs, and ReviewController that all user stories need
 
-- [ ] T009 [P] Create ReviewQueueItemDto in src/FundingPlatform.Application/DTOs/ReviewQueueItemDto.cs
-- [ ] T010 [P] Create ReviewApplicationDto and ReviewItemDto in src/FundingPlatform.Application/DTOs/ReviewApplicationDto.cs
-- [ ] T011 Create ReviewService with GetReviewQueueAsync and GetApplicationForReviewAsync methods in src/FundingPlatform.Application/Services/ReviewService.cs
-- [ ] T012 Register ReviewService in DI container in src/FundingPlatform.Application/DependencyInjection.cs
-- [ ] T013 Create ReviewController shell with Authorize(Roles="Reviewer") and inject ReviewService in src/FundingPlatform.Web/Controllers/ReviewController.cs
-- [ ] T014 [P] Create ReviewQueuePage page object for E2E tests in tests/FundingPlatform.Tests.E2E/PageObjects/ReviewQueuePage.cs
-- [ ] T015 [P] Create ReviewApplicationPage page object for E2E tests in tests/FundingPlatform.Tests.E2E/PageObjects/ReviewApplicationPage.cs
+- [X] T009 [P] Create ReviewQueueItemDto in src/FundingPlatform.Application/DTOs/ReviewQueueItemDto.cs
+- [X] T010 [P] Create ReviewApplicationDto and ReviewItemDto in src/FundingPlatform.Application/DTOs/ReviewApplicationDto.cs
+- [X] T011 Create ReviewService with GetReviewQueueAsync and GetApplicationForReviewAsync methods in src/FundingPlatform.Application/Services/ReviewService.cs
+- [X] T012 Register ReviewService in DI container in src/FundingPlatform.Application/DependencyInjection.cs
+- [X] T013 Create ReviewController shell with Authorize(Roles="Reviewer") and inject ReviewService in src/FundingPlatform.Web/Controllers/ReviewController.cs
+- [X] T014 [P] Create ReviewQueuePage page object for E2E tests in tests/FundingPlatform.Tests.E2E/PageObjects/ReviewQueuePage.cs
+- [X] T015 [P] Create ReviewApplicationPage page object for E2E tests in tests/FundingPlatform.Tests.E2E/PageObjects/ReviewApplicationPage.cs
 
 **Checkpoint**: Foundation ready — ReviewService, DTOs, controller shell, and page objects in place. User story implementation can begin.
 
@@ -56,15 +56,15 @@
 
 ### E2E Tests for User Story 1
 
-- [ ] T016 [US1] Write Playwright E2E test: reviewer sees submitted applications in queue, drafts and resolved apps excluded, pagination works — in tests/FundingPlatform.Tests.E2E/Tests/ReviewQueueTests.cs
+- [X] T016 [US1] Write Playwright E2E test: reviewer sees submitted applications in queue, drafts and resolved apps excluded, pagination works — in tests/FundingPlatform.Tests.E2E/Tests/ReviewQueueTests.cs
 
 ### Implementation for User Story 1
 
-- [ ] T017 [US1] Implement GetReviewQueueAsync in ReviewService: paginated query filtering State==Submitted, joining Applicant for name and score, ordered by SubmittedAt — in src/FundingPlatform.Application/Services/ReviewService.cs
-- [ ] T018 [P] [US1] Create ReviewQueueViewModel and ReviewQueueItemViewModel in src/FundingPlatform.Web/ViewModels/ReviewQueueViewModel.cs
-- [ ] T019 [US1] Implement Index(int page) action in ReviewController: call GetReviewQueueAsync, map to view model, return view — in src/FundingPlatform.Web/Controllers/ReviewController.cs
-- [ ] T020 [US1] Create Review/Index.cshtml view: paginated table of applications with applicant name, submission date, item count, performance score, and link to review detail — in src/FundingPlatform.Web/Views/Review/Index.cshtml
-- [ ] T021 [US1] Add Review link to navbar for users with Reviewer role in src/FundingPlatform.Web/Views/Shared/_Layout.cshtml
+- [X] T017 [US1] Implement GetReviewQueueAsync in ReviewService: paginated query filtering State==Submitted, joining Applicant for name and score, ordered by SubmittedAt — in src/FundingPlatform.Application/Services/ReviewService.cs
+- [X] T018 [P] [US1] Create ReviewQueueViewModel and ReviewQueueItemViewModel in src/FundingPlatform.Web/ViewModels/ReviewQueueViewModel.cs
+- [X] T019 [US1] Implement Index(int page) action in ReviewController: call GetReviewQueueAsync, map to view model, return view — in src/FundingPlatform.Web/Controllers/ReviewController.cs
+- [X] T020 [US1] Create Review/Index.cshtml view: paginated table of applications with applicant name, submission date, item count, performance score, and link to review detail — in src/FundingPlatform.Web/Views/Review/Index.cshtml
+- [X] T021 [US1] Add Review link to navbar for users with Reviewer role in src/FundingPlatform.Web/Views/Shared/_Layout.cshtml
 
 **Checkpoint**: User Story 1 complete. Reviewer can browse the queue and see submitted applications. Run ReviewQueueTests to validate.
 
@@ -78,14 +78,14 @@
 
 ### E2E Tests for User Story 2
 
-- [ ] T022 [US2] Write Playwright E2E test: reviewer opens submitted application, state transitions to Under Review, all items/suppliers/quotations/impact displayed, performance score shown read-only — in tests/FundingPlatform.Tests.E2E/Tests/ReviewApplicationTests.cs
+- [X] T022 [US2] Write Playwright E2E test: reviewer opens submitted application, state transitions to Under Review, all items/suppliers/quotations/impact displayed, performance score shown read-only — in tests/FundingPlatform.Tests.E2E/Tests/ReviewApplicationTests.cs
 
 ### Implementation for User Story 2
 
-- [ ] T023 [US2] Implement GetApplicationForReviewAsync in ReviewService: load application with all items, quotations, suppliers, impact, applicant; call StartReview on domain entity — in src/FundingPlatform.Application/Services/ReviewService.cs
-- [ ] T024 [P] [US2] Create ReviewApplicationViewModel and ReviewItemViewModel in src/FundingPlatform.Web/ViewModels/ReviewApplicationViewModel.cs
-- [ ] T025 [US2] Implement Review(int id) GET action in ReviewController: call GetApplicationForReviewAsync, compute lowest-price recommendation per item, map to view model — in src/FundingPlatform.Web/Controllers/ReviewController.cs
-- [ ] T026 [US2] Create Review/Review.cshtml view: applicant info with performance score, items list with category, tech specs, impact, quotations table with supplier details and price highlighting — in src/FundingPlatform.Web/Views/Review/Review.cshtml
+- [X] T023 [US2] Implement GetApplicationForReviewAsync in ReviewService: load application with all items, quotations, suppliers, impact, applicant; call StartReview on domain entity — in src/FundingPlatform.Application/Services/ReviewService.cs
+- [X] T024 [P] [US2] Create ReviewApplicationViewModel and ReviewItemViewModel in src/FundingPlatform.Web/ViewModels/ReviewApplicationViewModel.cs
+- [X] T025 [US2] Implement Review(int id) GET action in ReviewController: call GetApplicationForReviewAsync, compute lowest-price recommendation per item, map to view model — in src/FundingPlatform.Web/Controllers/ReviewController.cs
+- [X] T026 [US2] Create Review/Review.cshtml view: applicant info with performance score, items list with category, tech specs, impact, quotations table with supplier details and price highlighting — in src/FundingPlatform.Web/Views/Review/Review.cshtml
 
 **Checkpoint**: User Story 2 complete. Reviewer can open an application and see all details. State transitions to Under Review. Run ReviewApplicationTests to validate.
 
@@ -99,14 +99,14 @@
 
 ### E2E Tests for User Story 3
 
-- [ ] T027 [US3] Write Playwright E2E test: reviewer approves item with supplier and comment, rejects item with comment, requests more info without comment, lowest-price supplier highlighted, equal-price shows no highlight — in tests/FundingPlatform.Tests.E2E/Tests/ReviewItemDecisionTests.cs
+- [X] T027 [US3] Write Playwright E2E test: reviewer approves item with supplier and comment, rejects item with comment, requests more info without comment, lowest-price supplier highlighted, equal-price shows no highlight — in tests/FundingPlatform.Tests.E2E/Tests/ReviewItemDecisionTests.cs
 
 ### Implementation for User Story 3
 
-- [ ] T028 [US3] Create ReviewItemCommand (ApplicationId, ItemId, Decision, Comment, SelectedSupplierId) in src/FundingPlatform.Application/Applications/Commands/ReviewItemCommand.cs
-- [ ] T029 [US3] Implement ReviewItemAsync in ReviewService: load application, call domain method on item (Approve/Reject/RequestMoreInfo), record version history, save — in src/FundingPlatform.Application/Services/ReviewService.cs
-- [ ] T030 [US3] Implement ReviewItem POST action in ReviewController: parse decision, call ReviewItemAsync, redirect back to review page with success/error message — in src/FundingPlatform.Web/Controllers/ReviewController.cs
-- [ ] T031 [US3] Add item decision form to Review/Review.cshtml: decision radio buttons (Approve/Reject/Request More Info), supplier dropdown (shown when Approve selected), comment textarea, submit button per item — in src/FundingPlatform.Web/Views/Review/Review.cshtml
+- [X] T028 [US3] Create ReviewItemCommand (ApplicationId, ItemId, Decision, Comment, SelectedSupplierId) in src/FundingPlatform.Application/Applications/Commands/ReviewItemCommand.cs
+- [X] T029 [US3] Implement ReviewItemAsync in ReviewService: load application, call domain method on item (Approve/Reject/RequestMoreInfo), record version history, save — in src/FundingPlatform.Application/Services/ReviewService.cs
+- [X] T030 [US3] Implement ReviewItem POST action in ReviewController: parse decision, call ReviewItemAsync, redirect back to review page with success/error message — in src/FundingPlatform.Web/Controllers/ReviewController.cs
+- [X] T031 [US3] Add item decision form to Review/Review.cshtml: decision radio buttons (Approve/Reject/Request More Info), supplier dropdown (shown when Approve selected), comment textarea, submit button per item — in src/FundingPlatform.Web/Views/Review/Review.cshtml
 
 **Checkpoint**: User Story 3 complete. Reviewer can make item-level decisions. Run ReviewItemDecisionTests to validate.
 
@@ -120,14 +120,14 @@
 
 ### E2E Tests for User Story 4
 
-- [ ] T032 [US4] Write Playwright E2E test: flag not-equivalent triggers auto-rejection, attempt to approve flagged item is prevented, clear flag returns item to Pending — in tests/FundingPlatform.Tests.E2E/Tests/TechnicalEquivalenceTests.cs
+- [X] T032 [US4] Write Playwright E2E test: flag not-equivalent triggers auto-rejection, attempt to approve flagged item is prevented, clear flag returns item to Pending — in tests/FundingPlatform.Tests.E2E/Tests/TechnicalEquivalenceTests.cs
 
 ### Implementation for User Story 4
 
-- [ ] T033 [US4] Create FlagTechnicalEquivalenceCommand (ApplicationId, ItemId, IsNotEquivalent) in src/FundingPlatform.Application/Applications/Commands/FlagTechnicalEquivalenceCommand.cs
-- [ ] T034 [US4] Implement FlagTechnicalEquivalenceAsync in ReviewService: load application, call FlagNotEquivalent or ClearNotEquivalentFlag on item, record version history, save — in src/FundingPlatform.Application/Services/ReviewService.cs
-- [ ] T035 [US4] Implement FlagEquivalence POST action in ReviewController — in src/FundingPlatform.Web/Controllers/ReviewController.cs
-- [ ] T036 [US4] Add technical equivalence toggle to Review/Review.cshtml: checkbox or button per item, visual indicator when flagged, disable approve button when flagged — in src/FundingPlatform.Web/Views/Review/Review.cshtml
+- [X] T033 [US4] Create FlagTechnicalEquivalenceCommand (ApplicationId, ItemId, IsNotEquivalent) in src/FundingPlatform.Application/Applications/Commands/FlagTechnicalEquivalenceCommand.cs
+- [X] T034 [US4] Implement FlagTechnicalEquivalenceAsync in ReviewService: load application, call FlagNotEquivalent or ClearNotEquivalentFlag on item, record version history, save — in src/FundingPlatform.Application/Services/ReviewService.cs
+- [X] T035 [US4] Implement FlagEquivalence POST action in ReviewController — in src/FundingPlatform.Web/Controllers/ReviewController.cs
+- [X] T036 [US4] Add technical equivalence toggle to Review/Review.cshtml: checkbox or button per item, visual indicator when flagged, disable approve button when flagged — in src/FundingPlatform.Web/Views/Review/Review.cshtml
 
 **Checkpoint**: User Story 4 complete. Technical equivalence flagging works with auto-rejection. Run TechnicalEquivalenceTests to validate.
 
@@ -141,14 +141,14 @@
 
 ### E2E Tests for User Story 5
 
-- [ ] T037 [US5] Write Playwright E2E test: approval requires supplier selection, non-recommended supplier accepted, equal prices show no recommendation — in tests/FundingPlatform.Tests.E2E/Tests/SupplierSelectionTests.cs
+- [X] T037 [US5] Write Playwright E2E test: approval requires supplier selection, non-recommended supplier accepted, equal prices show no recommendation — in tests/FundingPlatform.Tests.E2E/Tests/SupplierSelectionTests.cs
 
 ### Implementation for User Story 5
 
 Note: Supplier selection logic is primarily implemented in US3 (Approve method requires SupplierId). This phase focuses on the recommendation display and enforcement edge cases.
 
-- [ ] T038 [US5] Add lowest-price recommendation computation to ReviewService.GetApplicationForReviewAsync: for each item find min price, set null if tie — in src/FundingPlatform.Application/Services/ReviewService.cs
-- [ ] T039 [US5] Enhance supplier dropdown in Review/Review.cshtml: highlight recommended supplier, show "(Recommended - lowest price)" label, show "(Tied price)" when no recommendation — in src/FundingPlatform.Web/Views/Review/Review.cshtml
+- [X] T038 [US5] Add lowest-price recommendation computation to ReviewService.GetApplicationForReviewAsync: for each item find min price, set null if tie — in src/FundingPlatform.Application/Services/ReviewService.cs
+- [X] T039 [US5] Enhance supplier dropdown in Review/Review.cshtml: highlight recommended supplier, show "(Recommended - lowest price)" label, show "(Tied price)" when no recommendation — in src/FundingPlatform.Web/Views/Review/Review.cshtml
 
 **Checkpoint**: User Story 5 complete. Supplier selection enforcement and recommendation display working. Run SupplierSelectionTests to validate.
 
@@ -162,15 +162,15 @@ Note: Supplier selection logic is primarily implemented in US3 (Approve method r
 
 ### E2E Tests for User Story 6
 
-- [ ] T040 [US6] Write Playwright E2E test: send back transitions to Draft, item statuses reset to Pending, applicant sees reviewer comments, applicant can edit and resubmit, previous comments preserved on resubmission — in tests/FundingPlatform.Tests.E2E/Tests/SendBackApplicationTests.cs
+- [X] T040 [US6] Write Playwright E2E test: send back transitions to Draft, item statuses reset to Pending, applicant sees reviewer comments, applicant can edit and resubmit, previous comments preserved on resubmission — in tests/FundingPlatform.Tests.E2E/Tests/SendBackApplicationTests.cs
 
 ### Implementation for User Story 6
 
-- [ ] T041 [US6] Create SendBackApplicationCommand (ApplicationId) in src/FundingPlatform.Application/Applications/Commands/SendBackApplicationCommand.cs
-- [ ] T042 [US6] Implement SendBackAsync in ReviewService: load application, call SendBack on domain entity, record version history, save — in src/FundingPlatform.Application/Services/ReviewService.cs
-- [ ] T043 [US6] Implement SendBack POST action in ReviewController: call SendBackAsync, redirect to queue with confirmation message — in src/FundingPlatform.Web/Controllers/ReviewController.cs
-- [ ] T044 [US6] Add Send Back button to Review/Review.cshtml: visible when application is Under Review — in src/FundingPlatform.Web/Views/Review/Review.cshtml
-- [ ] T045 [US6] Show reviewer comments on applicant's application detail/edit views: display previous review comments per item as read-only notes — in src/FundingPlatform.Web/Views/Application/Details.cshtml and src/FundingPlatform.Web/Views/Application/Edit.cshtml
+- [X] T041 [US6] Create SendBackApplicationCommand (ApplicationId) in src/FundingPlatform.Application/Applications/Commands/SendBackApplicationCommand.cs
+- [X] T042 [US6] Implement SendBackAsync in ReviewService: load application, call SendBack on domain entity, record version history, save — in src/FundingPlatform.Application/Services/ReviewService.cs
+- [X] T043 [US6] Implement SendBack POST action in ReviewController: call SendBackAsync, redirect to queue with confirmation message — in src/FundingPlatform.Web/Controllers/ReviewController.cs
+- [X] T044 [US6] Add Send Back button to Review/Review.cshtml: visible when application is Under Review — in src/FundingPlatform.Web/Views/Review/Review.cshtml
+- [X] T045 [US6] Show reviewer comments on applicant's application detail/edit views: display previous review comments per item as read-only notes — in src/FundingPlatform.Web/Views/Application/Details.cshtml and src/FundingPlatform.Web/Views/Application/Edit.cshtml
 
 **Checkpoint**: User Story 6 complete. Send-back flow works end-to-end including applicant seeing comments. Run SendBackApplicationTests to validate.
 
@@ -184,14 +184,14 @@ Note: Supplier selection logic is primarily implemented in US3 (Approve method r
 
 ### E2E Tests for User Story 7
 
-- [ ] T046 [US7] Write Playwright E2E test: finalize with all items resolved transitions to Resolved, finalize with unresolved items shows warning, confirm force-finalizes with implicit rejections, cancel keeps Under Review — in tests/FundingPlatform.Tests.E2E/Tests/FinalizeReviewTests.cs
+- [X] T046 [US7] Write Playwright E2E test: finalize with all items resolved transitions to Resolved, finalize with unresolved items shows warning, confirm force-finalizes with implicit rejections, cancel keeps Under Review — in tests/FundingPlatform.Tests.E2E/Tests/FinalizeReviewTests.cs
 
 ### Implementation for User Story 7
 
-- [ ] T047 [US7] Create FinalizeReviewCommand (ApplicationId, bool Force) in src/FundingPlatform.Application/Applications/Commands/FinalizeReviewCommand.cs
-- [ ] T048 [US7] Implement FinalizeReviewAsync in ReviewService: load application, check for unresolved items, if force=false and unresolved items exist return warning with list, if force=true call Finalize(true) on domain entity, record version history, save — in src/FundingPlatform.Application/Services/ReviewService.cs
-- [ ] T049 [US7] Implement Finalize POST action in ReviewController: handle normal finalization and force finalization, redirect to queue on success, show warning partial with unresolved item list on non-force with unresolved — in src/FundingPlatform.Web/Controllers/ReviewController.cs
-- [ ] T050 [US7] Add Finalize Review button and confirmation warning dialog to Review/Review.cshtml: button visible when Under Review, warning modal listing unresolved items with Confirm/Cancel options — in src/FundingPlatform.Web/Views/Review/Review.cshtml
+- [X] T047 [US7] Create FinalizeReviewCommand (ApplicationId, bool Force) in src/FundingPlatform.Application/Applications/Commands/FinalizeReviewCommand.cs
+- [X] T048 [US7] Implement FinalizeReviewAsync in ReviewService: load application, check for unresolved items, if force=false and unresolved items exist return warning with list, if force=true call Finalize(true) on domain entity, record version history, save — in src/FundingPlatform.Application/Services/ReviewService.cs
+- [X] T049 [US7] Implement Finalize POST action in ReviewController: handle normal finalization and force finalization, redirect to queue on success, show warning partial with unresolved item list on non-force with unresolved — in src/FundingPlatform.Web/Controllers/ReviewController.cs
+- [X] T050 [US7] Add Finalize Review button and confirmation warning dialog to Review/Review.cshtml: button visible when Under Review, warning modal listing unresolved items with Confirm/Cancel options — in src/FundingPlatform.Web/Views/Review/Review.cshtml
 
 **Checkpoint**: User Story 7 complete. Full review lifecycle works: queue → review → decide → finalize/send-back. Run FinalizeReviewTests to validate.
 
@@ -201,11 +201,11 @@ Note: Supplier selection logic is primarily implemented in US3 (Approve method r
 
 **Purpose**: Version history, authorization edge cases, concurrency handling
 
-- [ ] T051 Ensure all review actions (item decisions, send-back, finalize) record VersionHistory entries with appropriate action descriptions in src/FundingPlatform.Application/Services/ReviewService.cs
-- [ ] T052 Add authorization checks: verify reviewer role on all ReviewController actions, verify application exists and is in valid state before each action — in src/FundingPlatform.Web/Controllers/ReviewController.cs
-- [ ] T053 Handle DbUpdateConcurrencyException in ReviewService: catch and return user-friendly error when concurrent reviewers conflict — in src/FundingPlatform.Application/Services/ReviewService.cs
-- [ ] T054 Verify resolved applications do not appear in review queue and cannot be modified — in tests/FundingPlatform.Tests.E2E/Tests/ReviewQueueTests.cs (extend existing test)
-- [ ] T055 Run full E2E test suite to verify no regressions against spec 001 features
+- [X] T051 Ensure all review actions (item decisions, send-back, finalize) record VersionHistory entries with appropriate action descriptions in src/FundingPlatform.Application/Services/ReviewService.cs
+- [X] T052 Add authorization checks: verify reviewer role on all ReviewController actions, verify application exists and is in valid state before each action — in src/FundingPlatform.Web/Controllers/ReviewController.cs
+- [X] T053 Handle DbUpdateConcurrencyException in ReviewService: catch and return user-friendly error when concurrent reviewers conflict — in src/FundingPlatform.Application/Services/ReviewService.cs
+- [X] T054 Verify resolved applications do not appear in review queue and cannot be modified — in tests/FundingPlatform.Tests.E2E/Tests/ReviewQueueTests.cs (extend existing test)
+- [X] T055 Run full E2E test suite to verify no regressions against spec 001 features
 
 ---
 

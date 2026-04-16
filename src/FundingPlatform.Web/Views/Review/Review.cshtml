@@ -1,0 +1,312 @@
+@model FundingPlatform.Web.ViewModels.ReviewApplicationViewModel
+
+@{
+    ViewData["Title"] = $"Review Application #{Model.ApplicationId}";
+}
+
+<h2>Review Application #@Model.ApplicationId</h2>
+
+@if (Model.UnresolvedItemWarnings is not null)
+{
+    <div class="alert alert-warning unresolved-warning" role="alert">
+        <strong>Warning:</strong> The following items are unresolved:
+        <ul class="mb-2">
+            @foreach (var item in Model.UnresolvedItemWarnings)
+            {
+                <li>@item</li>
+            }
+        </ul>
+        <p class="mb-2">Confirming will implicitly reject all unresolved items.</p>
+        <form asp-action="Finalize" asp-route-id="@Model.ApplicationId" method="post" class="d-inline">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="force" value="true" />
+            <button type="submit" id="forceFinalizationConfirm" class="btn btn-danger btn-sm me-2">Confirm Finalization</button>
+        </form>
+        <a asp-action="Review" asp-route-id="@Model.ApplicationId" class="btn btn-secondary btn-sm">Cancel</a>
+    </div>
+}
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <strong>Applicant:</strong>
+                <span class="applicant-name">@Model.ApplicantName</span>
+            </div>
+            <div class="col-md-3">
+                <strong>Performance Score:</strong>
+                <span class="performance-score">
+                    @if (Model.ApplicantPerformanceScore.HasValue)
+                    {
+                        @Model.ApplicantPerformanceScore.Value.ToString("F2")
+                    }
+                    else
+                    {
+                        <span class="text-muted">N/A</span>
+                    }
+                </span>
+            </div>
+            <div class="col-md-3">
+                <strong>Status:</strong>
+                <span class="application-state">
+                    <span class="badge @GetStateBadgeClass(Model.State)">@Model.State</span>
+                </span>
+            </div>
+            @if (Model.SubmittedAt.HasValue)
+            {
+                <div class="col-md-3">
+                    <strong>Submitted:</strong> @Model.SubmittedAt.Value.ToString("yyyy-MM-dd HH:mm")
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<h4>Items (@Model.Items.Count)</h4>
+
+@foreach (var item in Model.Items)
+{
+    <div class="card mb-3 review-item" data-item-id="@item.ItemId">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <strong>@item.ProductName</strong>
+                <span class="text-muted ms-2">(@item.CategoryName)</span>
+            </div>
+            <span class="badge review-status-badge @GetReviewStatusBadgeClass(item.ReviewStatus)">
+                @item.ReviewStatus
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <strong>Technical Specifications:</strong>
+                <p class="mb-0">@item.TechnicalSpecifications</p>
+            </div>
+
+            @if (item.ImpactTemplateName is not null)
+            {
+                <div class="mb-3">
+                    <strong>Impact Assessment:</strong> @item.ImpactTemplateName
+                    @if (item.ImpactParameters.Count > 0)
+                    {
+                        <table class="table table-sm mt-1">
+                            <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+                            <tbody>
+                                @foreach (var param in item.ImpactParameters)
+                                {
+                                    <tr><td>@param.DisplayLabel</td><td>@param.Value</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            }
+
+            <div class="mb-3">
+                <strong>Quotations:</strong>
+                <table class="table table-sm mt-1">
+                    <thead>
+                        <tr>
+                            <th>Supplier</th>
+                            <th>Legal ID</th>
+                            <th>Price</th>
+                            <th>Valid Until</th>
+                            <th>Document</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var q in item.Quotations)
+                        {
+                            <tr class="quotation-row @(q.IsRecommended ? "table-success" : "")">
+                                <td>@q.SupplierName</td>
+                                <td>@q.SupplierLegalId</td>
+                                <td>@q.Price.ToString("C")</td>
+                                <td>@q.ValidUntil.ToString("yyyy-MM-dd")</td>
+                                <td>@q.DocumentFileName</td>
+                                <td>
+                                    @if (q.IsRecommended)
+                                    {
+                                        <span class="badge bg-success recommended-badge">Recommended - lowest price</span>
+                                    }
+                                    else if (item.RecommendedSupplierId is null && item.Quotations.Count > 1)
+                                    {
+                                        <span class="badge bg-secondary">Tied price</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (item.ReviewComment is not null)
+            {
+                <div class="mb-3">
+                    <strong>Review Comment:</strong>
+                    <p class="mb-0 fst-italic">@item.ReviewComment</p>
+                </div>
+            }
+
+            @if (item.IsNotTechnicallyEquivalent)
+            {
+                <div class="alert alert-warning py-1 mb-3">
+                    <strong>Flagged:</strong> Quotations are not technically equivalent.
+                </div>
+            }
+
+            @if (Model.State == "UnderReview")
+            {
+                <hr />
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Technical Equivalence</h6>
+                        <form asp-action="FlagEquivalence" asp-route-id="@Model.ApplicationId" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="ItemId" value="@item.ItemId" />
+                            @if (item.IsNotTechnicallyEquivalent)
+                            {
+                                <input type="hidden" name="IsNotEquivalent" value="false" />
+                                <button type="submit" data-item-id="@item.ItemId" class="btn btn-sm btn-outline-success submit-equivalence">
+                                    Clear Not-Equivalent Flag
+                                </button>
+                            }
+                            else
+                            {
+                                <input type="hidden" name="IsNotEquivalent" value="true" />
+                                <button type="submit" data-item-id="@item.ItemId" class="btn btn-sm btn-outline-warning submit-equivalence">
+                                    Flag as Not Technically Equivalent
+                                </button>
+                            }
+                        </form>
+                    </div>
+
+                    @if (!item.IsNotTechnicallyEquivalent)
+                    {
+                        <div class="col-md-6">
+                            <h6>Item Decision</h6>
+                            <form asp-action="ReviewItem" asp-route-id="@Model.ApplicationId" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="ItemId" value="@item.ItemId" />
+
+                                <div class="mb-2">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input decision-radio" type="radio" name="Decision" value="Approve"
+                                               id="approve_@item.ItemId" data-item-id="@item.ItemId"
+                                               @(item.ReviewStatus == "Approved" ? "checked" : "")>
+                                        <label class="form-check-label" for="approve_@item.ItemId">Approve</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input decision-radio" type="radio" name="Decision" value="Reject"
+                                               id="reject_@item.ItemId" data-item-id="@item.ItemId"
+                                               @(item.ReviewStatus == "Rejected" ? "checked" : "")>
+                                        <label class="form-check-label" for="reject_@item.ItemId">Reject</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input decision-radio" type="radio" name="Decision" value="RequestMoreInfo"
+                                               id="moreinfo_@item.ItemId" data-item-id="@item.ItemId"
+                                               @(item.ReviewStatus == "NeedsInfo" ? "checked" : "")>
+                                        <label class="form-check-label" for="moreinfo_@item.ItemId">Request More Info</label>
+                                    </div>
+                                </div>
+
+                                <div class="mb-2 supplier-select-wrapper" id="supplierSelect_@item.ItemId"
+                                     style="@(item.ReviewStatus == "Approved" ? "" : "display:none")">
+                                    <label class="form-label">Select Supplier:</label>
+                                    <select name="SelectedSupplierId" class="form-select form-select-sm">
+                                        <option value="">-- Select Supplier --</option>
+                                        @foreach (var q in item.Quotations)
+                                        {
+                                            var isSelected = item.SelectedSupplierId == q.SupplierId;
+                                            var label = $"{q.SupplierName} - {q.Price:C}";
+                                            if (q.IsRecommended)
+                                            {
+                                                label += " (Recommended - lowest price)";
+                                            }
+                                            else if (item.RecommendedSupplierId is null && item.Quotations.Count > 1)
+                                            {
+                                                label += " (Tied price)";
+                                            }
+                                            if (isSelected)
+                                            {
+                                                <option value="@q.SupplierId" selected>@label</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@q.SupplierId">@label</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="mb-2">
+                                    <label class="form-label">Comment (optional):</label>
+                                    <textarea name="Comment" class="form-control form-control-sm" rows="2"
+                                              maxlength="2000">@item.ReviewComment</textarea>
+                                </div>
+
+                                <button type="submit" data-item-id="@item.ItemId" class="btn btn-sm btn-primary submit-decision">
+                                    Save Decision
+                                </button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@if (Model.State == "UnderReview")
+{
+    <div class="mt-4 d-flex gap-2">
+        <form asp-action="SendBack" asp-route-id="@Model.ApplicationId" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-warning" onclick="return confirm('Send this application back to the applicant?')">
+                Send Back
+            </button>
+        </form>
+
+        <form asp-action="Finalize" asp-route-id="@Model.ApplicationId" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-success">Finalize Review</button>
+        </form>
+    </div>
+}
+
+<div class="mt-3">
+    <a asp-action="Index">Back to Review Queue</a>
+</div>
+
+@functions {
+    static string GetStateBadgeClass(string state) => state switch
+    {
+        "Draft" => "bg-secondary",
+        "Submitted" => "bg-primary",
+        "UnderReview" => "bg-info",
+        "Resolved" => "bg-success",
+        _ => "bg-secondary"
+    };
+
+    static string GetReviewStatusBadgeClass(string status) => status switch
+    {
+        "Pending" => "bg-secondary",
+        "Approved" => "bg-success",
+        "Rejected" => "bg-danger",
+        "NeedsInfo" => "bg-warning text-dark",
+        _ => "bg-secondary"
+    };
+}
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.decision-radio').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const itemId = this.dataset.itemId;
+                const wrapper = document.getElementById('supplierSelect_' + itemId);
+                if (wrapper) {
+                    wrapper.style.display = this.value === 'Approve' ? '' : 'none';
+                }
+            });
+        });
+    </script>
+}
