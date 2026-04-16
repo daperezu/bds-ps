@@ -19,8 +19,8 @@
 
 **Purpose**: No new projects needed. Create the ValueObjects directory and verify build.
 
-- [ ] T001 Create directory `src/FundingPlatform.Domain/ValueObjects/`
-- [ ] T002 Verify solution builds cleanly with `dotnet build`
+- [x] T001 Create directory `src/FundingPlatform.Domain/ValueObjects/`
+- [x] T002 Verify solution builds cleanly with `dotnet build`
 
 ---
 
@@ -30,14 +30,14 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T003 Modify database schema: drop `ComplianceStatus` column, add `IsCompliantCCSS BIT NOT NULL DEFAULT 0`, `IsCompliantHacienda BIT NOT NULL DEFAULT 0`, `IsCompliantSICOP BIT NOT NULL DEFAULT 0` in `src/FundingPlatform.Database/dbo/Tables/Suppliers.sql`
-- [ ] T004 Modify `Supplier` entity: replace `ComplianceStatus` (string?) property and constructor parameter with three boolean properties `IsCompliantCCSS`, `IsCompliantHacienda`, `IsCompliantSICOP` in `src/FundingPlatform.Domain/Entities/Supplier.cs`
-- [ ] T005 Update `SupplierConfiguration`: remove `ComplianceStatus` mapping, add mappings for `IsCompliantCCSS`, `IsCompliantHacienda`, `IsCompliantSICOP` (all `IsRequired()`) in `src/FundingPlatform.Infrastructure/Persistence/Configurations/SupplierConfiguration.cs`
-- [ ] T006 Update `SupplierDto`: replace `ComplianceStatus` (string?) with `IsCompliantCCSS` (bool), `IsCompliantHacienda` (bool), `IsCompliantSICOP` (bool) in `src/FundingPlatform.Application/DTOs/SupplierDto.cs`
-- [ ] T007 Update `AddSupplierQuotationCommand`: replace `ComplianceStatus` (string?) with `IsCompliantCCSS` (bool), `IsCompliantHacienda` (bool), `IsCompliantSICOP` (bool) in `src/FundingPlatform.Application/Applications/Commands/AddSupplierQuotationCommand.cs`
-- [ ] T008 Update `ApplicationService.AddSupplierQuotationAsync`: pass the three compliance booleans to `Supplier` constructor instead of `ComplianceStatus` in `src/FundingPlatform.Application/Services/ApplicationService.cs`
-- [ ] T009 Create `SupplierScore` value object with `ComputeForItem` static method in `src/FundingPlatform.Domain/ValueObjects/SupplierScore.cs`. Accepts list of (Quotation, Supplier) pairs, computes score 0-5 per quotation (CCSS + Hacienda + SICOP + E-Invoice + lowest price), determines IsRecommended and IsPreSelected, returns sorted by score descending then supplier ID ascending.
-- [ ] T010 Verify solution builds cleanly with `dotnet build` after all foundational changes
+- [x] T003 Modify database schema: drop `ComplianceStatus` column, add `IsCompliantCCSS BIT NOT NULL DEFAULT 0`, `IsCompliantHacienda BIT NOT NULL DEFAULT 0`, `IsCompliantSICOP BIT NOT NULL DEFAULT 0` in `src/FundingPlatform.Database/dbo/Tables/Suppliers.sql`
+- [x] T004 Modify `Supplier` entity: replace `ComplianceStatus` (string?) property and constructor parameter with three boolean properties `IsCompliantCCSS`, `IsCompliantHacienda`, `IsCompliantSICOP` in `src/FundingPlatform.Domain/Entities/Supplier.cs`
+- [x] T005 Update `SupplierConfiguration`: remove `ComplianceStatus` mapping, add mappings for `IsCompliantCCSS`, `IsCompliantHacienda`, `IsCompliantSICOP` (all `IsRequired()`) in `src/FundingPlatform.Infrastructure/Persistence/Configurations/SupplierConfiguration.cs`
+- [x] T006 Update `SupplierDto`: replace `ComplianceStatus` (string?) with `IsCompliantCCSS` (bool), `IsCompliantHacienda` (bool), `IsCompliantSICOP` (bool) in `src/FundingPlatform.Application/DTOs/SupplierDto.cs`
+- [x] T007 Update `AddSupplierQuotationCommand`: replace `ComplianceStatus` (string?) with `IsCompliantCCSS` (bool), `IsCompliantHacienda` (bool), `IsCompliantSICOP` (bool) in `src/FundingPlatform.Application/Applications/Commands/AddSupplierQuotationCommand.cs`
+- [x] T008 Update `ApplicationService.AddSupplierQuotationAsync`: pass the three compliance booleans to `Supplier` constructor instead of `ComplianceStatus` in `src/FundingPlatform.Application/Services/ApplicationService.cs`
+- [x] T009 Create `SupplierScore` value object with `ComputeForItem` static method in `src/FundingPlatform.Domain/ValueObjects/SupplierScore.cs`. Accepts list of (Quotation, Supplier) pairs, computes score 0-5 per quotation (CCSS + Hacienda + SICOP + E-Invoice + lowest price), determines IsRecommended and IsPreSelected, returns sorted by score descending then supplier ID ascending.
+- [x] T010 Verify solution builds cleanly with `dotnet build` after all foundational changes
 
 **Checkpoint**: Domain model updated, SupplierScore ready. Build passes. Ready for user story implementation.
 
@@ -51,12 +51,12 @@
 
 ### Implementation for User Story 3
 
-- [ ] T011 [US3] Update `AddSupplierViewModel`: replace `ComplianceStatus` (string?, MaxLength 200) with three bool properties `IsCompliantCCSS`, `IsCompliantHacienda`, `IsCompliantSICOP` with display names "CCSS Compliance", "Hacienda Compliance", "SICOP Registration" in `src/FundingPlatform.Web/ViewModels/AddSupplierViewModel.cs`
-- [ ] T012 [US3] Update `SupplierController.Add` (POST): pass three compliance booleans from model to `AddSupplierQuotationCommand` instead of `ComplianceStatus` in `src/FundingPlatform.Web/Controllers/SupplierController.cs`
-- [ ] T013 [US3] Update supplier form view: replace the single `ComplianceStatus` text input with three checkboxes for CCSS, Hacienda, and SICOP in `src/FundingPlatform.Web/Views/Supplier/Add.cshtml`
-- [ ] T014 [US3] Update `SupplierPage` page object: replace `ComplianceStatusInput` locator with `IsCompliantCCSSCheckbox`, `IsCompliantHaciendaCheckbox`, `IsCompliantSICOPCheckbox` locators. Update `FillSupplierFormAsync` to accept compliance booleans in `tests/FundingPlatform.Tests.E2E/PageObjects/SupplierPage.cs`
-- [ ] T015 [US3] Update existing E2E tests that create suppliers (e.g., `SupplierTests.cs`, `ApplicationSubmissionTests.cs`) to use the new compliance checkboxes instead of `ComplianceStatus` text input in `tests/FundingPlatform.Tests.E2E/Tests/`
-- [ ] T016 [US3] Add E2E test: applicant creates supplier with CCSS and Hacienda checked but not SICOP, verify booleans persisted correctly in `tests/FundingPlatform.Tests.E2E/Tests/SupplierEvaluationTests.cs`
+- [x] T011 [US3] Update `AddSupplierViewModel`: replace `ComplianceStatus` (string?, MaxLength 200) with three bool properties `IsCompliantCCSS`, `IsCompliantHacienda`, `IsCompliantSICOP` with display names "CCSS Compliance", "Hacienda Compliance", "SICOP Registration" in `src/FundingPlatform.Web/ViewModels/AddSupplierViewModel.cs`
+- [x] T012 [US3] Update `SupplierController.Add` (POST): pass three compliance booleans from model to `AddSupplierQuotationCommand` instead of `ComplianceStatus` in `src/FundingPlatform.Web/Controllers/SupplierController.cs`
+- [x] T013 [US3] Update supplier form view: replace the single `ComplianceStatus` text input with three checkboxes for CCSS, Hacienda, and SICOP in `src/FundingPlatform.Web/Views/Supplier/Add.cshtml`
+- [x] T014 [US3] Update `SupplierPage` page object: replace `ComplianceStatusInput` locator with `IsCompliantCCSSCheckbox`, `IsCompliantHaciendaCheckbox`, `IsCompliantSICOPCheckbox` locators. Update `FillSupplierFormAsync` to accept compliance booleans in `tests/FundingPlatform.Tests.E2E/PageObjects/SupplierPage.cs`
+- [x] T015 [US3] Update existing E2E tests that create suppliers (e.g., `SupplierTests.cs`, `ApplicationSubmissionTests.cs`) to use the new compliance checkboxes instead of `ComplianceStatus` text input in `tests/FundingPlatform.Tests.E2E/Tests/`
+- [x] T016 [US3] Add E2E test: applicant creates supplier with CCSS and Hacienda checked but not SICOP, verify booleans persisted correctly in `tests/FundingPlatform.Tests.E2E/Tests/SupplierEvaluationTests.cs`
 
 **Checkpoint**: Supplier form shows three compliance checkboxes. Existing supplier tests pass with updated inputs.
 
@@ -70,19 +70,19 @@
 
 ### Unit Tests for User Story 1
 
-- [ ] T017 [P] [US1] Create `SupplierScoreTests` unit test class covering: single quotation scores (gets price point), multiple quotations with varying compliance, price tie handling, all-identical scores, zero-compliance scoring, recommendation flag, pre-selection tie-breaking by lowest supplier ID in `tests/FundingPlatform.Tests.Unit/Domain/SupplierScoreTests.cs`
+- [x] T017 [P] [US1] Create `SupplierScoreTests` unit test class covering: single quotation scores (gets price point), multiple quotations with varying compliance, price tie handling, all-identical scores, zero-compliance scoring, recommendation flag, pre-selection tie-breaking by lowest supplier ID in `tests/FundingPlatform.Tests.Unit/Domain/SupplierScoreTests.cs`
 
 ### Implementation for User Story 1
 
-- [ ] T018 [US1] Update `ReviewQuotationDto`: add `Score` (int), `ScoreCCSS` (bool), `ScoreHacienda` (bool), `ScoreSICOP` (bool), `ScoreElectronicInvoice` (bool), `ScoreLowestPrice` (bool), `IsPreSelected` (bool). Keep `IsRecommended` (now score-based). Remove `RecommendedSupplierId` from `ReviewItemDto` in `src/FundingPlatform.Application/DTOs/ReviewApplicationDto.cs`
-- [ ] T019 [US1] Update `ReviewService.MapToReviewDto`: replace `ComputeRecommendedSupplierId` with `SupplierScore.ComputeForItem`. Map score results to `ReviewQuotationDto` fields. Sort quotations by score descending in `src/FundingPlatform.Application/Services/ReviewService.cs`
-- [ ] T020 [US1] Update `ReviewQuotationViewModel`: add `Score` (int), `ScoreCCSS` (bool), `ScoreHacienda` (bool), `ScoreSICOP` (bool), `ScoreElectronicInvoice` (bool), `ScoreLowestPrice` (bool), `IsPreSelected` (bool). Remove `RecommendedSupplierId` from `ReviewItemViewModel` in `src/FundingPlatform.Web/ViewModels/ReviewApplicationViewModel.cs`
-- [ ] T021 [US1] Update `ReviewController.MapToViewModel`: map new score fields from DTOs to ViewModels. Remove `RecommendedSupplierId` mapping in `src/FundingPlatform.Web/Controllers/ReviewController.cs`
-- [ ] T022 [US1] Update review screen quotation table: add Score column showing "N/5", add score breakdown indicators (checkmarks for each factor), sort quotations by score descending, update "Recommended" badge to show score-based recommendation, update supplier dropdown to pre-select highest scorer in `src/FundingPlatform.Web/Views/Review/Review.cshtml`
-- [ ] T023 [US1] Update `ReviewApplicationPage` page object: add locators for score display (`.supplier-score`), score breakdown (`.score-breakdown`), pre-selected supplier detection in `tests/FundingPlatform.Tests.E2E/PageObjects/ReviewApplicationPage.cs`
-- [ ] T024 [US1] Add E2E test: three suppliers with different compliance levels and prices, verify scores displayed correctly, ordered by score, top scorer recommended and pre-selected in `tests/FundingPlatform.Tests.E2E/Tests/SupplierEvaluationTests.cs`
-- [ ] T025 [US1] Add E2E test: two suppliers tie for highest score, verify both marked recommended, lower supplier ID pre-selected in `tests/FundingPlatform.Tests.E2E/Tests/SupplierEvaluationTests.cs`
-- [ ] T026 [US1] Add E2E test: single quotation on item, verify it gets price point, is recommended and pre-selected in `tests/FundingPlatform.Tests.E2E/Tests/SupplierEvaluationTests.cs`
+- [x] T018 [US1] Update `ReviewQuotationDto`: add `Score` (int), `ScoreCCSS` (bool), `ScoreHacienda` (bool), `ScoreSICOP` (bool), `ScoreElectronicInvoice` (bool), `ScoreLowestPrice` (bool), `IsPreSelected` (bool). Keep `IsRecommended` (now score-based). Remove `RecommendedSupplierId` from `ReviewItemDto` in `src/FundingPlatform.Application/DTOs/ReviewApplicationDto.cs`
+- [x] T019 [US1] Update `ReviewService.MapToReviewDto`: replace `ComputeRecommendedSupplierId` with `SupplierScore.ComputeForItem`. Map score results to `ReviewQuotationDto` fields. Sort quotations by score descending in `src/FundingPlatform.Application/Services/ReviewService.cs`
+- [x] T020 [US1] Update `ReviewQuotationViewModel`: add `Score` (int), `ScoreCCSS` (bool), `ScoreHacienda` (bool), `ScoreSICOP` (bool), `ScoreElectronicInvoice` (bool), `ScoreLowestPrice` (bool), `IsPreSelected` (bool). Remove `RecommendedSupplierId` from `ReviewItemViewModel` in `src/FundingPlatform.Web/ViewModels/ReviewApplicationViewModel.cs`
+- [x] T021 [US1] Update `ReviewController.MapToViewModel`: map new score fields from DTOs to ViewModels. Remove `RecommendedSupplierId` mapping in `src/FundingPlatform.Web/Controllers/ReviewController.cs`
+- [x] T022 [US1] Update review screen quotation table: add Score column showing "N/5", add score breakdown indicators (checkmarks for each factor), sort quotations by score descending, update "Recommended" badge to show score-based recommendation, update supplier dropdown to pre-select highest scorer in `src/FundingPlatform.Web/Views/Review/Review.cshtml`
+- [x] T023 [US1] Update `ReviewApplicationPage` page object: add locators for score display (`.supplier-score`), score breakdown (`.score-breakdown`), pre-selected supplier detection in `tests/FundingPlatform.Tests.E2E/PageObjects/ReviewApplicationPage.cs`
+- [x] T024 [US1] Add E2E test: three suppliers with different compliance levels and prices, verify scores displayed correctly, ordered by score, top scorer recommended and pre-selected in `tests/FundingPlatform.Tests.E2E/Tests/SupplierEvaluationTests.cs`
+- [x] T025 [US1] Add E2E test: two suppliers tie for highest score, verify both marked recommended, lower supplier ID pre-selected in `tests/FundingPlatform.Tests.E2E/Tests/SupplierEvaluationTests.cs`
+- [x] T026 [US1] Add E2E test: single quotation on item, verify it gets price point, is recommended and pre-selected in `tests/FundingPlatform.Tests.E2E/Tests/SupplierEvaluationTests.cs`
 
 **Checkpoint**: Review screen shows scores with breakdown. Quotations ranked by score. Top scorer recommended and pre-selected. Unit tests and E2E tests pass.
 
@@ -96,9 +96,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T027 [US2] Verify existing approval flow respects reviewer's supplier selection when it differs from pre-selected. If `Item.SelectedSupplierId` is already set, the dropdown should show the reviewer's prior choice (not the score-based pre-selection). Adjust `ReviewService` and/or Review.cshtml if needed in `src/FundingPlatform.Application/Services/ReviewService.cs` and `src/FundingPlatform.Web/Views/Review/Review.cshtml`
-- [ ] T028 [US2] Add E2E test: reviewer overrides pre-selected supplier, approves item, verify non-recommended supplier saved as selected in `tests/FundingPlatform.Tests.E2E/Tests/SupplierEvaluationTests.cs`
-- [ ] T029 [US2] Add E2E test: reviewer overrides selection, navigates away and back, verify override persists (manually selected supplier still shown, not reverted to recommendation) in `tests/FundingPlatform.Tests.E2E/Tests/SupplierEvaluationTests.cs`
+- [x] T027 [US2] Verify existing approval flow respects reviewer's supplier selection when it differs from pre-selected. If `Item.SelectedSupplierId` is already set, the dropdown should show the reviewer's prior choice (not the score-based pre-selection). Adjust `ReviewService` and/or Review.cshtml if needed in `src/FundingPlatform.Application/Services/ReviewService.cs` and `src/FundingPlatform.Web/Views/Review/Review.cshtml`
+- [x] T028 [US2] Add E2E test: reviewer overrides pre-selected supplier, approves item, verify non-recommended supplier saved as selected in `tests/FundingPlatform.Tests.E2E/Tests/SupplierEvaluationTests.cs`
+- [x] T029 [US2] Add E2E test: reviewer overrides selection, navigates away and back, verify override persists (manually selected supplier still shown, not reverted to recommendation) in `tests/FundingPlatform.Tests.E2E/Tests/SupplierEvaluationTests.cs`
 
 **Checkpoint**: Reviewer can override recommendations without friction. Overrides persist across page reloads. E2E tests pass.
 
@@ -108,8 +108,8 @@
 
 **Purpose**: Final cleanup and validation across all stories.
 
-- [ ] T030 Update existing review E2E tests (`ReviewApplicationTests.cs`, `FinalizeReviewTests.cs`) that reference the old "Recommended - lowest price" badge or `RecommendedSupplierId` to work with the new score-based recommendation in `tests/FundingPlatform.Tests.E2E/Tests/`
-- [ ] T031 Run full test suite: `dotnet test` across all test projects (Unit, Integration, E2E). Fix any regressions.
+- [x] T030 Update existing review E2E tests (`ReviewApplicationTests.cs`, `FinalizeReviewTests.cs`) that reference the old "Recommended - lowest price" badge or `RecommendedSupplierId` to work with the new score-based recommendation in `tests/FundingPlatform.Tests.E2E/Tests/`
+- [x] T031 Run full test suite: `dotnet test` across all test projects (Unit, Integration, E2E). Fix any regressions.
 - [ ] T032 Run quickstart.md validation: verify all 6 verification steps pass against running Aspire stack
 
 ---

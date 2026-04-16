@@ -46,6 +46,9 @@ public class SupplierSelectionTests : AuthenticatedTestBase
 
         // Approve without selecting supplier — should show error
         await reviewPage.ItemDecisionRadio(itemId, "Approve").CheckAsync();
+        // Clear the pre-selected supplier (scoring auto-selects the recommended one)
+        var supplierDropdownClear = reviewPage.ItemSupplierDropdown(itemId);
+        await supplierDropdownClear.SelectOptionAsync("");
         await reviewPage.ItemSubmitButton(itemId).ClickAsync();
         await Expect(Page.Locator(".alert-danger")).ToBeVisibleAsync();
 
@@ -63,7 +66,7 @@ public class SupplierSelectionTests : AuthenticatedTestBase
     }
 
     [Test]
-    public async Task EqualPrices_ShowNoRecommendation()
+    public async Task EqualPrices_BothRecommended()
     {
         var appId = await SetupSubmittedApplicationAsync(1000m, 1000m);
 
@@ -77,13 +80,13 @@ public class SupplierSelectionTests : AuthenticatedTestBase
 
         var firstItem = reviewPage.ItemCards.First;
 
-        // Verify no recommended badge (prices are tied)
+        // With equal prices and no compliance, both get score 1/5 (price point only)
+        // Both tied at max score, so both should be recommended
         var recommendedRows = firstItem.Locator(".quotation-row.table-success");
-        await Expect(recommendedRows).ToHaveCountAsync(0);
+        await Expect(recommendedRows).ToHaveCountAsync(2);
 
-        // Verify "Tied price" text appears
-        var tiedBadge = firstItem.Locator(".badge:has-text('Tied price')");
-        await Expect(tiedBadge).ToHaveCountAsync(2);
+        var recommendedBadges = firstItem.Locator(".recommended-badge");
+        await Expect(recommendedBadges).ToHaveCountAsync(2);
     }
 
     private async Task<int> SetupSubmittedApplicationAsync(decimal price1, decimal price2)

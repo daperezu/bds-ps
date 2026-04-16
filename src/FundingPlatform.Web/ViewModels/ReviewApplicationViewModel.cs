@@ -23,7 +23,6 @@ public class ReviewItemViewModel
     public int? SelectedSupplierId { get; set; }
     public bool IsNotTechnicallyEquivalent { get; set; }
     public List<ReviewQuotationViewModel> Quotations { get; set; } = [];
-    public int? RecommendedSupplierId { get; set; }
     public string? ImpactTemplateName { get; set; }
     public List<ImpactParameterDisplayViewModel> ImpactParameters { get; set; } = [];
 }
@@ -38,6 +37,13 @@ public class ReviewQuotationViewModel
     public DateOnly ValidUntil { get; set; }
     public string DocumentFileName { get; set; } = string.Empty;
     public bool IsRecommended { get; set; }
+    public int Score { get; set; }
+    public bool ScoreCCSS { get; set; }
+    public bool ScoreHacienda { get; set; }
+    public bool ScoreSICOP { get; set; }
+    public bool ScoreElectronicInvoice { get; set; }
+    public bool ScoreLowestPrice { get; set; }
+    public bool IsPreSelected { get; set; }
 }
 
 public class ImpactParameterDisplayViewModel

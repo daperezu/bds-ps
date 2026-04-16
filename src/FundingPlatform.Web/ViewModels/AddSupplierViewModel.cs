@@ -35,8 +35,14 @@ public class AddSupplierViewModel
     [Display(Name = "Warranty Info"), MaxLength(1000)]
     public string? WarrantyInfo { get; set; }
 
-    [Display(Name = "Compliance Status"), MaxLength(200)]
-    public string? ComplianceStatus { get; set; }
+    [Display(Name = "CCSS Compliance")]
+    public bool IsCompliantCCSS { get; set; }
+
+    [Display(Name = "Hacienda Compliance")]
+    public bool IsCompliantHacienda { get; set; }
+
+    [Display(Name = "SICOP Registration")]
+    public bool IsCompliantSICOP { get; set; }
 
     [Required, Display(Name = "Price")]
     [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than zero.")]

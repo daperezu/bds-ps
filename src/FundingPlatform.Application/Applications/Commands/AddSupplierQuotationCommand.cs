@@ -13,7 +13,9 @@ public class AddSupplierQuotationCommand
     public bool HasElectronicInvoice { get; set; }
     public string? ShippingDetails { get; set; }
     public string? WarrantyInfo { get; set; }
-    public string? ComplianceStatus { get; set; }
+    public bool IsCompliantCCSS { get; set; }
+    public bool IsCompliantHacienda { get; set; }
+    public bool IsCompliantSICOP { get; set; }
     public decimal Price { get; set; }
     public DateOnly ValidUntil { get; set; }
     public string FileName { get; set; } = string.Empty;

@@ -74,10 +74,19 @@
                 <span asp-validation-for="WarrantyInfo" class="text-danger"></span>
             </div>
 
-            <div class="mb-3">
-                <label asp-for="ComplianceStatus" class="form-label"></label>
-                <input asp-for="ComplianceStatus" class="form-control" />
-                <span asp-validation-for="ComplianceStatus" class="text-danger"></span>
+            <div class="mb-3 form-check">
+                <input asp-for="IsCompliantCCSS" class="form-check-input" type="checkbox" />
+                <label asp-for="IsCompliantCCSS" class="form-check-label"></label>
+            </div>
+
+            <div class="mb-3 form-check">
+                <input asp-for="IsCompliantHacienda" class="form-check-input" type="checkbox" />
+                <label asp-for="IsCompliantHacienda" class="form-check-label"></label>
+            </div>
+
+            <div class="mb-3 form-check">
+                <input asp-for="IsCompliantSICOP" class="form-check-input" type="checkbox" />
+                <label asp-for="IsCompliantSICOP" class="form-check-label"></label>
             </div>
 
             <h4 class="mt-4">Quotation Details</h4>

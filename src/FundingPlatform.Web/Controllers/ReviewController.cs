@@ -155,7 +155,6 @@ public class ReviewController : Controller
                 ReviewComment = item.ReviewComment,
                 SelectedSupplierId = item.SelectedSupplierId,
                 IsNotTechnicallyEquivalent = item.IsNotTechnicallyEquivalent,
-                RecommendedSupplierId = item.RecommendedSupplierId,
                 ImpactTemplateName = item.ImpactTemplateName,
                 Quotations = item.Quotations.Select(q => new ReviewQuotationViewModel
                 {
@@ -166,7 +165,14 @@ public class ReviewController : Controller
                     Price = q.Price,
                     ValidUntil = q.ValidUntil,
                     DocumentFileName = q.DocumentFileName,
-                    IsRecommended = q.IsRecommended
+                    IsRecommended = q.IsRecommended,
+                    Score = q.Score,
+                    ScoreCCSS = q.ScoreCCSS,
+                    ScoreHacienda = q.ScoreHacienda,
+                    ScoreSICOP = q.ScoreSICOP,
+                    ScoreElectronicInvoice = q.ScoreElectronicInvoice,
+                    ScoreLowestPrice = q.ScoreLowestPrice,
+                    IsPreSelected = q.IsPreSelected
                 }).ToList(),
                 ImpactParameters = item.ImpactParameters.Select(p => new ImpactParameterDisplayViewModel
                 {

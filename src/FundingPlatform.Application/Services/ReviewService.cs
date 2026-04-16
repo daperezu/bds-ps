@@ -2,6 +2,7 @@ using FundingPlatform.Application.DTOs;
 using FundingPlatform.Domain.Entities;
 using FundingPlatform.Domain.Enums;
 using FundingPlatform.Domain.Interfaces;
+using FundingPlatform.Domain.ValueObjects;
 using Microsoft.Extensions.Logging;
 using AppEntity = FundingPlatform.Domain.Entities.Application;
 
@@ -188,7 +189,35 @@ public class ReviewService
         var reviewItems = application.Items.Select(item =>
         {
             var quotations = item.Quotations.ToList();
-            int? recommendedSupplierId = ComputeRecommendedSupplierId(quotations);
+            var scorePairs = quotations
+                .Where(q => q.Supplier is not null)
+                .Select(q => (q, q.Supplier!))
+                .ToList();
+            var scoreResults = SupplierScore.ComputeForItem(scorePairs);
+            var scoreMap = scoreResults.ToDictionary(s => s.QuotationId, s => s.Score);
+
+            var quotationDtos = quotations.Select(q =>
+            {
+                var score = scoreMap.GetValueOrDefault(q.Id);
+                return new ReviewQuotationDto(
+                    q.Id,
+                    q.SupplierId,
+                    q.Supplier?.Name ?? string.Empty,
+                    q.Supplier?.LegalId ?? string.Empty,
+                    q.Price,
+                    q.ValidUntil,
+                    q.Document?.OriginalFileName ?? string.Empty,
+                    score?.IsRecommended ?? false,
+                    score?.Total ?? 0,
+                    score?.IsCompliantCCSS ?? false,
+                    score?.IsCompliantHacienda ?? false,
+                    score?.IsCompliantSICOP ?? false,
+                    score?.HasElectronicInvoice ?? false,
+                    score?.HasLowestPrice ?? false,
+                    score?.IsPreSelected ?? false);
+            })
+            .OrderByDescending(q => q.Score)
+            .ToList();
 
             return new ReviewItemDto(
                 item.Id,
@@ -199,16 +228,7 @@ public class ReviewService
                 item.ReviewComment,
                 item.SelectedSupplierId,
                 item.IsNotTechnicallyEquivalent,
-                quotations.Select(q => new ReviewQuotationDto(
-                    q.Id,
-                    q.SupplierId,
-                    q.Supplier?.Name ?? string.Empty,
-                    q.Supplier?.LegalId ?? string.Empty,
-                    q.Price,
-                    q.ValidUntil,
-                    q.Document?.OriginalFileName ?? string.Empty,
-                    recommendedSupplierId.HasValue && q.SupplierId == recommendedSupplierId.Value)).ToList(),
-                recommendedSupplierId,
+                quotationDtos,
                 item.Impact?.ImpactTemplate?.Name,
                 item.Impact?.ParameterValues.Select(pv => new ImpactParameterDisplayDto(
                     pv.ImpactTemplateParameter?.Name ?? string.Empty,
@@ -223,15 +243,5 @@ public class ReviewService
             application.State,
             application.SubmittedAt,
             reviewItems);
-    }
-
-    private static int? ComputeRecommendedSupplierId(List<Quotation> quotations)
-    {
-        if (quotations.Count == 0) return null;
-
-        var minPrice = quotations.Min(q => q.Price);
-        var cheapest = quotations.Where(q => q.Price == minPrice).ToList();
-
-        return cheapest.Count == 1 ? cheapest[0].SupplierId : null;
     }
 }

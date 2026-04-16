@@ -12,7 +12,9 @@ public class Supplier
     public bool HasElectronicInvoice { get; private set; }
     public string? ShippingDetails { get; private set; }
     public string? WarrantyInfo { get; private set; }
-    public string? ComplianceStatus { get; private set; }
+    public bool IsCompliantCCSS { get; private set; }
+    public bool IsCompliantHacienda { get; private set; }
+    public bool IsCompliantSICOP { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 
@@ -28,7 +30,9 @@ public class Supplier
         bool hasElectronicInvoice,
         string? shippingDetails,
         string? warrantyInfo,
-        string? complianceStatus)
+        bool isCompliantCCSS,
+        bool isCompliantHacienda,
+        bool isCompliantSICOP)
     {
         LegalId = legalId;
         Name = name;
@@ -39,7 +43,9 @@ public class Supplier
         HasElectronicInvoice = hasElectronicInvoice;
         ShippingDetails = shippingDetails;
         WarrantyInfo = warrantyInfo;
-        ComplianceStatus = complianceStatus;
+        IsCompliantCCSS = isCompliantCCSS;
+        IsCompliantHacienda = isCompliantHacienda;
+        IsCompliantSICOP = isCompliantSICOP;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
