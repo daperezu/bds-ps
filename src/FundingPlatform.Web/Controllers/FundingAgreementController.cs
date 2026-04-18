@@ -1,10 +1,14 @@
 using System.Security.Claims;
+using System.Text.Json;
 using FundingPlatform.Application.DTOs;
 using FundingPlatform.Application.FundingAgreements.Commands;
 using FundingPlatform.Application.FundingAgreements.Queries;
 using FundingPlatform.Application.Interfaces;
 using FundingPlatform.Application.Options;
 using FundingPlatform.Application.Services;
+using FundingPlatform.Application.SignedUploads.Commands;
+using FundingPlatform.Application.SignedUploads.Queries;
+using FundingPlatform.Domain.Entities;
 using FundingPlatform.Domain.Interfaces;
 using FundingPlatform.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -20,6 +24,8 @@ namespace FundingPlatform.Web.Controllers;
 public class FundingAgreementController : Controller
 {
     private readonly FundingAgreementService _service;
+    private readonly SignedUploadService _signedUploadService;
+    private readonly IApplicationRepository _applicationRepository;
     private readonly IFundingAgreementHtmlRenderer _htmlRenderer;
     private readonly IFundingAgreementPdfRenderer _pdfRenderer;
     private readonly IFileStorageService _fileStorage;
@@ -30,6 +36,8 @@ public class FundingAgreementController : Controller
 
     public FundingAgreementController(
         FundingAgreementService service,
+        SignedUploadService signedUploadService,
+        IApplicationRepository applicationRepository,
         IFundingAgreementHtmlRenderer htmlRenderer,
         IFundingAgreementPdfRenderer pdfRenderer,
         IFileStorageService fileStorage,
@@ -39,6 +47,8 @@ public class FundingAgreementController : Controller
         ILogger<FundingAgreementController> logger)
     {
         _service = service;
+        _signedUploadService = signedUploadService;
+        _applicationRepository = applicationRepository;
         _htmlRenderer = htmlRenderer;
         _pdfRenderer = pdfRenderer;
         _fileStorage = fileStorage;
@@ -51,16 +61,13 @@ public class FundingAgreementController : Controller
     [HttpGet("Panel")]
     public async Task<IActionResult> Panel(int applicationId)
     {
-        var query = await BuildPanelQueryAsync(applicationId);
-        var result = await _service.GetPanelAsync(query);
-
-        if (!result.Authorized || result.Panel is null)
+        var viewModel = await BuildPanelViewModelAsync(applicationId);
+        if (viewModel is null)
         {
             LogUnauthorized(applicationId, "Panel", "access-denied-or-missing");
             return NotFound();
         }
 
-        var viewModel = MapToViewModel(result.Panel);
         return PartialView("~/Views/Applications/_FundingAgreementPanel.cshtml", viewModel);
     }
 
@@ -98,7 +105,32 @@ public class FundingAgreementController : Controller
             return StatusCode(403);
         }
 
-        if (!application.CanGenerateFundingAgreement(out var precondErrors))
+        var isRegeneration = application.FundingAgreement is not null;
+        if (isRegeneration)
+        {
+            if (!application.CanRegenerateFundingAgreement(out var regenErrors))
+            {
+                var reason = regenErrors.FirstOrDefault() ?? "Regeneration preconditions are not met.";
+                application.AddVersionHistory(new VersionHistory(
+                    userId,
+                    SigningAuditActions.FundingAgreementRegenerationBlocked,
+                    JsonSerializer.Serialize(new Dictionary<string, object?>
+                    {
+                        ["reason"] = reason,
+                        ["pendingOrTerminalUploadId"] = application.FundingAgreement!.SignedUploads
+                            .OrderByDescending(u => u.UploadedAtUtc)
+                            .Select(u => (int?)u.Id)
+                            .FirstOrDefault()
+                    })));
+
+                await _applicationRepository.UpdateAsync(application);
+                await _applicationRepository.SaveChangesAsync();
+
+                TempData["FundingAgreementError"] = reason;
+                return RedirectToRoute(new { controller = "FundingAgreement", action = "Details", applicationId });
+            }
+        }
+        else if (!application.CanGenerateFundingAgreement(out var precondErrors))
         {
             TempData["FundingAgreementError"] = precondErrors.FirstOrDefault()
                 ?? "Funding agreement preconditions are not met.";
@@ -202,42 +234,228 @@ public class FundingAgreementController : Controller
             return NotFound();
         }
 
+        application.AddVersionHistory(new VersionHistory(
+            userId,
+            SigningAuditActions.AgreementDownloaded,
+            JsonSerializer.Serialize(new Dictionary<string, object?>
+            {
+                ["generatedVersion"] = agreement.GeneratedVersion
+            })));
+
+        await _applicationRepository.UpdateAsync(application);
+        await _applicationRepository.SaveChangesAsync();
+
         var stream = await _fileStorage.GetFileAsync(agreement.StoragePath);
         Response.Headers.CacheControl = "private, no-cache";
         return File(stream, agreement.ContentType,
             fileDownloadName: $"FundingAgreement-{application.Id}.pdf");
     }
 
+    [HttpPost("Upload")]
+    [ValidateAntiForgeryToken]
+    [RequestFormLimits(MultipartBodyLengthLimit = 50L * 1024 * 1024)]
+    public async Task<IActionResult> Upload(int applicationId, UploadSignedAgreementViewModel model)
+    {
+        if (!ModelState.IsValid || model.File is null || model.File.Length == 0)
+        {
+            TempData["FundingAgreementError"] = "A signed PDF file is required.";
+            return RedirectToRoute(new { controller = "FundingAgreement", action = "Details", applicationId });
+        }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        await using var stream = model.File.OpenReadStream();
+        var command = new UploadSignedAgreementCommand(
+            ApplicationId: applicationId,
+            UserId: userId,
+            GeneratedVersion: model.GeneratedVersion,
+            FileName: model.File.FileName,
+            ContentType: model.File.ContentType ?? "",
+            Size: model.File.Length,
+            Content: stream);
+
+        var result = await _signedUploadService.UploadAsync(command);
+
+        return RenderSignedUploadRedirect(applicationId, result,
+            successMessage: "Signed agreement uploaded. Awaiting reviewer decision.");
+    }
+
+    [HttpPost("ReplaceUpload")]
+    [ValidateAntiForgeryToken]
+    [RequestFormLimits(MultipartBodyLengthLimit = 50L * 1024 * 1024)]
+    public async Task<IActionResult> ReplaceUpload(
+        int applicationId, int signedUploadId, UploadSignedAgreementViewModel model)
+    {
+        if (!ModelState.IsValid || model.File is null || model.File.Length == 0)
+        {
+            TempData["FundingAgreementError"] = "A signed PDF file is required.";
+            return RedirectToRoute(new { controller = "FundingAgreement", action = "Details", applicationId });
+        }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        await using var stream = model.File.OpenReadStream();
+        var command = new ReplaceSignedUploadCommand(
+            ApplicationId: applicationId,
+            UserId: userId,
+            SignedUploadId: signedUploadId,
+            GeneratedVersion: model.GeneratedVersion,
+            FileName: model.File.FileName,
+            ContentType: model.File.ContentType ?? "",
+            Size: model.File.Length,
+            Content: stream);
+
+        var result = await _signedUploadService.ReplaceAsync(command);
+        return RenderSignedUploadRedirect(applicationId, result,
+            successMessage: "Signed agreement replaced.");
+    }
+
+    [HttpPost("WithdrawUpload")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> WithdrawUpload(int applicationId, int signedUploadId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        var command = new WithdrawSignedUploadCommand(applicationId, userId, signedUploadId);
+        var result = await _signedUploadService.WithdrawAsync(command);
+
+        return RenderSignedUploadRedirect(applicationId, result,
+            successMessage: "Signed upload withdrawn.");
+    }
+
+    [HttpPost("Approve")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Approve(int applicationId, int signedUploadId, string? comment)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var isAdmin = User.IsInRole("Admin");
+        var isReviewer = User.IsInRole("Reviewer");
+
+        if (!isAdmin && !isReviewer)
+        {
+            LogUnauthorized(applicationId, "Approve", "role-forbidden");
+            return NotFound();
+        }
+
+        var command = new ApproveSignedUploadCommand(
+            ApplicationId: applicationId,
+            ReviewerUserId: userId,
+            IsAdministrator: isAdmin,
+            IsReviewerAssigned: isReviewer,
+            SignedUploadId: signedUploadId,
+            Comment: comment);
+
+        var result = await _signedUploadService.ApproveAsync(command);
+        return RenderSignedUploadRedirect(applicationId, result,
+            successMessage: "Agreement executed.");
+    }
+
+    [HttpPost("Reject")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Reject(int applicationId, int signedUploadId, string? comment)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var isAdmin = User.IsInRole("Admin");
+        var isReviewer = User.IsInRole("Reviewer");
+
+        if (!isAdmin && !isReviewer)
+        {
+            LogUnauthorized(applicationId, "Reject", "role-forbidden");
+            return NotFound();
+        }
+
+        var command = new RejectSignedUploadCommand(
+            ApplicationId: applicationId,
+            ReviewerUserId: userId,
+            IsAdministrator: isAdmin,
+            IsReviewerAssigned: isReviewer,
+            SignedUploadId: signedUploadId,
+            Comment: comment ?? "");
+
+        var result = await _signedUploadService.RejectAsync(command);
+        return RenderSignedUploadRedirect(applicationId, result,
+            successMessage: "Upload rejected; the applicant can submit a new one.");
+    }
+
+    [HttpGet("DownloadSigned/{signedUploadId:int}")]
+    public async Task<IActionResult> DownloadSigned(int applicationId, int signedUploadId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = User.IsInRole("Admin");
+        var isReviewer = User.IsInRole("Reviewer");
+
+        var query = new GetSignedAgreementDownloadQuery(
+            ApplicationId: applicationId,
+            SignedUploadId: signedUploadId,
+            UserId: userId,
+            IsAdministrator: isAdmin,
+            IsReviewerAssigned: isReviewer);
+
+        var result = await _signedUploadService.GetDownloadAsync(query);
+        if (!result.Authorized || result.Content is null)
+        {
+            LogUnauthorized(applicationId, "DownloadSigned", "access-denied-or-missing");
+            return NotFound();
+        }
+
+        Response.Headers.CacheControl = "private, no-cache";
+        return File(result.Content, result.ContentType ?? "application/pdf",
+            fileDownloadName: result.FileName ?? $"SignedAgreement-{applicationId}.pdf");
+    }
+
     [HttpGet("")]
     public async Task<IActionResult> Details(int applicationId)
     {
-        var query = await BuildPanelQueryAsync(applicationId);
-        var result = await _service.GetPanelAsync(query);
-
-        if (!result.Authorized || result.Panel is null)
+        var viewModel = await BuildPanelViewModelAsync(applicationId);
+        if (viewModel is null)
         {
             LogUnauthorized(applicationId, "Details", "access-denied-or-missing");
             return NotFound();
         }
-
-        var viewModel = MapToViewModel(result.Panel);
         return View(viewModel);
     }
 
-    private async Task<GetFundingAgreementPanelQuery> BuildPanelQueryAsync(int applicationId)
+    private IActionResult RenderSignedUploadRedirect(
+        int applicationId, SignedUploadResult result, string successMessage)
+    {
+        if (result.Success)
+        {
+            TempData["FundingAgreementSuccess"] = successMessage;
+            return RedirectToRoute(new { controller = "FundingAgreement", action = "Details", applicationId });
+        }
+
+        if (result.ConflictDetected)
+        {
+            TempData["FundingAgreementError"] = result.Error;
+            return StatusCode(409);
+        }
+
+        TempData["FundingAgreementError"] = result.Error ?? "Signed upload failed.";
+        if (result.Error == "Not found." || result.Error is null)
+        {
+            return NotFound();
+        }
+        return RedirectToRoute(new { controller = "FundingAgreement", action = "Details", applicationId });
+    }
+
+    private async Task<SigningStagePanelViewModel?> BuildPanelViewModelAsync(int applicationId)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var isAdministrator = User.IsInRole("Admin");
         var isReviewer = User.IsInRole("Reviewer");
 
-        return new GetFundingAgreementPanelQuery(
+        var dto = await _signedUploadService.GetPanelAsync(new GetSigningStagePanelQuery(
             ApplicationId: applicationId,
             UserId: userId,
             IsAdministrator: isAdministrator,
-            IsReviewerAssigned: isReviewer);
+            IsReviewerAssigned: isReviewer));
+
+        if (dto is null) return null;
+
+        return MapToViewModel(dto);
     }
 
-    private FundingAgreementPanelViewModel MapToViewModel(FundingAgreementPanelDto dto)
+    private SigningStagePanelViewModel MapToViewModel(SigningStagePanelDto dto)
     {
         string? downloadUrl = null;
         if (dto.AgreementExists)
@@ -250,7 +468,19 @@ public class FundingAgreementController : Controller
             });
         }
 
-        return new FundingAgreementPanelViewModel
+        string? approvedDownloadUrl = null;
+        if (dto.ApprovedSignedUploadId.HasValue)
+        {
+            approvedDownloadUrl = Url.RouteUrl(new
+            {
+                controller = "FundingAgreement",
+                action = "DownloadSigned",
+                applicationId = dto.ApplicationId,
+                signedUploadId = dto.ApprovedSignedUploadId.Value
+            });
+        }
+
+        return new SigningStagePanelViewModel
         {
             ApplicationId = dto.ApplicationId,
             AgreementExists = dto.AgreementExists,
@@ -260,7 +490,16 @@ public class FundingAgreementController : Controller
             DisabledReason = dto.DisabledReason,
             GeneratedAtUtc = dto.GeneratedAtUtc,
             GeneratedByDisplayName = dto.GeneratedByDisplayName,
-            ShowActions = User.IsInRole("Admin") || User.IsInRole("Reviewer")
+            GeneratedVersion = dto.GeneratedVersion,
+            ShowActions = User.IsInRole("Admin") || User.IsInRole("Reviewer"),
+            PendingUpload = dto.PendingUpload,
+            LastDecision = dto.LastDecision,
+            ApprovedSignedUploadId = dto.ApprovedSignedUploadId,
+            ApprovedSignedDownloadUrl = approvedDownloadUrl,
+            CanApplicantUpload = dto.CanApplicantUpload,
+            CanApplicantReplaceOrWithdraw = dto.CanApplicantReplaceOrWithdraw,
+            CanReviewerAct = dto.CanReviewerAct,
+            IsExecuted = dto.IsExecuted
         };
     }
 

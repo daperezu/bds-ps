@@ -12,6 +12,7 @@ var funderTaxId = builder.Configuration["FundingAgreement:Funder:TaxId"] ?? "";
 var funderAddress = builder.Configuration["FundingAgreement:Funder:Address"] ?? "";
 var funderContactEmail = builder.Configuration["FundingAgreement:Funder:ContactEmail"] ?? "";
 var funderContactPhone = builder.Configuration["FundingAgreement:Funder:ContactPhone"] ?? "";
+var signedUploadMaxSizeBytes = builder.Configuration["SignedUpload:MaxSizeBytes"] ?? "20971520";
 
 builder.AddProject<Projects.FundingPlatform_Web>("webapp")
     .WithExternalHttpEndpoints()
@@ -24,6 +25,7 @@ builder.AddProject<Projects.FundingPlatform_Web>("webapp")
     .WithEnvironment("FundingAgreement__Funder__TaxId", funderTaxId)
     .WithEnvironment("FundingAgreement__Funder__Address", funderAddress)
     .WithEnvironment("FundingAgreement__Funder__ContactEmail", funderContactEmail)
-    .WithEnvironment("FundingAgreement__Funder__ContactPhone", funderContactPhone);
+    .WithEnvironment("FundingAgreement__Funder__ContactPhone", funderContactPhone)
+    .WithEnvironment("SignedUpload__MaxSizeBytes", signedUploadMaxSizeBytes);
 
 builder.Build().Run();

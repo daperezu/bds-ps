@@ -424,19 +424,13 @@ public class Application
         string storagePath,
         string regeneratingUserId)
     {
-        if (!CanGenerateFundingAgreement(out var errors))
+        if (!CanRegenerateFundingAgreement(out var errors))
         {
             throw new InvalidOperationException(
                 $"Cannot regenerate Funding Agreement: {string.Join(" ", errors)}");
         }
 
-        if (_fundingAgreement is null)
-        {
-            throw new InvalidOperationException(
-                "No Funding Agreement exists for this application. Use GenerateFundingAgreement.");
-        }
-
-        _fundingAgreement.Replace(fileName, contentType, size, storagePath, regeneratingUserId);
+        _fundingAgreement!.Replace(fileName, contentType, size, storagePath, regeneratingUserId);
         UpdatedAt = DateTime.UtcNow;
 
         return _fundingAgreement;
@@ -470,5 +464,148 @@ public class Application
         bool isReviewerAssignedToThisApplication)
     {
         return isAdministrator || isReviewerAssignedToThisApplication;
+    }
+
+    // --- Digital Signatures (spec 006) ---
+
+    /// <summary>
+    /// Evaluates preconditions for regenerating the Funding Agreement. Composes
+    /// the existing generation preconditions with a lockdown check against any
+    /// signed upload already submitted.
+    /// </summary>
+    public bool CanRegenerateFundingAgreement(out IReadOnlyList<string> errors)
+    {
+        var failures = new List<string>();
+
+        if (!CanGenerateFundingAgreement(out var baseErrors))
+            failures.AddRange(baseErrors);
+
+        if (_fundingAgreement is null)
+            failures.Add("No Funding Agreement exists to regenerate.");
+        else if (_fundingAgreement.IsLocked)
+            failures.Add("Agreement is locked: a signed upload has been submitted.");
+
+        errors = failures.Distinct(StringComparer.Ordinal).ToList().AsReadOnly();
+        return errors.Count == 0;
+    }
+
+    /// <summary>
+    /// Authorization: reviewer may approve/reject a signed upload. Admin OR the
+    /// reviewer assigned to this application.
+    /// </summary>
+    public bool CanUserReviewSignedUpload(
+        bool isAdministrator,
+        bool isReviewerAssignedToThisApplication)
+    {
+        return isAdministrator || isReviewerAssignedToThisApplication;
+    }
+
+    /// <summary>
+    /// Transitions the application from ResponseFinalized to AgreementExecuted.
+    /// Called immediately after a reviewer-approved signed upload.
+    /// </summary>
+    public void ExecuteAgreement(string reviewerUserId)
+    {
+        if (string.IsNullOrWhiteSpace(reviewerUserId))
+            throw new InvalidOperationException("Reviewer user id must be non-empty.");
+
+        if (_fundingAgreement is null)
+            throw new InvalidOperationException("Cannot execute agreement: no Funding Agreement exists.");
+
+        if (State != ApplicationState.ResponseFinalized)
+            throw new InvalidOperationException(
+                $"Cannot execute agreement: application is in '{State}' state, expected 'ResponseFinalized'.");
+
+        State = ApplicationState.AgreementExecuted;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Applicant facade: accept a new signed upload against the current agreement.
+    /// </summary>
+    public SignedUpload SubmitSignedUpload(
+        string uploaderUserId,
+        int generatedVersionAtUpload,
+        string fileName,
+        long size,
+        string storagePath)
+    {
+        var agreement = _fundingAgreement
+            ?? throw new InvalidOperationException("Cannot submit signed upload: no Funding Agreement exists.");
+
+        if (State != ApplicationState.ResponseFinalized)
+            throw new InvalidOperationException(
+                $"Cannot submit signed upload: application is in '{State}' state, expected 'ResponseFinalized'.");
+
+        var upload = agreement.AcceptSignedUpload(
+            uploaderUserId, generatedVersionAtUpload, fileName, size, storagePath);
+        UpdatedAt = DateTime.UtcNow;
+        return upload;
+    }
+
+    /// <summary>
+    /// Applicant facade: supersede a still-pending signed upload with a new one.
+    /// </summary>
+    public SignedUpload ReplaceSignedUpload(
+        string uploaderUserId,
+        int generatedVersionAtUpload,
+        string fileName,
+        long size,
+        string storagePath)
+    {
+        var agreement = _fundingAgreement
+            ?? throw new InvalidOperationException("Cannot replace signed upload: no Funding Agreement exists.");
+
+        if (State != ApplicationState.ResponseFinalized)
+            throw new InvalidOperationException(
+                $"Cannot replace signed upload: application is in '{State}' state, expected 'ResponseFinalized'.");
+
+        var upload = agreement.ReplacePendingUpload(
+            uploaderUserId, generatedVersionAtUpload, fileName, size, storagePath);
+        UpdatedAt = DateTime.UtcNow;
+        return upload;
+    }
+
+    /// <summary>
+    /// Applicant facade: withdraw the pending signed upload.
+    /// </summary>
+    public void WithdrawSignedUpload(string withdrawingUserId)
+    {
+        var agreement = _fundingAgreement
+            ?? throw new InvalidOperationException("Cannot withdraw signed upload: no Funding Agreement exists.");
+
+        if (State != ApplicationState.ResponseFinalized)
+            throw new InvalidOperationException(
+                $"Cannot withdraw signed upload: application is in '{State}' state, expected 'ResponseFinalized'.");
+
+        agreement.WithdrawPendingUpload(withdrawingUserId);
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Reviewer facade: approve the pending signed upload and execute the agreement.
+    /// </summary>
+    public SigningReviewDecision ApproveSignedUpload(string reviewerUserId, string? comment)
+    {
+        var agreement = _fundingAgreement
+            ?? throw new InvalidOperationException("Cannot approve signed upload: no Funding Agreement exists.");
+
+        var decision = agreement.ApprovePendingUpload(reviewerUserId, comment);
+        ExecuteAgreement(reviewerUserId);
+        return decision;
+    }
+
+    /// <summary>
+    /// Reviewer facade: reject the pending signed upload with a required comment.
+    /// Application state is unchanged.
+    /// </summary>
+    public SigningReviewDecision RejectSignedUpload(string reviewerUserId, string comment)
+    {
+        var agreement = _fundingAgreement
+            ?? throw new InvalidOperationException("Cannot reject signed upload: no Funding Agreement exists.");
+
+        var decision = agreement.RejectPendingUpload(reviewerUserId, comment);
+        UpdatedAt = DateTime.UtcNow;
+        return decision;
     }
 }

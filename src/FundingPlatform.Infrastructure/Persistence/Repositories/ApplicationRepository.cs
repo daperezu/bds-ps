@@ -58,6 +58,8 @@ public class ApplicationRepository : IApplicationRepository
             .Include(a => a.Appeals)
                 .ThenInclude(ap => ap.Messages)
             .Include(a => a.FundingAgreement)
+                .ThenInclude(fa => fa!.SignedUploads)
+                    .ThenInclude(u => u.ReviewDecision)
             .FirstOrDefaultAsync(a => a.Id == id);
     }
 

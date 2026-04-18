@@ -26,6 +26,8 @@ public class AppDbContext : IdentityDbContext
     public DbSet<ApplicantResponse> ApplicantResponses => Set<ApplicantResponse>();
     public DbSet<Appeal> Appeals => Set<Appeal>();
     public DbSet<FundingAgreement> FundingAgreements => Set<FundingAgreement>();
+    public DbSet<SignedUpload> SignedUploads => Set<SignedUpload>();
+    public DbSet<SigningReviewDecision> SigningReviewDecisions => Set<SigningReviewDecision>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

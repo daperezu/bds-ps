@@ -7,5 +7,6 @@ public enum ApplicationState
     UnderReview = 2,
     Resolved = 3,
     AppealOpen = 4,
-    ResponseFinalized = 5
+    ResponseFinalized = 5,
+    AgreementExecuted = 6
 }

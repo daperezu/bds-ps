@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-04-17
+Last updated: 2026-04-18
 
 ## Sessions
 
@@ -11,6 +11,7 @@ Last updated: 2026-04-17
 | 03 | 2026-04-16 | supplier-evaluation-engine | spec-created | 003 |
 | 04 | 2026-04-17 | applicant-response-appeal | spec-created | 004 |
 | 05 | 2026-04-17 | document-generation | spec-created | 005 |
+| 06 | 2026-04-18 | digital-signatures | spec-created | 006 |
 
 ## Open Threads
 
@@ -31,11 +32,18 @@ Last updated: 2026-04-17
 - Syncfusion HTML-to-PDF license acquisition and cost — planning/ops coordination prerequisite (from #05)
 - Specific default locale code for LatAm formatting (e.g., `es-CO`, `es-MX`) — to be pinned during planning (from #05)
 - Formal audit retention policy for generated Funding Agreement PDFs — deferred to a later compliance-driven spec (from #05)
-- Post-signature regeneration lockout on the Funding Agreement — belongs to the future Digital Signatures spec (from #05)
+- Side-by-side view of generated agreement vs. signed upload to aid reviewer visual verification (from #06)
+- Execution banner or cover page on executed signed PDF (from #06)
+- Final upload size limit value for signed PDFs; 20 MB default proposed (from #06)
+- Verify spec 005 precision on which role (reviewer vs. approver) can trigger agreement regeneration, so FR-010 has no inherited ambiguity (from #06)
+- Administrative back-out of the signing stage — deliberately out-of-scope gap at feature boundary; ops has no supported path until an admin tooling spec exists (from #06)
+- Whether unlimited rejection cycles are acceptable long-term, or whether a future reporting/ops-visibility feature should pressure-test the assumption (from #06)
+- Automated reviewer assist (content hash, version marker, or side-by-side diff) to catch mismatched signed uploads — currently purely visual (from #06)
 
 ## Closed Threads
 
 - Will version history be sufficient for audit needs, or will the Appeal spec need a Resolution entity? (from #02) — **Closed by #04**: no `Resolution` entity needed; appeal resolution is a state transition + audit entry.
+- Post-signature regeneration lockout on the Funding Agreement (from #05) — **Closed by #06**: resolved as "regeneration permitted until first signed upload; locked thereafter; administrative back-out explicitly out of scope for this feature."
 
 ## Parked Ideas
 

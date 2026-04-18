@@ -22,6 +22,7 @@ public static class DependencyInjection
         services.AddScoped<ISystemConfigurationRepository, SystemConfigurationRepository>();
         services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped<IFundingAgreementRepository, FundingAgreementRepository>();
+        services.AddScoped<Application.Interfaces.ISignedUploadRepository, SignedUploadRepository>();
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
 
         services.Configure<FunderOptions>(configuration.GetSection(FunderOptions.SectionName));
