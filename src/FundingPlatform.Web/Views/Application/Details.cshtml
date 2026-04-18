@@ -156,6 +156,27 @@ else
     </div>
 }
 
+<div class="mt-3" id="funding-agreement-panel-container">
+    <div data-async-panel-url="@Url.RouteUrl(new { controller = "FundingAgreement", action = "Panel", applicationId = Model.Id })">
+        Loading funding agreement panel...
+    </div>
+</div>
+
+<script>
+(function () {
+    var container = document.querySelector('#funding-agreement-panel-container > div[data-async-panel-url]');
+    if (!container) return;
+    var url = container.getAttribute('data-async-panel-url');
+    fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'text/html' } })
+        .then(function (r) { return r.ok ? r.text() : ''; })
+        .then(function (html) {
+            var target = document.getElementById('funding-agreement-panel-container');
+            if (target) target.innerHTML = html;
+        })
+        .catch(function () { /* non-disclosing: silently drop on error */ });
+})();
+</script>
+
 <div class="mt-3">
     <a asp-action="Index" asp-controller="Application">Back to Applications</a>
 </div>

@@ -1,0 +1,80 @@
+@model FundingPlatform.Web.ViewModels.FundingAgreementPanelViewModel
+
+<div class="card mb-4" id="funding-agreement-panel" data-application-id="@Model.ApplicationId">
+    <div class="card-header">
+        <strong>Funding Agreement</strong>
+    </div>
+    <div class="card-body">
+        @if (TempData["FundingAgreementError"] is string errorMessage)
+        {
+            <div class="alert alert-danger" role="alert" data-testid="funding-agreement-error">
+                @errorMessage
+            </div>
+        }
+        @if (TempData["FundingAgreementSuccess"] is string successMessage)
+        {
+            <div class="alert alert-success" role="alert" data-testid="funding-agreement-success">
+                @successMessage
+            </div>
+        }
+
+        @if (Model.AgreementExists)
+        {
+            <p class="mb-2" data-testid="funding-agreement-metadata">
+                <strong>Status:</strong> Generated
+                @if (Model.GeneratedAtUtc.HasValue)
+                {
+                    <text> &mdash; @Model.GeneratedAtUtc.Value.ToString("yyyy-MM-dd HH:mm") UTC</text>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.GeneratedByDisplayName))
+                {
+                    <text> by @Model.GeneratedByDisplayName</text>
+                }
+            </p>
+
+            @if (!string.IsNullOrWhiteSpace(Model.AgreementDownloadUrl))
+            {
+                <a class="btn btn-primary" data-testid="funding-agreement-download"
+                   href="@Model.AgreementDownloadUrl">Download PDF</a>
+            }
+
+            @if (Model.ShowActions && Model.CanRegenerate)
+            {
+                <form method="post" class="d-inline ms-2"
+                      action="@Url.RouteUrl(new { controller = "FundingAgreement", action = "Generate", applicationId = Model.ApplicationId })"
+                      onsubmit="return confirm('This will overwrite the current agreement. Continue?');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-warning"
+                            data-testid="funding-agreement-regenerate">
+                        Regenerate
+                    </button>
+                </form>
+            }
+        }
+        else
+        {
+            <p class="mb-2" data-testid="funding-agreement-empty">
+                No agreement has been generated yet.
+            </p>
+
+            @if (!Model.CanGenerate && !string.IsNullOrWhiteSpace(Model.DisabledReason))
+            {
+                <div class="alert alert-warning" data-testid="funding-agreement-disabled-reason">
+                    @Model.DisabledReason
+                </div>
+            }
+
+            @if (Model.ShowActions && Model.CanGenerate)
+            {
+                <form method="post"
+                      action="@Url.RouteUrl(new { controller = "FundingAgreement", action = "Generate", applicationId = Model.ApplicationId })">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-success"
+                            data-testid="funding-agreement-generate">
+                        Generate agreement
+                    </button>
+                </form>
+            }
+        }
+    </div>
+</div>

@@ -1,0 +1,123 @@
+@model FundingPlatform.Web.ViewModels.FundingAgreementDocumentViewModel
+<!DOCTYPE html>
+<html lang="@Model.LocaleCode">
+<head>
+    <meta charset="utf-8" />
+    <title>Funding Agreement @Model.AgreementReference</title>
+    <style>
+        @@page {
+            size: A4;
+            margin: 20mm 18mm;
+        }
+
+        body {
+            font-family: "Liberation Sans", "DejaVu Sans", Arial, sans-serif;
+            font-size: 11pt;
+            color: #111;
+            line-height: 1.4;
+        }
+
+        h1 {
+            font-size: 18pt;
+            margin: 0 0 4pt;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 13pt;
+            margin: 12pt 0 4pt;
+            border-bottom: 1pt solid #333;
+            padding-bottom: 2pt;
+        }
+
+        .document-reference {
+            text-align: center;
+            margin-bottom: 12pt;
+            color: #555;
+        }
+
+        .parties {
+            display: table;
+            width: 100%;
+            margin-bottom: 12pt;
+        }
+
+        .party {
+            display: table-cell;
+            width: 50%;
+            vertical-align: top;
+            padding-right: 10pt;
+        }
+
+        table.items {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12pt;
+            page-break-inside: auto;
+        }
+
+        table.items thead th {
+            background-color: #eee;
+            text-align: left;
+            padding: 4pt 6pt;
+            border-bottom: 1pt solid #333;
+        }
+
+        table.items tbody td {
+            padding: 4pt 6pt;
+            border-bottom: 0.5pt solid #ccc;
+            vertical-align: top;
+            page-break-inside: avoid;
+        }
+
+        table.items tr.total-row td {
+            font-weight: bold;
+            border-top: 1pt solid #333;
+            border-bottom: 1pt solid #333;
+        }
+
+        .amount {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .terms {
+            text-align: justify;
+            margin: 12pt 0;
+            page-break-inside: avoid;
+        }
+
+        .signature-blocks {
+            margin-top: 30pt;
+            display: table;
+            width: 100%;
+            page-break-inside: avoid;
+        }
+
+        .signature-blocks .signature {
+            display: table-cell;
+            width: 50%;
+            vertical-align: top;
+            padding: 8pt;
+            text-align: center;
+        }
+
+        .signature-line {
+            margin-top: 40pt;
+            border-top: 1pt solid #000;
+            padding-top: 4pt;
+        }
+
+        .placeholder-note {
+            background-color: #fff8dc;
+            border: 1pt dashed #b8860b;
+            padding: 6pt 8pt;
+            margin-top: 8pt;
+            font-size: 10pt;
+        }
+    </style>
+</head>
+<body>
+    @RenderBody()
+</body>
+</html>

@@ -1,0 +1,9 @@
+@model FundingPlatform.Web.ViewModels.FundingAgreementDocumentViewModel
+@{
+    Layout = "_FundingAgreementLayout";
+}
+
+@await Html.PartialAsync("Partials/_FundingAgreementHeader", Model)
+@await Html.PartialAsync("Partials/_FundingAgreementItemsTable", Model)
+@await Html.PartialAsync("Partials/_FundingAgreementTermsAndConditions", Model)
+@await Html.PartialAsync("Partials/_FundingAgreementSignatureBlocks", Model)

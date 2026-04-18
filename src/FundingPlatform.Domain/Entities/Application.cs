@@ -8,6 +8,7 @@ public class Application
     private readonly List<VersionHistory> _versionHistory = [];
     private readonly List<ApplicantResponse> _applicantResponses = [];
     private readonly List<Appeal> _appeals = [];
+    private FundingAgreement? _fundingAgreement;
 
     public int Id { get; private set; }
     public int ApplicantId { get; private set; }
@@ -23,6 +24,7 @@ public class Application
     public IReadOnlyList<VersionHistory> VersionHistory => _versionHistory.AsReadOnly();
     public IReadOnlyList<ApplicantResponse> ApplicantResponses => _applicantResponses.AsReadOnly();
     public IReadOnlyList<Appeal> Appeals => _appeals.AsReadOnly();
+    public FundingAgreement? FundingAgreement => _fundingAgreement;
 
     private Application() { }
 
@@ -318,5 +320,155 @@ public class Application
             .OrderByDescending(a => a.OpenedAt)
             .FirstOrDefault(a => a.Status == AppealStatus.Open)
             ?? throw new InvalidOperationException("Cannot resolve appeal: no open appeal found.");
+    }
+
+    // --- Funding Agreement (spec 005) ---
+
+    /// <summary>
+    /// Evaluates FR-002 preconditions for generating a Funding Agreement.
+    /// Returns true when all preconditions hold; otherwise false with user-presentable
+    /// messages describing each failed precondition.
+    /// </summary>
+    public bool CanGenerateFundingAgreement(out IReadOnlyList<string> errors)
+    {
+        var failures = new List<string>();
+
+        if (State != ApplicationState.ResponseFinalized)
+        {
+            if (State == ApplicationState.AppealOpen)
+            {
+                failures.Add("An appeal is currently open on this application.");
+            }
+            else
+            {
+                failures.Add("Review is still in progress.");
+            }
+        }
+
+        if (_appeals.Any(a => a.Status == AppealStatus.Open))
+        {
+            failures.Add("An appeal is currently open on this application.");
+        }
+
+        var latestResponse = _applicantResponses
+            .OrderByDescending(r => r.CycleNumber)
+            .FirstOrDefault();
+
+        if (latestResponse is null)
+        {
+            failures.Add("Applicant has not yet responded to every approved item.");
+        }
+        else
+        {
+            if (latestResponse.ItemResponses.Count == 0)
+            {
+                failures.Add("Applicant has not yet responded to every approved item.");
+            }
+
+            if (!latestResponse.ItemResponses.Any(ir => ir.Decision == ItemResponseDecision.Accept))
+            {
+                failures.Add("Nothing to fund: all items were rejected.");
+            }
+        }
+
+        errors = failures
+            .Distinct(StringComparer.Ordinal)
+            .ToList()
+            .AsReadOnly();
+        return errors.Count == 0;
+    }
+
+    /// <summary>
+    /// Creates a FundingAgreement for this application. Requires no existing agreement
+    /// and passing preconditions.
+    /// </summary>
+    public FundingAgreement GenerateFundingAgreement(
+        string fileName,
+        string contentType,
+        long size,
+        string storagePath,
+        string generatingUserId)
+    {
+        if (!CanGenerateFundingAgreement(out var errors))
+        {
+            throw new InvalidOperationException(
+                $"Cannot generate Funding Agreement: {string.Join(" ", errors)}");
+        }
+
+        if (_fundingAgreement is not null)
+        {
+            throw new InvalidOperationException(
+                "A Funding Agreement already exists for this application. Use RegenerateFundingAgreement.");
+        }
+
+        _fundingAgreement = new FundingAgreement(
+            Id,
+            fileName,
+            contentType,
+            size,
+            storagePath,
+            generatingUserId);
+        UpdatedAt = DateTime.UtcNow;
+
+        return _fundingAgreement;
+    }
+
+    /// <summary>
+    /// Replaces the existing Funding Agreement's file metadata in place. Requires an
+    /// existing agreement and passing preconditions.
+    /// </summary>
+    public FundingAgreement RegenerateFundingAgreement(
+        string fileName,
+        string contentType,
+        long size,
+        string storagePath,
+        string regeneratingUserId)
+    {
+        if (!CanGenerateFundingAgreement(out var errors))
+        {
+            throw new InvalidOperationException(
+                $"Cannot regenerate Funding Agreement: {string.Join(" ", errors)}");
+        }
+
+        if (_fundingAgreement is null)
+        {
+            throw new InvalidOperationException(
+                "No Funding Agreement exists for this application. Use GenerateFundingAgreement.");
+        }
+
+        _fundingAgreement.Replace(fileName, contentType, size, storagePath, regeneratingUserId);
+        UpdatedAt = DateTime.UtcNow;
+
+        return _fundingAgreement;
+    }
+
+    /// <summary>
+    /// Authorization: download / read access. Applicant-owner, any administrator, or
+    /// a reviewer explicitly assigned to this application's review.
+    /// </summary>
+    public bool CanUserAccessFundingAgreement(
+        string? applicantUserId,
+        bool isAdministrator,
+        bool isReviewerAssignedToThisApplication)
+    {
+        if (isAdministrator) return true;
+        if (isReviewerAssignedToThisApplication) return true;
+        if (applicantUserId is not null &&
+            Applicant is not null &&
+            Applicant.UserId == applicantUserId)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Authorization: generate / regenerate access. Same as access, minus the applicant branch.
+    /// </summary>
+    public bool CanUserGenerateFundingAgreement(
+        bool isAdministrator,
+        bool isReviewerAssignedToThisApplication)
+    {
+        return isAdministrator || isReviewerAssignedToThisApplication;
     }
 }

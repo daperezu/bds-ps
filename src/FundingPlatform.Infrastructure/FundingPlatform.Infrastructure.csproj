@@ -8,6 +8,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.6" />
+    <PackageReference Include="Syncfusion.HtmlToPdfConverter.Net.Linux" Version="31.2.*" />
+    <PackageReference Include="Syncfusion.Licensing" Version="31.2.*" />
   </ItemGroup>
 
   <PropertyGroup>

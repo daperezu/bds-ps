@@ -10,6 +10,7 @@ Last updated: 2026-04-17
 | 02 | 2026-04-15 | review-approval-workflow | spec-created | 002 |
 | 03 | 2026-04-16 | supplier-evaluation-engine | spec-created | 003 |
 | 04 | 2026-04-17 | applicant-response-appeal | spec-created | 004 |
+| 05 | 2026-04-17 | document-generation | spec-created | 005 |
 
 ## Open Threads
 
@@ -24,6 +25,13 @@ Last updated: 2026-04-17
 - Representation of `AppealMessage`: child entity with identity vs. value object in a collection on `Appeal` (from #04)
 - Operational visibility for stuck applications with no deadlines — likely future reporting spec (from #04)
 - Whether `ApplicantResponse` decisions should be visible to reviewers in read-only form before an appeal is opened (from #04)
+- Terms & Conditions copy ownership and delivery path for the Funding Agreement template (from #05)
+- Funder identity shape: single configuration block vs. richer `Funder` aggregate for multi-funder scenarios (from #05)
+- Reviewer regeneration rights on the Funding Agreement — revalidate during planning when full role-scope is visible (from #05)
+- Syncfusion HTML-to-PDF license acquisition and cost — planning/ops coordination prerequisite (from #05)
+- Specific default locale code for LatAm formatting (e.g., `es-CO`, `es-MX`) — to be pinned during planning (from #05)
+- Formal audit retention policy for generated Funding Agreement PDFs — deferred to a later compliance-driven spec (from #05)
+- Post-signature regeneration lockout on the Funding Agreement — belongs to the future Digital Signatures spec (from #05)
 
 ## Closed Threads
 
