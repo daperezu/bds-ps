@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\FundingPlatform.Infrastructure\FundingPlatform.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\FundingPlatform.Application\FundingPlatform.Application.csproj" />
   </ItemGroup>
 
 </Project>

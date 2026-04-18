@@ -1,0 +1,19 @@
+@model FundingPlatform.Web.ViewModels.FundingAgreementDocumentViewModel
+
+<h2>Signatures</h2>
+<div class="signature-blocks">
+    <div class="signature">
+        <div class="signature-line">
+            <strong>For the Funder</strong>
+        </div>
+        <div>@Model.Funder.LegalName</div>
+        <div>Tax ID: @Model.Funder.TaxId</div>
+    </div>
+    <div class="signature">
+        <div class="signature-line">
+            <strong>Applicant</strong>
+        </div>
+        <div>@Model.ApplicantLegalName</div>
+        <div>Legal ID: @Model.ApplicantLegalId</div>
+    </div>
+</div>

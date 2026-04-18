@@ -1,0 +1,11 @@
+@model FundingPlatform.Web.ViewModels.FundingAgreementPanelViewModel
+
+@{
+    ViewData["Title"] = $"Funding Agreement — Application #{Model.ApplicationId}";
+}
+
+<h2>Application #@Model.ApplicationId — Funding Agreement</h2>
+
+@await Html.PartialAsync("~/Views/Applications/_FundingAgreementPanel.cshtml", Model)
+
+<a class="btn btn-link" asp-controller="Home" asp-action="Index">Back</a>

@@ -1,0 +1,21 @@
+namespace FundingPlatform.Application.Options;
+
+public class FunderOptions
+{
+    public const string SectionName = "FundingAgreement:Funder";
+
+    public string LegalName { get; set; } = string.Empty;
+    public string TaxId { get; set; } = string.Empty;
+    public string Address { get; set; } = string.Empty;
+    public string ContactEmail { get; set; } = string.Empty;
+    public string ContactPhone { get; set; } = string.Empty;
+}
+
+public class FundingAgreementOptions
+{
+    public const string SectionName = "FundingAgreement";
+
+    public string LocaleCode { get; set; } = "es-CO";
+    public string CurrencyIsoCode { get; set; } = "COP";
+    public FunderOptions Funder { get; set; } = new();
+}

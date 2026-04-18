@@ -1,0 +1,32 @@
+@model FundingPlatform.Web.ViewModels.FundingAgreementDocumentViewModel
+@{
+    var culture = System.Globalization.CultureInfo.GetCultureInfo(Model.LocaleCode);
+}
+
+<h1>Funding Agreement</h1>
+<div class="document-reference">
+    Reference: <strong>@Model.AgreementReference</strong>
+    &mdash;
+    Generated: @Model.GeneratedAtUtc.ToString("yyyy-MM-dd HH:mm", culture) UTC
+</div>
+
+<div class="parties">
+    <div class="party">
+        <h2>Funder</h2>
+        <div><strong>@Model.Funder.LegalName</strong></div>
+        <div>Tax ID: @Model.Funder.TaxId</div>
+        <div>@Model.Funder.Address</div>
+        <div>Email: @Model.Funder.ContactEmail</div>
+        <div>Phone: @Model.Funder.ContactPhone</div>
+    </div>
+    <div class="party">
+        <h2>Applicant</h2>
+        <div><strong>@Model.ApplicantLegalName</strong></div>
+        <div>Legal ID: @Model.ApplicantLegalId</div>
+        <div>Email: @Model.ApplicantEmail</div>
+        @if (!string.IsNullOrWhiteSpace(Model.ApplicantPhone))
+        {
+            <div>Phone: @Model.ApplicantPhone</div>
+        }
+    </div>
+</div>

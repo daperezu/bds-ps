@@ -25,10 +25,18 @@ public class AppDbContext : IdentityDbContext
     public DbSet<VersionHistory> VersionHistories => Set<VersionHistory>();
     public DbSet<ApplicantResponse> ApplicantResponses => Set<ApplicantResponse>();
     public DbSet<Appeal> Appeals => Set<Appeal>();
+    public DbSet<FundingAgreement> FundingAgreements => Set<FundingAgreement>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+        // Bind Application.FundingAgreement to its private backing field.
+        // Done after ApplyConfigurationsFromAssembly so the navigation metadata exists.
+        builder.Entity<AppEntity>()
+            .Navigation(a => a.FundingAgreement)
+            .HasField("_fundingAgreement")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

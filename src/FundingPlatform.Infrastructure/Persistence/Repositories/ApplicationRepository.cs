@@ -48,6 +48,8 @@ public class ApplicationRepository : IApplicationRepository
             .Include(a => a.Items)
                 .ThenInclude(i => i.SelectedSupplier)
             .Include(a => a.Items)
+                .ThenInclude(i => i.Category)
+            .Include(a => a.Items)
                 .ThenInclude(i => i.Quotations)
                     .ThenInclude(q => q.Supplier)
             .Include(a => a.Applicant)
@@ -55,6 +57,7 @@ public class ApplicationRepository : IApplicationRepository
                 .ThenInclude(r => r.ItemResponses)
             .Include(a => a.Appeals)
                 .ThenInclude(ap => ap.Messages)
+            .Include(a => a.FundingAgreement)
             .FirstOrDefaultAsync(a => a.Id == id);
     }
 

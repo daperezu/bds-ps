@@ -1,6 +1,9 @@
 using FundingPlatform.Application;
+using FundingPlatform.Application.Interfaces;
 using FundingPlatform.Infrastructure;
+using FundingPlatform.Infrastructure.DocumentGeneration;
 using FundingPlatform.Infrastructure.Persistence;
+using FundingPlatform.Web.Services;
 using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,7 +12,8 @@ builder.AddServiceDefaults();
 builder.AddSqlServerDbContext<AppDbContext>("fundingdb");
 
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure();
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddScoped<IFundingAgreementHtmlRenderer, RazorFundingAgreementHtmlRenderer>();
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     {
@@ -35,6 +39,16 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
+    try
+    {
+        scope.ServiceProvider.GetRequiredService<SyncfusionLicenseValidator>().ValidateOrThrow();
+    }
+    catch (InvalidOperationException ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogWarning("Syncfusion license validation skipped: {Message}", ex.Message);
+    }
+
     try
     {
         await FundingPlatform.Infrastructure.Identity.IdentityConfiguration.SeedRolesAsync(scope.ServiceProvider);
