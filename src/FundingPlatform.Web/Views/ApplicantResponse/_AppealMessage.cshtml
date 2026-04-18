@@ -1,0 +1,9 @@
+@model FundingPlatform.Web.ViewModels.AppealMessageViewModel
+
+<div class="appeal-message @(Model.IsByApplicant ? "by-applicant" : "by-reviewer") mb-2 p-2 border rounded">
+    <div class="d-flex justify-content-between">
+        <strong class="author-name">@Model.AuthorDisplayName</strong>
+        <small class="text-muted created-at">@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</small>
+    </div>
+    <div class="message-body mt-1">@Model.Text</div>
+</div>

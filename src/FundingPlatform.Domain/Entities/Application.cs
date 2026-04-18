@@ -6,6 +6,8 @@ public class Application
 {
     private readonly List<Item> _items = [];
     private readonly List<VersionHistory> _versionHistory = [];
+    private readonly List<ApplicantResponse> _applicantResponses = [];
+    private readonly List<Appeal> _appeals = [];
 
     public int Id { get; private set; }
     public int ApplicantId { get; private set; }
@@ -19,6 +21,8 @@ public class Application
 
     public IReadOnlyList<Item> Items => _items.AsReadOnly();
     public IReadOnlyList<VersionHistory> VersionHistory => _versionHistory.AsReadOnly();
+    public IReadOnlyList<ApplicantResponse> ApplicantResponses => _applicantResponses.AsReadOnly();
+    public IReadOnlyList<Appeal> Appeals => _appeals.AsReadOnly();
 
     private Application() { }
 
@@ -188,5 +192,131 @@ public class Application
 
         State = ApplicationState.Resolved;
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Submits the applicant's per-item response. Transitions the application from
+    /// Resolved to ResponseFinalized. Requires a decision for every item on the application.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the application is not in the Resolved state, or when the decision map
+    /// does not cover every item exactly once.
+    /// </exception>
+    public ApplicantResponse SubmitResponse(
+        IReadOnlyDictionary<int, ItemResponseDecision> itemDecisions,
+        string submittedByUserId)
+    {
+        if (State != ApplicationState.Resolved)
+        {
+            throw new InvalidOperationException(
+                $"Cannot submit response: application is in '{State}' state, expected 'Resolved'.");
+        }
+
+        var cycleNumber = _applicantResponses.Count + 1;
+        var itemIds = _items.Select(i => i.Id).ToList();
+
+        var response = ApplicantResponse.Submit(
+            Id,
+            cycleNumber,
+            submittedByUserId,
+            itemIds,
+            itemDecisions);
+
+        _applicantResponses.Add(response);
+        State = ApplicationState.ResponseFinalized;
+        UpdatedAt = DateTime.UtcNow;
+
+        return response;
+    }
+
+    /// <summary>
+    /// Opens an appeal against the most recent applicant response. Freezes the application
+    /// by transitioning to AppealOpen.
+    /// </summary>
+    public Appeal OpenAppeal(string openedByUserId, int maxAppeals)
+    {
+        if (State != ApplicationState.ResponseFinalized)
+        {
+            throw new InvalidOperationException(
+                $"Cannot open appeal: application is in '{State}' state, expected 'ResponseFinalized'.");
+        }
+
+        if (_appeals.Count >= maxAppeals)
+        {
+            throw new InvalidOperationException(
+                $"Cannot open appeal: maximum appeal count ({maxAppeals}) reached.");
+        }
+
+        var latestResponse = _applicantResponses
+            .OrderByDescending(r => r.CycleNumber)
+            .FirstOrDefault()
+            ?? throw new InvalidOperationException(
+                "Cannot open appeal: no applicant response exists for this application.");
+
+        if (!latestResponse.ItemResponses.Any(ir => ir.Decision == ItemResponseDecision.Reject))
+        {
+            throw new InvalidOperationException(
+                "Cannot open appeal: the response does not include any rejected items.");
+        }
+
+        var appeal = Appeal.Open(Id, latestResponse.Id, openedByUserId);
+        _appeals.Add(appeal);
+        State = ApplicationState.AppealOpen;
+        UpdatedAt = DateTime.UtcNow;
+
+        return appeal;
+    }
+
+    /// <summary>
+    /// Resolves the active appeal as Uphold. Application returns to ResponseFinalized.
+    /// </summary>
+    public void ResolveAppealAsUphold(string resolvedByUserId)
+    {
+        var appeal = GetActiveAppealOrThrow();
+        appeal.Resolve(resolvedByUserId, AppealResolution.Uphold);
+
+        State = ApplicationState.ResponseFinalized;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Resolves the active appeal as Grant — Reopen to Draft. Application returns to Draft
+    /// so the applicant can revise the submission.
+    /// </summary>
+    public void ResolveAppealAsGrantReopenToDraft(string resolvedByUserId)
+    {
+        var appeal = GetActiveAppealOrThrow();
+        appeal.Resolve(resolvedByUserId, AppealResolution.GrantReopenToDraft);
+
+        State = ApplicationState.Draft;
+        SubmittedAt = null;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Resolves the active appeal as Grant — Reopen to Review. Application returns to
+    /// UnderReview WITHOUT resetting item review statuses (unlike SendBack).
+    /// </summary>
+    public void ResolveAppealAsGrantReopenToReview(string resolvedByUserId)
+    {
+        var appeal = GetActiveAppealOrThrow();
+        appeal.Resolve(resolvedByUserId, AppealResolution.GrantReopenToReview);
+
+        State = ApplicationState.UnderReview;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    private Appeal GetActiveAppealOrThrow()
+    {
+        if (State != ApplicationState.AppealOpen)
+        {
+            throw new InvalidOperationException(
+                $"Cannot resolve appeal: application is in '{State}' state, expected 'AppealOpen'.");
+        }
+
+        return _appeals
+            .OrderByDescending(a => a.OpenedAt)
+            .FirstOrDefault(a => a.Status == AppealStatus.Open)
+            ?? throw new InvalidOperationException("Cannot resolve appeal: no open appeal found.");
     }
 }

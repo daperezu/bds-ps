@@ -60,6 +60,10 @@ IF NOT EXISTS (SELECT 1 FROM [dbo].[SystemConfigurations] WHERE [Key] = N'MaxFil
     INSERT INTO [dbo].[SystemConfigurations] ([Key], [Value], [Description], [UpdatedAt])
     VALUES (N'MaxFileSizeMB', N'10', N'Maximum file size in megabytes for uploads', GETUTCDATE());
 
+IF NOT EXISTS (SELECT 1 FROM [dbo].[SystemConfigurations] WHERE [Key] = N'MaxAppealsPerApplication')
+    INSERT INTO [dbo].[SystemConfigurations] ([Key], [Value], [Description], [UpdatedAt])
+    VALUES (N'MaxAppealsPerApplication', N'1', N'Maximum appeals per application across all reopen cycles. 0 disables appeals.', GETUTCDATE());
+
 -- =============================================================================
 -- Impact Templates
 -- =============================================================================

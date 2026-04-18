@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-04-16
+Last updated: 2026-04-17
 
 ## Sessions
 
@@ -9,6 +9,7 @@ Last updated: 2026-04-16
 | 01 | 2026-04-15 | core-model-submission | spec-created | 001 |
 | 02 | 2026-04-15 | review-approval-workflow | spec-created | 002 |
 | 03 | 2026-04-16 | supplier-evaluation-engine | spec-created | 003 |
+| 04 | 2026-04-17 | applicant-response-appeal | spec-created | 004 |
 
 ## Open Threads
 
@@ -18,8 +19,15 @@ Last updated: 2026-04-16
 - Performance score on Applicant: manual, calculated, or deferred? (from #01)
 - Constitution needs to be filled in after first implementation (from #01)
 - Should pagination page size be configurable or fixed? (from #02)
-- Will version history be sufficient for audit needs, or will the Appeal spec need a Resolution entity? (from #02)
 - Does full item-status reset on send-back create unnecessary re-work for reviewers? (from #02)
+- Persistence model for `ApplicantResponse`: durable snapshot vs. reconstructed from item-level state (from #04)
+- Representation of `AppealMessage`: child entity with identity vs. value object in a collection on `Appeal` (from #04)
+- Operational visibility for stuck applications with no deadlines — likely future reporting spec (from #04)
+- Whether `ApplicantResponse` decisions should be visible to reviewers in read-only form before an appeal is opened (from #04)
+
+## Closed Threads
+
+- Will version history be sufficient for audit needs, or will the Appeal spec need a Resolution entity? (from #02) — **Closed by #04**: no `Resolution` entity needed; appeal resolution is a state transition + audit entry.
 
 ## Parked Ideas
 

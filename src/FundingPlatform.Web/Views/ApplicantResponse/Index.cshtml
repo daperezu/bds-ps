@@ -1,0 +1,140 @@
+@using FundingPlatform.Domain.Enums
+@model FundingPlatform.Web.ViewModels.ApplicantResponseViewModel
+
+@{
+    ViewData["Title"] = $"Application #{Model.ApplicationId} — Applicant Response";
+}
+
+<h2 class="applicant-response-header">Application #@Model.ApplicationId — Applicant Response</h2>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <strong>State:</strong>
+        <span class="badge bg-info application-state">@Model.State</span>
+        @if (Model.SubmittedAt is not null)
+        {
+            <span class="ms-3 submitted-at"><strong>Response submitted:</strong> @Model.SubmittedAt.Value.ToString("yyyy-MM-dd HH:mm")</span>
+        }
+    </div>
+</div>
+
+@{
+    var isReadOnly = Model.IsSubmitted || Model.State == ApplicationState.AppealOpen;
+}
+
+<form method="post" asp-action="Submit" asp-route-id="@Model.ApplicationId" id="applicantResponseForm">
+    @Html.AntiForgeryToken()
+    <table class="table table-striped response-items">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Reviewer Decision</th>
+                <th>Supplier</th>
+                <th>Amount</th>
+                <th>Comment</th>
+                <th>Your Decision</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Items)
+            {
+                <tr class="response-item" data-item-id="@item.ItemId">
+                    <td class="item-name">@item.ProductName</td>
+                    <td>
+                        <span class="badge review-status review-status-@item.ReviewStatus.ToString().ToLowerInvariant()">@item.ReviewStatus</span>
+                    </td>
+                    <td class="supplier-name">@(item.SelectedSupplierName ?? "—")</td>
+                    <td class="amount">@(item.Amount.HasValue ? item.Amount.Value.ToString("C") : "—")</td>
+                    <td class="review-comment">@(item.ReviewComment ?? "—")</td>
+                    <td>
+                        @if (isReadOnly)
+                        {
+                            if (item.Decision.HasValue)
+                            {
+                                <span class="badge decision-display bg-@(item.Decision == ItemResponseDecision.Accept ? "success" : "danger")">
+                                    @item.Decision
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        }
+                        else
+                        {
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input decision-accept"
+                                       type="radio"
+                                       name="decisions[@item.ItemId]"
+                                       value="@((int)ItemResponseDecision.Accept)"
+                                       id="accept-@item.ItemId"
+                                       @(item.Decision == ItemResponseDecision.Accept ? "checked" : "")
+                                       required>
+                                <label class="form-check-label" for="accept-@item.ItemId">Accept</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input decision-reject"
+                                       type="radio"
+                                       name="decisions[@item.ItemId]"
+                                       value="@((int)ItemResponseDecision.Reject)"
+                                       id="reject-@item.ItemId"
+                                       @(item.Decision == ItemResponseDecision.Reject ? "checked" : "")
+                                       required>
+                                <label class="form-check-label" for="reject-@item.ItemId">Reject</label>
+                            </div>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (!isReadOnly)
+    {
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary submit-response" id="submitResponseButton" disabled>Submit Response</button>
+        </div>
+    }
+</form>
+
+@if (Model.CanOpenAppeal)
+{
+    <div class="mt-4">
+        <form method="post" asp-action="OpenAppeal" asp-route-id="@Model.ApplicationId">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-warning open-appeal-button">Open Appeal</button>
+        </form>
+    </div>
+}
+
+@if (Model.HasOpenAppeal)
+{
+    <div class="alert alert-warning mt-3 appeal-frozen-banner">
+        An appeal is currently open. The application is frozen until the appeal is resolved.
+        <a asp-action="Appeal" asp-route-id="@Model.ApplicationId" class="alert-link">View dispute thread</a>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            var form = document.getElementById('applicantResponseForm');
+            if (!form) return;
+            var submitBtn = document.getElementById('submitResponseButton');
+            if (!submitBtn) return;
+
+            function refreshSubmitButton() {
+                var rows = form.querySelectorAll('tr.response-item');
+                var allAnswered = true;
+                rows.forEach(function (row) {
+                    var anyChecked = row.querySelector('input[type=radio]:checked');
+                    if (!anyChecked) allAnswered = false;
+                });
+                submitBtn.disabled = !allAnswered;
+            }
+
+            form.addEventListener('change', refreshSubmitButton);
+            refreshSubmitButton();
+        })();
+    </script>
+}
