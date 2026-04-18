@@ -33,5 +33,21 @@ public class ApplicationConfiguration : IEntityTypeConfiguration<AppEntity>
             .WithOne(v => v.Application)
             .HasForeignKey(v => v.ApplicationId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        var applicantResponsesNav = builder.Metadata.FindNavigation(nameof(AppEntity.ApplicantResponses))!;
+        applicantResponsesNav.SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.HasMany(a => a.ApplicantResponses)
+            .WithOne()
+            .HasForeignKey(r => r.ApplicationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        var appealsNav = builder.Metadata.FindNavigation(nameof(AppEntity.Appeals))!;
+        appealsNav.SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.HasMany(a => a.Appeals)
+            .WithOne()
+            .HasForeignKey(ap => ap.ApplicationId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

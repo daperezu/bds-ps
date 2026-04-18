@@ -1,0 +1,75 @@
+@using FundingPlatform.Domain.Enums
+@model FundingPlatform.Web.ViewModels.AppealThreadViewModel
+
+@{
+    ViewData["Title"] = $"Appeal — Application #{Model.ApplicationId}";
+}
+
+<h2 class="appeal-header">Appeal — Application #@Model.ApplicationId</h2>
+
+<div class="card mb-3">
+    <div class="card-body">
+        @if (Model.Status == AppealStatus.Open)
+        {
+            <span class="badge bg-warning appeal-status">Open</span>
+            <span class="ms-2 text-muted">Application is frozen while this appeal is open.</span>
+        }
+        else
+        {
+            <span class="badge bg-success appeal-status">Resolved</span>
+            @if (Model.Resolution is not null)
+            {
+                <span class="ms-2 appeal-resolution"><strong>@Model.Resolution</strong></span>
+            }
+            @if (Model.ResolvedAt is not null)
+            {
+                <span class="ms-2 text-muted">Resolved at @Model.ResolvedAt.Value.ToString("yyyy-MM-dd HH:mm")</span>
+            }
+        }
+    </div>
+</div>
+
+<div class="appeal-messages">
+    @if (Model.Messages.Count == 0)
+    {
+        <div class="alert alert-info no-messages">No messages yet.</div>
+    }
+    else
+    {
+        foreach (var message in Model.Messages)
+        {
+            @await Html.PartialAsync("_AppealMessage", message)
+        }
+    }
+</div>
+
+@if (Model.CanPostMessage)
+{
+    <form method="post" asp-action="PostMessage" asp-route-id="@Model.ApplicationId" class="mt-3">
+        @Html.AntiForgeryToken()
+        <div class="mb-2">
+            <label for="NewMessageText" class="form-label">Post a message</label>
+            <textarea id="NewMessageText" name="NewMessageText" class="form-control message-text" rows="3" maxlength="4000" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary post-message-button">Post Message</button>
+    </form>
+}
+
+@if (Model.CanResolve)
+{
+    <div class="mt-4 card">
+        <div class="card-body">
+            <h5 class="card-title">Resolve Appeal</h5>
+            <form method="post" asp-action="ResolveAppeal" asp-route-id="@Model.ApplicationId" class="d-flex gap-2 flex-wrap">
+                @Html.AntiForgeryToken()
+                <button type="submit" name="resolution" value="@((int)AppealResolution.Uphold)" class="btn btn-secondary resolve-uphold">Uphold</button>
+                <button type="submit" name="resolution" value="@((int)AppealResolution.GrantReopenToDraft)" class="btn btn-warning resolve-reopen-draft">Grant — Reopen to Draft</button>
+                <button type="submit" name="resolution" value="@((int)AppealResolution.GrantReopenToReview)" class="btn btn-info resolve-reopen-review">Grant — Reopen to Review</button>
+            </form>
+        </div>
+    </div>
+}
+
+<div class="mt-3">
+    <a asp-action="Index" asp-route-id="@Model.ApplicationId">Back to response screen</a>
+</div>

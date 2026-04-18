@@ -37,6 +37,24 @@ public class ApplicationRepository : IApplicationRepository
                     .ThenInclude(imp => imp!.ParameterValues)
                         .ThenInclude(pv => pv.ImpactTemplateParameter)
             .Include(a => a.Applicant)
+            .Include(a => a.ApplicantResponses)
+                .ThenInclude(r => r.ItemResponses)
+            .FirstOrDefaultAsync(a => a.Id == id);
+    }
+
+    public async Task<AppEntity?> GetByIdWithResponseAndAppealsAsync(int id)
+    {
+        return await _context.Applications
+            .Include(a => a.Items)
+                .ThenInclude(i => i.SelectedSupplier)
+            .Include(a => a.Items)
+                .ThenInclude(i => i.Quotations)
+                    .ThenInclude(q => q.Supplier)
+            .Include(a => a.Applicant)
+            .Include(a => a.ApplicantResponses)
+                .ThenInclude(r => r.ItemResponses)
+            .Include(a => a.Appeals)
+                .ThenInclude(ap => ap.Messages)
             .FirstOrDefaultAsync(a => a.Id == id);
     }
 

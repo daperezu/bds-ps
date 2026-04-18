@@ -10,6 +10,7 @@ public static class DependencyInjection
         services.AddScoped<ApplicationService>();
         services.AddScoped<AdminService>();
         services.AddScoped<ReviewService>();
+        services.AddScoped<ApplicantResponseService>();
 
         return services;
     }

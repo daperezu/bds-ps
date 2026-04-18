@@ -23,6 +23,8 @@ public class AppDbContext : IdentityDbContext
     public DbSet<Document> Documents => Set<Document>();
     public DbSet<SystemConfiguration> SystemConfigurations => Set<SystemConfiguration>();
     public DbSet<VersionHistory> VersionHistories => Set<VersionHistory>();
+    public DbSet<ApplicantResponse> ApplicantResponses => Set<ApplicantResponse>();
+    public DbSet<Appeal> Appeals => Set<Appeal>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
