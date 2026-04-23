@@ -21,9 +21,24 @@ public class ApplicantResponsePage
     public ILocator SuccessMessage => _page.Locator(".alert-success");
     public ILocator ErrorMessage => _page.Locator(".alert-danger");
 
+    public ILocator ReadyToSignBanner => _page.Locator("[data-testid=signing-banner-ready]");
+    public ILocator AgreementExecutedBanner => _page.Locator("[data-testid=signing-banner-executed]");
+
+    public SigningStagePanelPage SigningPanel => new(_page);
+
     public async Task GotoAsync(string baseUrl, int applicationId)
     {
         await _page.GotoAsync($"{baseUrl}/ApplicantResponse/Index/{applicationId}");
+    }
+
+    public async Task<bool> IsReadyToSignBannerVisible()
+    {
+        return await ReadyToSignBanner.CountAsync() > 0;
+    }
+
+    public async Task<bool> IsAgreementExecutedBannerVisible()
+    {
+        return await AgreementExecutedBanner.CountAsync() > 0;
     }
 
     public ILocator ItemRow(int itemId) =>

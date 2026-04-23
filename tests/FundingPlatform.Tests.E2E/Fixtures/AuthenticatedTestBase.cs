@@ -10,6 +10,7 @@ public class AuthenticatedTestBase : PageTest
     private static readonly SemaphoreSlim _initLock = new(1, 1);
 
     protected string BaseUrl => _fixture.BaseUrl;
+    protected string ConnectionString => _fixture.ConnectionString;
 
     public override BrowserNewContextOptions ContextOptions()
     {

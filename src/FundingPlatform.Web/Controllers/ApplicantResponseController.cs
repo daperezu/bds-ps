@@ -180,7 +180,8 @@ public class ApplicantResponseController : Controller
                 Decision = i.Decision
             }).ToList(),
             CanOpenAppeal = dto.State == ApplicationState.ResponseFinalized && hasRejectedItem,
-            HasOpenAppeal = dto.State == ApplicationState.AppealOpen
+            HasOpenAppeal = dto.State == ApplicationState.AppealOpen,
+            HasFundingAgreement = dto.HasFundingAgreement
         };
     }
 

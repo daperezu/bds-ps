@@ -8,6 +8,7 @@ public class AspireFixture : IAsyncDisposable
 {
     private DistributedApplication? _app;
     public string BaseUrl { get; private set; } = string.Empty;
+    public string ConnectionString { get; private set; } = string.Empty;
 
     public async Task StartAsync()
     {
@@ -18,6 +19,8 @@ public class AspireFixture : IAsyncDisposable
         await _app.StartAsync();
 
         await DeployDacpacAsync();
+
+        ConnectionString = await _app.GetConnectionStringAsync("fundingdb") ?? string.Empty;
 
         // Use http — the test environment may not trust the dev HTTPS certificate
         var webapp = _app.GetEndpoint("webapp", "http");

@@ -29,7 +29,7 @@ End-to-end manual walkthrough. Mirrors the four critical journeys mandated by SC
 **Persona:** applicant, then reviewer.
 
 1. Log in as `applicant@demo.com`.
-2. Navigate to the application's detail page.
+2. Navigate to `/ApplicantResponse/Index/{id}` for the application (the page you land on after accepting reviewer decisions). The Funding Agreement panel renders below the response-item form.
 3. In the "Funding Agreement" panel, click **Download agreement**.
    - Browser downloads `funding-agreement.pdf` (or similar).
    - Audit-trail entry appears: `AgreementDownloaded`.
@@ -38,8 +38,8 @@ End-to-end manual walkthrough. Mirrors the four critical journeys mandated by SC
    - Panel now shows a "Pending review" banner with filename, size, uploaded-at timestamp, uploader (you), and the `GeneratedVersion` the upload is tied to.
    - Application state in the header badge is still **ResponseFinalized**.
 6. Log out. Log in as `reviewer@demo.com`.
-7. Go to **Review → Signing Inbox**. You should see one row for the application.
-8. Click through to the application detail page. The panel shows the pending upload and two buttons: **Approve** and **Reject**.
+7. In the main navigation click **Review**, then click the **Signing Inbox** sub-tab. You should see one row for the application.
+8. Click through to the application (row link). The signing panel shows the pending upload and two buttons: **Approve** and **Reject**.
 9. Click **Approve** (optional comment). Confirm.
    - Application state flips to **AgreementExecuted**.
    - Audit trail gains: `SignedUploadApproved`.
@@ -55,7 +55,7 @@ End-to-end manual walkthrough. Mirrors the four critical journeys mandated by SC
 **Persona:** applicant, reviewer, applicant.
 
 1. Start with an application in the same state as the end of step 5 of Journey 1 (pending signed upload) — or go through steps 1–5 first with a deliberately bad signed PDF (e.g., don't actually stamp a signature).
-2. Log in as `reviewer@demo.com` and navigate to the application detail page.
+2. Log in as `reviewer@demo.com`, click **Review** in the main navigation, click the **Signing Inbox** sub-tab, and open the application from the row.
 3. Click **Reject**. Try to submit with an empty comment — the form should refuse with "Rejection comment is required".
 4. Enter a comment like "Signature not visible on page 3; please sign again" and submit.
    - Audit trail gains: `SignedUploadRejected` with the comment as detail.
@@ -101,7 +101,7 @@ End-to-end manual walkthrough. Mirrors the four critical journeys mandated by SC
    - Expected: the action is blocked. The panel surfaces "Agreement is locked: a signed upload has been submitted."
    - Audit trail gains: `FundingAgreementRegenerationBlocked`.
 5. **Version-mismatch sub-path** — skip the pending upload above and instead do the following:
-   - As applicant, download the agreement (call this V1).
+   - As applicant, open `/ApplicantResponse/Index/{id}` and download the agreement from the embedded panel (call this V1).
    - Log out. Log in as reviewer, regenerate. Current `GeneratedVersion` becomes V2.
    - Log out. Log in as applicant. Sign V1 externally. Upload.
    - Expected: upload is rejected inline with "Please re-download the latest agreement and re-sign." No `SignedUpload` record is created. No audit entry.

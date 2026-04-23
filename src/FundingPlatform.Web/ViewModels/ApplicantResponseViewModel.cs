@@ -12,4 +12,5 @@ public class ApplicantResponseViewModel
     public bool CanOpenAppeal { get; set; }
     public bool HasOpenAppeal { get; set; }
     public string? AppealBlockedReason { get; set; }
+    public bool HasFundingAgreement { get; set; }
 }

@@ -8,4 +8,5 @@ public record ApplicantResponseDto(
     DateTime? SubmittedAt,
     bool IsSubmitted,
     ApplicationState State,
-    List<ItemResponseDto> Items);
+    List<ItemResponseDto> Items,
+    bool HasFundingAgreement);

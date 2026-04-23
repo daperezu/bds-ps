@@ -22,6 +22,19 @@
     var isReadOnly = Model.IsSubmitted || Model.State == ApplicationState.AppealOpen;
 }
 
+@if (Model.State == ApplicationState.AgreementExecuted)
+{
+    <div class="alert alert-success" data-testid="signing-banner-executed">
+        Your funding agreement has been executed.
+    </div>
+}
+else if (Model.State == ApplicationState.ResponseFinalized && Model.HasFundingAgreement)
+{
+    <div class="alert alert-info" data-testid="signing-banner-ready">
+        Your funding agreement is ready to sign below.
+    </div>
+}
+
 <form method="post" asp-action="Submit" asp-route-id="@Model.ApplicationId" id="applicantResponseForm">
     @Html.AntiForgeryToken()
     <table class="table table-striped response-items">
@@ -114,6 +127,27 @@
         <a asp-action="Appeal" asp-route-id="@Model.ApplicationId" class="alert-link">View dispute thread</a>
     </div>
 }
+
+<div class="mt-3" id="funding-agreement-panel-container">
+    <div data-async-panel-url="@Url.RouteUrl(new { controller = "FundingAgreement", action = "Panel", applicationId = Model.ApplicationId })">
+        Loading funding agreement panel...
+    </div>
+</div>
+
+<script>
+(function () {
+    var container = document.querySelector('#funding-agreement-panel-container > div[data-async-panel-url]');
+    if (!container) return;
+    var url = container.getAttribute('data-async-panel-url');
+    fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'text/html' } })
+        .then(function (r) { return r.ok ? r.text() : ''; })
+        .then(function (html) {
+            var target = document.getElementById('funding-agreement-panel-container');
+            if (target) target.innerHTML = html;
+        })
+        .catch(function () { /* non-disclosing: silently drop on error */ });
+})();
+</script>
 
 @section Scripts {
     <script>

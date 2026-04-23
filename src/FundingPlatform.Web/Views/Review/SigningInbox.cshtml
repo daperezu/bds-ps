@@ -2,11 +2,14 @@
 
 @{
     ViewData["Title"] = "Signing Inbox";
+    ViewData["ActiveTab"] = "Signing";
     var page = (int)(ViewData["SigningInbox.Page"] ?? 1);
     var pageSize = (int)(ViewData["SigningInbox.PageSize"] ?? 25);
     var totalCount = (int)(ViewData["SigningInbox.TotalCount"] ?? 0);
     var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 }
+
+@await Html.PartialAsync("_ReviewTabs")
 
 <h2>Signing Inbox</h2>
 
