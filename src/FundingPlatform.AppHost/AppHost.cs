@@ -4,6 +4,9 @@ var sqlServer = builder.AddSqlServer("sqlserver")
                        .WithDataVolume("fundingplatform-sqldata")
                        .AddDatabase("fundingdb");
 
+builder.AddSqlProject<Projects.FundingPlatform_Database>("database-schema")
+       .WithReference(sqlServer);
+
 var syncfusionLicense = builder.Configuration["Syncfusion:LicenseKey"] ?? "";
 var localeCode = builder.Configuration["FundingAgreement:LocaleCode"] ?? "es-CO";
 var currencyIsoCode = builder.Configuration["FundingAgreement:CurrencyIsoCode"] ?? "COP";

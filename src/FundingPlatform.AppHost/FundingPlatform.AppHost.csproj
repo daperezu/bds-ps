@@ -2,10 +2,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FundingPlatform.Web\FundingPlatform.Web.csproj" />
+    <ProjectReference Include="..\FundingPlatform.Database\FundingPlatform.Database.sqlproj"
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.SqlServer" Version="13.2.2" />
+    <PackageReference Include="CommunityToolkit.Aspire.Hosting.SqlDatabaseProjects" Version="13.1.1" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -14,6 +17,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UserSecretsId>e5507dcb-4fb8-492c-b094-a2c7be052bde</UserSecretsId>
+    <!-- FundingPlatform.Database is a sqlproj, not an exe; Aspire emits ASPIRE004 for the ProjectReference
+         even though CommunityToolkit.Aspire.Hosting.SqlDatabaseProjects uses it to generate Projects.FundingPlatform_Database. -->
+    <NoWarn>$(NoWarn);ASPIRE004</NoWarn>
   </PropertyGroup>
 
 </Project>
