@@ -126,3 +126,71 @@ No new entities, tables, or domain concepts are introduced. This feature compose
 - Notifications to applicants or reviewers about signing-stage events (email, in-app toasts, etc.). Remain deferred per spec 006's assumptions list.
 - Reviewer-assist tooling on the embedded panel — content hashing, side-by-side diff between generated and signed PDFs, version stamping. Remain out of scope per spec 006.
 - Any change to the underlying signing behavior (upload intake rules, version-mismatch logic, regeneration lockdown, audit-trail shape). This feature is wayfinding only.
+
+---
+
+## Amendment 1 — Reviewer queue for applications awaiting Funding Agreement generation
+
+**Amended**: 2026-04-24
+**Trigger**: Post-ship field report. Once an applicant submits their response and the application transitions to `ResponseFinalized`, the application disappears from every reviewer-visible list on `/Review`. The **Initial Review Queue** filters to `Submitted` only (see `src/FundingPlatform.Application/Services/ReviewService.cs:24-27`); the **Signing Inbox** filters to applications that already have a pending signed upload (see `src/FundingPlatform.Infrastructure/Persistence/Repositories/SignedUploadRepository.cs:42`), which requires a Funding Agreement to already exist. The agreement-generation action (`FundingAgreementController.Generate`, authorized for the assigned reviewer and for admins per `Application.CanUserGenerateFundingAgreement` at `src/FundingPlatform.Domain/Entities/Application.cs:462-467`) therefore has no discoverable entry point from any reviewer-accessible page. `/Application/Details/{id}` is `[Authorize(Roles = "Applicant")]` (see `src/FundingPlatform.Web/Controllers/ApplicationController.cs:12-13`) and cannot serve as a reviewer entry either. Result: generation is a dead-letter action whose preconditions can be met but whose trigger is effectively unreachable without URL guessing, which in turn leaves every applicant stuck on the *"No agreement has been generated yet."* state covered by acceptance scenario 3 of User Story 2.
+
+**Scope of the amendment**: Add a third `/Review` sub-tab — a peer to the two introduced in FR-001 — that lists applications awaiting Funding Agreement generation and links each row to the existing `/Applications/{applicationId}/FundingAgreement` page, where the Generate button is already exposed to the assigned reviewer and admins per spec 005. No new server-side generation entry point, no change to authorization of existing surfaces, no schema change.
+
+**Relationship to the original Out of Scope list**: This amendment deliberately narrows the original out-of-scope clause *"New pipeline stages, new review flavors, new inbox types. This feature only wires two existing surfaces together."* — the new tab is, strictly, a third inbox type. The narrowing is intentional: without this tab, the wayfinding loop the original spec defined (US1 reviewer discoverability → US2 applicant signing → eventual execution) cannot be closed in practice. The rest of that out-of-scope clause stands.
+
+### User Story 4 - Reviewer discovers which applications are ready for agreement generation (Priority: P1)
+
+An assigned reviewer signs in after an applicant has submitted their response. They click **Review** in the main navigation and see a new sub-tab labeled **Generate Agreement** positioned between **Initial Review Queue** and **Signing Inbox**. Selecting it shows a paginated list of the applications the reviewer is assigned to that are in state `ResponseFinalized` with no Funding Agreement record yet, with columns *Application title · Applicant · Response finalized on · Open →*. The reviewer clicks **Open** on a row and lands on `/Applications/{applicationId}/FundingAgreement`, where the Generate button shipped by spec 005 is already visible to their role. After they generate the agreement, the same application leaves this queue on the next page load and becomes visible to the applicant via the embedded panel on `/ApplicantResponse/Index/{id}` (as already covered by User Story 2), closing the end-to-end wayfinding loop.
+
+**Why this priority**: Without this, User Story 2's happy path cannot be reached in practice. An applicant whose response is finalized sees *"No agreement has been generated yet."* indefinitely because no reviewer has a navigable path to the generation action. This gap blocks every application from progressing past `ResponseFinalized` regardless of how well US1 and US2 are implemented.
+
+**Independent Test**: Seed an application at `ResponseFinalized` with no Funding Agreement and a reviewer assigned to it. Starting from `/`, the assigned reviewer reaches the Generate Agreement tab in at most two clicks (Review → Generate Agreement) and sees the application listed. Clicking **Open** lands on the Funding Agreement page with the Generate button visible. A second, unassigned reviewer does not see the application in their own list. An admin user sees the application regardless of assignment.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user with the `Reviewer` role assigned to an application in state `ResponseFinalized` with no Funding Agreement, **When** they navigate to `/Review` and click the **Generate Agreement** sub-tab, **Then** the page lists the application with columns *Application title*, *Applicant*, *Response finalized on*, and an **Open** action linking to `/Applications/{applicationId}/FundingAgreement`.
+2. **Given** a user with the `Reviewer` role who is NOT assigned to a matching application, **When** they open the **Generate Agreement** tab, **Then** that application does NOT appear in their list.
+3. **Given** a user with the `Admin` role, **When** they open the **Generate Agreement** tab, **Then** all applications in state `ResponseFinalized` with no Funding Agreement are listed regardless of reviewer assignment.
+4. **Given** an assigned reviewer viewing the **Generate Agreement** tab, **When** they click **Open** on a row and then click **Generate agreement** on the Funding Agreement page, **Then** the application is removed from the **Generate Agreement** tab on the next page load, and — per User Story 2 — appears on the applicant's response page with the *"ready to sign"* banner.
+5. **Given** a reviewer with no applications matching the tab's criteria, **When** they open **Generate Agreement**, **Then** the empty-state message *"No applications are waiting for agreement generation."* renders with the test hook `data-testid="generate-agreement-empty"`.
+6. **Given** an application in state `AppealOpen` with no Funding Agreement, **When** the assigned reviewer opens **Generate Agreement**, **Then** the application does NOT appear in the list (`AppealOpen` is a distinct state; its discoverability is explicitly out of scope for this amendment).
+7. **Given** an application in state `ResponseFinalized` whose applicant rejected every item (so `Application.CanGenerateFundingAgreement()` would return false on the preconditions check), **When** the assigned reviewer opens **Generate Agreement**, **Then** the application DOES appear in the list — the tab's filter is scoped by state plus missing agreement only. The Funding Agreement page surfaces the precondition blocker when the reviewer clicks **Open**.
+8. **Given** a user with only the `Applicant` role, **When** they attempt to reach `/Review/GenerateAgreement` directly, **Then** access is denied, matching the existing `/Review` authorization posture.
+9. **Given** two applications the same reviewer is assigned to — one finalized earlier and one finalized later — **When** the reviewer opens **Generate Agreement**, **Then** the earlier-finalized application appears above the later-finalized one (ascending order of response-finalized-on so long-waiting applicants are not starved).
+
+### Additional Functional Requirements
+
+- **FR-008**: The `/Review` landing MUST expose a third peer sub-tab — **Generate Agreement** — positioned between **Initial Review Queue** and **Signing Inbox** in `_ReviewTabs.cshtml`. The tab is served at route `/Review/GenerateAgreement` and participates in the same route-level authorization as its siblings (`Reviewer,Admin`). No new authorization surface is introduced.
+- **FR-009**: The **Generate Agreement** tab MUST list applications matching ALL of the following, paginated using the same page size as the sibling tabs, in ascending order of response-finalized-on (oldest first):
+  - Application state equals `ResponseFinalized`; AND
+  - The application has no Funding Agreement record associated; AND
+  - Either the signed-in user is assigned as a reviewer on the application, OR the signed-in user has the `Admin` role.
+- **FR-010**: Each row in the **Generate Agreement** tab MUST display the application title, the applicant's display name, the timestamp the response was finalized, and an **Open** action. The **Open** action MUST route to `/Applications/{applicationId}/FundingAgreement` — the same target used by the **Signing Inbox**'s Open link per the existing implementation — so reviewers reach a page where the Generate button is already role-gated and ready.
+- **FR-011**: The **Generate Agreement** tab MUST NOT introduce any new server-side agreement-generation entry point or any new mutation endpoint. It is a discovery surface only; the creation action remains `FundingAgreementController.Generate` as shipped by spec 005.
+- **FR-012**: The **Generate Agreement** tab MUST render the empty-state message *"No applications are waiting for agreement generation."* — with the test hook `data-testid="generate-agreement-empty"` — when no rows match the filter in FR-009.
+- **FR-013**: Implementation MUST NOT modify the authorization of `/Application/Details/{id}`. The applicant-only gate on that route stands; reviewers and admins reach agreement generation exclusively via `/Applications/{applicationId}/FundingAgreement`.
+
+### Additional Success Criteria
+
+- **SC-008**: An assigned reviewer reaches an application ready for agreement generation in at most three clicks from any signed-in page: **Review** → **Generate Agreement** → **Open**. No URL typing required.
+- **SC-009**: For any application in state `ResponseFinalized` with no Funding Agreement, exactly one of the following is true for each reviewer: (a) the application is listed in that reviewer's **Generate Agreement** tab (assigned-reviewer case), or (b) the application is not listed in that reviewer's tab (unassigned-reviewer case). Admins always see case (a).
+- **SC-010**: The Playwright coverage for User Story 4 is added alongside the SC-007 suite and includes: (a) an assigned reviewer sees the application in the **Generate Agreement** tab with the correct columns and sort order; (b) an unassigned reviewer does not see the application; (c) an admin sees the application regardless of assignment; (d) the empty-state message and its `data-testid` render when no rows match; (e) the end-to-end chain from **Generate Agreement** → **Open** → **Generate** → the applicant's embedded panel per User Story 2 completes without navigating off the `/Review/*` and `/ApplicantResponse/Index/{id}` surfaces.
+- **SC-011**: No regressions to SC-001 through SC-007. The **Initial Review Queue** and **Signing Inbox** tabs' content, authorization, URLs, and Playwright coverage are unchanged.
+
+### Amendment Assumptions
+
+- `Application` either already exposes a response-finalized-on timestamp or can derive one — the implementation plan must verify and name the chosen source, with *"latest `ApplicantResponse.SubmittedAt` for the application"* as the permitted fallback if no dedicated domain field exists.
+- A reviewer-to-application assignment relation already exists and is queryable, since `Application.CanUserGenerateFundingAgreement(isAdministrator, isReviewerAssignedToThisApplication)` already branches on it. The implementation plan must identify the exact relation and reuse it rather than introduce a new one.
+- The `/Applications/{applicationId}/FundingAgreement` page already exposes the **Generate** button to the assigned reviewer and to admins when `Application.CanGenerateFundingAgreement()` preconditions are met. This amendment does not change that.
+- Pagination on the sibling tabs uses a consistent page size and partial; the new tab adopts the same convention rather than introducing its own.
+
+### Amendment Out of Scope
+
+- A reviewer queue for applications in state `AppealOpen`. Different workflow phase; its discoverability gap is acknowledged and will be addressed in a separate amendment or feature if raised.
+- A reviewer queue for applications where the Funding Agreement has been generated but the applicant has not yet uploaded a signed PDF. The reviewer holds no action in that phase; the applicant is the blocker.
+- Auto-generation of the Funding Agreement on the `ResponseFinalized` transition. Spec 005's *"Administrator Generates"* user-story framing stands; this amendment only makes the existing manual trigger discoverable.
+- Any change to `/Application/Details/{id}` authorization. That route remains applicant-only; reviewers reach generation via `/Applications/{applicationId}/FundingAgreement`.
+- Schema changes. This amendment keeps the *"no schema changes"* invariant carried forward from 007's plan.
+- Notifications (email, in-app toast) when an application enters the new queue. Deferred in line with the original 007 out-of-scope list.
+- Pending-count badges on the new tab. Deferred for the same reason stated in the original spec's Out of Scope list.
+- Reordering or renaming of the two existing `/Review` sub-tabs. Their positions, labels, content, and routes remain unchanged.
