@@ -56,6 +56,33 @@ public class ReviewController : Controller
     }
 
     [HttpGet]
+    [Route("Review/GenerateAgreement")]
+    public async Task<IActionResult> GenerateAgreement(int page = 1)
+    {
+        if (page < 1) page = 1;
+
+        var (items, totalCount) = await _reviewService.GetGenerateAgreementQueueAsync(page);
+
+        const int pageSize = 25;
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+        var viewModel = new GenerateAgreementQueueViewModel
+        {
+            Applications = items.Select(i => new GenerateAgreementQueueItemViewModel
+            {
+                ApplicationId = i.ApplicationId,
+                ApplicantDisplayName = i.ApplicantDisplayName,
+                ResponseFinalizedAtUtc = i.ResponseFinalizedAtUtc,
+            }).ToList(),
+            CurrentPage = page,
+            TotalPages = totalPages,
+            TotalCount = totalCount,
+        };
+
+        return View(viewModel);
+    }
+
+    [HttpGet]
     public async Task<IActionResult> Index(int page = 1)
     {
         if (page < 1) page = 1;
