@@ -1,67 +1,81 @@
+@using FundingPlatform.Domain.Enums
 @model FundingPlatform.Web.ViewModels.ApplicationListViewModel
 
 @{
     ViewData["Title"] = "My Applications";
+    var headerActions = new[]
+    {
+        new ActionItem("Create New Application", ActionClass.Primary,
+            Url: Url.Action("Create"),
+            Icon: "ti ti-plus"),
+    };
 }
 
-<h2>My Applications</h2>
-
-<div class="mb-3">
-    <a asp-action="Create" class="btn btn-primary">Create New Application</a>
-</div>
+@await Html.PartialAsync("Components/_PageHeader",
+    new PageHeaderViewModel("My Applications", PrimaryActions: headerActions))
 
 @if (Model.Applications.Count == 0)
 {
-    <div class="alert alert-info">
-        You have no applications yet. Click "Create New Application" to get started.
-    </div>
+    @await Html.PartialAsync("Components/_EmptyState",
+        new EmptyStateViewModel(
+            Headline: "No applications yet",
+            Body: "Create your first funding application to get started.",
+            Icon: "ti ti-files",
+            PrimaryAction: new ActionItem("Create your first application", ActionClass.Primary,
+                Url: Url.Action("Create"),
+                Icon: "ti ti-plus")))
 }
 else
 {
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Status</th>
-                <th>Items</th>
-                <th>Created</th>
-                <th>Last Updated</th>
-                <th>Submitted</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var app in Model.Applications)
-            {
-                <tr>
-                    <td>@app.Id</td>
-                    <td>
-                        <span class="badge @(app.State == "Draft" ? "bg-secondary" : "bg-success")">
-                            @app.State
-                        </span>
-                    </td>
-                    <td>@app.ItemCount</td>
-                    <td>@app.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                    <td>@app.UpdatedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                    <td>
-                        @if (app.SubmittedAt.HasValue)
-                        {
-                            @app.SubmittedAt.Value.ToString("yyyy-MM-dd HH:mm")
-                        }
-                        else
-                        {
-                            <span class="text-muted">-</span>
-                        }
-                    </td>
-                    <td>
-                        <a asp-action="Details" asp-route-id="@app.Id" class="btn btn-sm btn-info">View</a>
-                        @if (app.State == "Draft")
-                        {
-                            <a asp-action="Edit" asp-route-id="@app.Id" class="btn btn-sm btn-warning">Edit</a>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table card-table table-vcenter">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Status</th>
+                        <th>Items</th>
+                        <th>Created</th>
+                        <th>Last Updated</th>
+                        <th>Submitted</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var app in Model.Applications)
+                    {
+                        <tr>
+                            <td>@app.Id</td>
+                            <td>
+                                @{
+                                    var state = Enum.Parse<ApplicationState>(app.State);
+                                }
+                                @await Html.PartialAsync("Components/_StatusPill", new StatusPillViewModel(state))
+                            </td>
+                            <td>@app.ItemCount</td>
+                            <td>@app.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@app.UpdatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>
+                                @if (app.SubmittedAt.HasValue)
+                                {
+                                    @app.SubmittedAt.Value.ToString("yyyy-MM-dd HH:mm")
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">-</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@app.Id" class="btn btn-sm btn-outline-primary">View</a>
+                                @if (app.State == nameof(ApplicationState.Draft))
+                                {
+                                    <a asp-action="Edit" asp-route-id="@app.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 }

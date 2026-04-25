@@ -1,0 +1,38 @@
+@model PageHeaderViewModel
+<div class="page-header" data-testid="page-header">
+    <div class="row g-2 align-items-center">
+        <div class="col">
+            <h2 class="page-title text-truncate" data-testid="page-title">@Model.Title</h2>
+            @if (!string.IsNullOrWhiteSpace(Model.Subtitle))
+            {
+                <div class="page-subtitle text-secondary mt-1" data-testid="page-subtitle">@Model.Subtitle</div>
+            }
+            @if (Model.Breadcrumbs is { Count: > 0 } crumbs)
+            {
+                <ol class="breadcrumb mt-2 mb-0" data-testid="breadcrumbs">
+                    @for (var i = 0; i < crumbs.Count; i++)
+                    {
+                        var crumb = crumbs[i];
+                        var isLast = i == crumbs.Count - 1;
+                        <li class="breadcrumb-item @(isLast ? "active" : null)">
+                            @if (!isLast && !string.IsNullOrWhiteSpace(crumb.Url))
+                            {
+                                <a href="@crumb.Url">@crumb.Label</a>
+                            }
+                            else
+                            {
+                                @crumb.Label
+                            }
+                        </li>
+                    }
+                </ol>
+            }
+        </div>
+        @if (Model.PrimaryActions is { Count: > 0 } actions)
+        {
+            <div class="col-auto" data-testid="page-header-actions">
+                @await Html.PartialAsync("Components/_ActionBar", new ActionBarViewModel(actions))
+            </div>
+        }
+    </div>
+</div>

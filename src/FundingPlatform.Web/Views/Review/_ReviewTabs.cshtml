@@ -5,20 +5,26 @@
     var signingActive = activeTab == "Signing" ? "active" : string.Empty;
 }
 
-<ul class="nav nav-pills mb-3" role="tablist" data-testid="review-tabs">
+<ul class="nav nav-pills nav-fill mb-3" role="tablist" data-testid="review-tabs">
     <li class="nav-item">
         <a class="nav-link @initialActive"
            data-testid="review-tab-initial"
-           href="@Url.Action("Index", "Review")">Initial Review Queue</a>
+           href="@Url.Action("Index", "Review")">
+            <i class="ti ti-clipboard-check me-1"></i>Initial Review Queue
+        </a>
     </li>
     <li class="nav-item">
         <a class="nav-link @generateActive"
            data-testid="review-tab-generate"
-           href="@Url.Action("GenerateAgreement", "Review")">Generate Agreement</a>
+           href="@Url.Action("GenerateAgreement", "Review")">
+            <i class="ti ti-file-text me-1"></i>Generate Agreement
+        </a>
     </li>
     <li class="nav-item">
         <a class="nav-link @signingActive"
            data-testid="review-tab-signing"
-           href="@Url.Action("SigningInbox", "Review")">Signing Inbox</a>
+           href="@Url.Action("SigningInbox", "Review")">
+            <i class="ti ti-pen me-1"></i>Signing Inbox
+        </a>
     </li>
 </ul>

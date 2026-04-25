@@ -1,0 +1,91 @@
+@model ActionBarViewModel
+@{
+    string ButtonClassesFor(ActionClass c) => c switch
+    {
+        ActionClass.Primary => "btn btn-primary",
+        ActionClass.Secondary => "btn btn-outline-secondary",
+        ActionClass.Destructive => "btn btn-danger",
+        ActionClass.StateLocking => "btn btn-warning",
+        _ => "btn",
+    };
+
+    string DefaultIconFor(ActionClass c) => c switch
+    {
+        ActionClass.Destructive => "ti ti-trash",
+        ActionClass.StateLocking => "ti ti-lock",
+        _ => string.Empty,
+    };
+
+    string AlignmentClass = Model.Alignment switch
+    {
+        ActionBarAlignment.Start => "justify-content-start",
+        ActionBarAlignment.End => "justify-content-end",
+        ActionBarAlignment.SpaceBetween => "justify-content-between",
+        _ => "justify-content-end",
+    };
+
+    foreach (var action in Model.Actions)
+    {
+        if ((action.Class == ActionClass.Destructive || action.Class == ActionClass.StateLocking)
+            && string.IsNullOrWhiteSpace(action.ConfirmDialogId))
+        {
+            throw new InvalidOperationException(
+                $"_ActionBar: ActionItem '{action.Label}' (Class={action.Class}) requires ConfirmDialogId per FR-010.");
+        }
+    }
+}
+<div class="btn-list d-flex @AlignmentClass"
+     data-testid="action-bar"
+     data-alignment="@(Model.Alignment.ToString().ToLowerInvariant())">
+    @foreach (var action in Model.Actions)
+    {
+        var classes = ButtonClassesFor(action.Class);
+        var icon = action.Icon ?? DefaultIconFor(action.Class);
+        var hasConfirm = !string.IsNullOrWhiteSpace(action.ConfirmDialogId);
+        if (!string.IsNullOrWhiteSpace(action.Url) && !hasConfirm)
+        {
+            <a class="@classes"
+               href="@action.Url"
+               data-testid="action-item"
+               data-action-class="@action.Class.ToString().ToLowerInvariant()">
+                @if (!string.IsNullOrWhiteSpace(icon))
+                {
+                    <i class="@icon me-1"></i>
+                }
+                @action.Label
+            </a>
+        }
+        else if (hasConfirm)
+        {
+            <button type="button"
+                    class="@classes"
+                    data-bs-toggle="modal"
+                    data-bs-target="#@action.ConfirmDialogId"
+                    data-testid="action-item"
+                    data-action-class="@action.Class.ToString().ToLowerInvariant()"
+                    data-confirm-dialog-id="@action.ConfirmDialogId">
+                @if (!string.IsNullOrWhiteSpace(icon))
+                {
+                    <i class="@icon me-1"></i>
+                }
+                @action.Label
+            </button>
+        }
+        else if (!string.IsNullOrWhiteSpace(action.FormController) && !string.IsNullOrWhiteSpace(action.FormAction))
+        {
+            <form asp-controller="@action.FormController" asp-action="@action.FormAction" asp-all-route-data="@(action.FormRouteValues as Dictionary<string, string>)" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit"
+                        class="@classes"
+                        data-testid="action-item"
+                        data-action-class="@action.Class.ToString().ToLowerInvariant()">
+                    @if (!string.IsNullOrWhiteSpace(icon))
+                    {
+                        <i class="@icon me-1"></i>
+                    }
+                    @action.Label
+                </button>
+            </form>
+        }
+    }
+</div>

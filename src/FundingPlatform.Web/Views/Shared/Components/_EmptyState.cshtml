@@ -1,0 +1,14 @@
+@model EmptyStateViewModel
+<div class="empty" data-testid="empty-state">
+    <div class="empty-icon">
+        <i class="@Model.Icon" style="font-size: 2.5rem;"></i>
+    </div>
+    <p class="empty-title" data-testid="empty-state-headline">@Model.Headline</p>
+    <p class="empty-subtitle text-secondary" data-testid="empty-state-body">@Model.Body</p>
+    @if (Model.PrimaryAction is not null)
+    {
+        <div class="empty-action">
+            @await Html.PartialAsync("Components/_ActionBar", new ActionBarViewModel(new[] { Model.PrimaryAction }))
+        </div>
+    }
+</div>

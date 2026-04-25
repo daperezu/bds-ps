@@ -1,3 +1,4 @@
+@using FundingPlatform.Domain.Enums
 @model FundingPlatform.Web.ViewModels.ReviewQueueViewModel
 
 @{
@@ -7,57 +8,65 @@
 
 @await Html.PartialAsync("_ReviewTabs")
 
-<h2>Review Queue</h2>
-<p class="text-muted page-info">@Model.TotalCount submitted application(s)</p>
+@await Html.PartialAsync("Components/_PageHeader",
+    new PageHeaderViewModel(
+        Title: "Review Queue",
+        Subtitle: $"{Model.TotalCount} submitted application(s)"))
 
 @if (Model.Applications.Count == 0)
 {
-    <div class="alert alert-info">
-        No applications awaiting review.
-    </div>
+    @await Html.PartialAsync("Components/_EmptyState",
+        new EmptyStateViewModel(
+            Headline: "No applications awaiting review",
+            Body: "Submitted applications will appear here when applicants finish their drafts.",
+            Icon: "ti ti-clipboard-check"))
 }
 else
 {
-    <table class="table table-striped review-queue">
-        <thead>
-            <tr>
-                <th>Application</th>
-                <th>Applicant</th>
-                <th>Performance Score</th>
-                <th>Submitted</th>
-                <th>Items</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var app in Model.Applications)
-            {
-                <tr>
-                    <td>#@app.ApplicationId</td>
-                    <td>@app.ApplicantName</td>
-                    <td>
-                        @if (app.ApplicantPerformanceScore.HasValue)
-                        {
-                            @app.ApplicantPerformanceScore.Value.ToString("F2")
-                        }
-                        else
-                        {
-                            <span class="text-muted">N/A</span>
-                        }
-                    </td>
-                    <td>@app.SubmittedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                    <td>@app.ItemCount</td>
-                    <td>
-                        <a asp-action="Review" asp-route-id="@app.ApplicationId" class="btn btn-sm btn-primary">Review</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table card-table table-vcenter table-sm review-queue">
+                <thead>
+                    <tr>
+                        <th>Application</th>
+                        <th>Applicant</th>
+                        <th>Performance Score</th>
+                        <th>Submitted</th>
+                        <th>Items</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var app in Model.Applications)
+                    {
+                        <tr>
+                            <td>#@app.ApplicationId</td>
+                            <td>@app.ApplicantName</td>
+                            <td>
+                                @if (app.ApplicantPerformanceScore.HasValue)
+                                {
+                                    @app.ApplicantPerformanceScore.Value.ToString("F2")
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">N/A</span>
+                                }
+                            </td>
+                            <td>@app.SubmittedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@app.ItemCount</td>
+                            <td>
+                                <a asp-action="Review" asp-route-id="@app.ApplicationId" class="btn btn-sm btn-primary">Review</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     @if (Model.TotalPages > 1)
     {
-        <nav class="pagination" aria-label="Review queue pagination">
+        <nav class="pagination mt-3" aria-label="Review queue pagination">
             <ul class="pagination">
                 @if (Model.CurrentPage > 1)
                 {

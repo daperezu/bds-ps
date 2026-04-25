@@ -1,0 +1,42 @@
+@model DataTableViewModel
+<div class="card" data-testid="data-table">
+    @if (!string.IsNullOrWhiteSpace(Model.Caption))
+    {
+        <div class="card-header">
+            <h3 class="card-title mb-0">@Model.Caption</h3>
+        </div>
+    }
+    @if (Model.Rows.Count == 0 && Model.EmptyState is not null)
+    {
+        <div class="card-body" data-testid="data-table-empty">
+            @await Html.PartialAsync("Components/_EmptyState", Model.EmptyState)
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table card-table table-vcenter @(Model.Density == DataTableDensity.Compact ? "table-sm" : null)"
+                   data-testid="data-table-table">
+                <thead>
+                    <tr>
+                        @foreach (var header in Model.ColumnHeaders)
+                        {
+                            <th>@header</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Rows)
+                    {
+                        <tr>
+                            @foreach (var cell in row)
+                            {
+                                <td>@cell</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
