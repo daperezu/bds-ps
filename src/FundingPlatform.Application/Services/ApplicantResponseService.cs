@@ -257,7 +257,8 @@ public class ApplicantResponseService
             latestResponse?.SubmittedAt,
             latestResponse is not null,
             application.State,
-            items);
+            items,
+            application.FundingAgreement is not null);
     }
 
     private static AppealDto MapAppealToDto(Appeal appeal, AppEntity application)

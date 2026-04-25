@@ -1,0 +1,61 @@
+@model FundingPlatform.Web.ViewModels.GenerateAgreementQueueViewModel
+
+@{
+    ViewData["Title"] = "Generate Agreement";
+    ViewData["ActiveTab"] = "Generate";
+}
+
+@await Html.PartialAsync("_ReviewTabs")
+
+<h2>Generate Agreement</h2>
+
+<p class="text-muted">Applications awaiting funding agreement generation.</p>
+
+@if (Model.Applications.Count == 0)
+{
+    <p data-testid="generate-agreement-empty">No applications are waiting for agreement generation.</p>
+}
+else
+{
+    <table class="table" data-testid="generate-agreement-table">
+        <thead>
+            <tr>
+                <th>Application</th>
+                <th>Applicant</th>
+                <th>Response finalized on</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model.Applications)
+            {
+                <tr data-testid="generate-agreement-row" data-application-id="@row.ApplicationId">
+                    <td>#@row.ApplicationId</td>
+                    <td>@row.ApplicantDisplayName</td>
+                    <td>@row.ResponseFinalizedAtUtc.ToString("yyyy-MM-dd HH:mm") UTC</td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-primary"
+                           href="@Url.RouteUrl(new { controller = "FundingAgreement", action = "Details", applicationId = row.ApplicationId })">
+                            Open
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav>
+            <ul class="pagination">
+                @for (var p = 1; p <= Model.TotalPages; p++)
+                {
+                    var classes = p == Model.CurrentPage ? "page-item active" : "page-item";
+                    <li class="@classes">
+                        <a class="page-link" href="@Url.Action("GenerateAgreement", "Review", new { page = p })">@p</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+}

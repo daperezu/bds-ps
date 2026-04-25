@@ -36,6 +36,20 @@ public class ReviewService
         return (items, totalCount);
     }
 
+    public async Task<(List<GenerateAgreementQueueRowDto> Items, int TotalCount)> GetGenerateAgreementQueueAsync(int page)
+    {
+        if (page < 1) page = 1;
+
+        var (applications, totalCount) = await _applicationRepository.GetPendingAgreementPagedAsync(page, PageSize);
+
+        var items = applications.Select(a => new GenerateAgreementQueueRowDto(
+            a.Id,
+            $"{a.Applicant.FirstName} {a.Applicant.LastName}",
+            a.ApplicantResponses.Max(r => r.SubmittedAt))).ToList();
+
+        return (items, totalCount);
+    }
+
     public async Task<ReviewApplicationDto?> GetApplicationForReviewAsync(int applicationId)
     {
         var application = await _applicationRepository.GetByIdWithDetailsAsync(applicationId);

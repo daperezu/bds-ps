@@ -2,7 +2,10 @@
 
 @{
     ViewData["Title"] = "Review Queue";
+    ViewData["ActiveTab"] = "Initial";
 }
+
+@await Html.PartialAsync("_ReviewTabs")
 
 <h2>Review Queue</h2>
 <p class="text-muted page-info">@Model.TotalCount submitted application(s)</p>

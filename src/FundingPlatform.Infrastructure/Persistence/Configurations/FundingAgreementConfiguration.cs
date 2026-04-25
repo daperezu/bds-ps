@@ -23,6 +23,7 @@ public class FundingAgreementConfiguration : IEntityTypeConfiguration<FundingAgr
         builder.Property(f => f.StoragePath).IsRequired().HasMaxLength(500);
         builder.Property(f => f.GeneratedAtUtc).IsRequired();
         builder.Property(f => f.GeneratedByUserId).IsRequired().HasMaxLength(450);
+        builder.Property(f => f.GeneratedVersion).IsRequired().HasDefaultValue(1);
 
         builder.Property(f => f.RowVersion).IsRowVersion();
 
@@ -31,5 +32,14 @@ public class FundingAgreementConfiguration : IEntityTypeConfiguration<FundingAgr
             .WithOne(a => a.FundingAgreement!)
             .HasForeignKey<FundingAgreement>(f => f.ApplicationId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(f => f.SignedUploads)
+            .WithOne()
+            .HasForeignKey(u => u.FundingAgreementId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Navigation(f => f.SignedUploads)
+            .HasField("_signedUploads")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

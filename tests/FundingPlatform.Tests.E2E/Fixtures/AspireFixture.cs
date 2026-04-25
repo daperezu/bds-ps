@@ -8,16 +8,22 @@ public class AspireFixture : IAsyncDisposable
 {
     private DistributedApplication? _app;
     public string BaseUrl { get; private set; } = string.Empty;
+    public string ConnectionString { get; private set; } = string.Empty;
 
     public async Task StartAsync()
     {
+        // --EphemeralStorage=true tells the AppHost to skip both the persistent
+        // SQL data volume AND the AddSqlProject auto-deploy. Tests own the schema
+        // deployment themselves via DeployDacpacAsync below.
         var builder = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.FundingPlatform_AppHost>();
+            .CreateAsync<Projects.FundingPlatform_AppHost>(["--EphemeralStorage=true"]);
 
         _app = await builder.BuildAsync();
         await _app.StartAsync();
 
         await DeployDacpacAsync();
+
+        ConnectionString = await _app.GetConnectionStringAsync("fundingdb") ?? string.Empty;
 
         // Use http — the test environment may not trust the dev HTTPS certificate
         var webapp = _app.GetEndpoint("webapp", "http");

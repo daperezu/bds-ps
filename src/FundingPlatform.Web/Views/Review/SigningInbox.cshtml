@@ -1,0 +1,76 @@
+@model IReadOnlyList<FundingPlatform.Web.ViewModels.SigningInboxRowViewModel>
+
+@{
+    ViewData["Title"] = "Signing Inbox";
+    ViewData["ActiveTab"] = "Signing";
+    var page = (int)(ViewData["SigningInbox.Page"] ?? 1);
+    var pageSize = (int)(ViewData["SigningInbox.PageSize"] ?? 25);
+    var totalCount = (int)(ViewData["SigningInbox.TotalCount"] ?? 0);
+    var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+}
+
+@await Html.PartialAsync("_ReviewTabs")
+
+<h2>Signing Inbox</h2>
+
+<p class="text-muted">Pending signed agreements awaiting review.</p>
+
+@if (Model.Count == 0)
+{
+    <p data-testid="signing-inbox-empty">No pending signed uploads.</p>
+}
+else
+{
+    <table class="table" data-testid="signing-inbox-table">
+        <thead>
+            <tr>
+                <th>Application</th>
+                <th>Applicant</th>
+                <th>Uploaded</th>
+                <th>Version match</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model)
+            {
+                <tr data-testid="signing-inbox-row" data-application-id="@row.ApplicationId">
+                    <td>#@row.ApplicationId</td>
+                    <td>@row.ApplicantDisplayName</td>
+                    <td>@row.UploadedAtUtc.ToString("yyyy-MM-dd HH:mm") UTC</td>
+                    <td>
+                        @if (row.VersionMatchesCurrent)
+                        {
+                            <span class="badge bg-success">Matches current</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">Stale (v@row.GeneratedVersionAtUpload)</span>
+                        }
+                    </td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-primary"
+                           href="@Url.RouteUrl(new { controller = "FundingAgreement", action = "Details", applicationId = row.ApplicationId })">
+                            Open
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (totalPages > 1)
+    {
+        <nav>
+            <ul class="pagination">
+                @for (var p = 1; p <= totalPages; p++)
+                {
+                    var classes = p == page ? "page-item active" : "page-item";
+                    <li class="@classes">
+                        <a class="page-link" href="@Url.Action("SigningInbox", "Review", new { page = p, pageSize })">@p</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+}

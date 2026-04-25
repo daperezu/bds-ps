@@ -1,19 +1,85 @@
 using System.Security.Claims;
 using FundingPlatform.Application.Services;
+using FundingPlatform.Application.SignedUploads.Queries;
 using FundingPlatform.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FundingPlatform.Web.Controllers;
 
-[Authorize(Roles = "Reviewer")]
+[Authorize(Roles = "Reviewer,Admin")]
 public class ReviewController : Controller
 {
     private readonly ReviewService _reviewService;
+    private readonly SignedUploadService _signedUploadService;
 
-    public ReviewController(ReviewService reviewService)
+    public ReviewController(
+        ReviewService reviewService,
+        SignedUploadService signedUploadService)
     {
         _reviewService = reviewService;
+        _signedUploadService = signedUploadService;
+    }
+
+    [HttpGet]
+    [Route("Review/SigningInbox")]
+    public async Task<IActionResult> SigningInbox(int page = 1, int pageSize = 25)
+    {
+        if (page < 1) page = 1;
+        if (pageSize < 1 || pageSize > 100) pageSize = 25;
+
+        var query = new GetSigningInboxQuery(
+            CurrentUserId: GetUserId(),
+            IsAdministrator: User.IsInRole("Admin"),
+            Page: page,
+            PageSize: pageSize);
+
+        var result = await _signedUploadService.GetInboxAsync(query);
+
+        var rows = result.Rows
+            .Select(r => new SigningInboxRowViewModel
+            {
+                ApplicationId = r.ApplicationId,
+                ApplicantDisplayName = r.ApplicantDisplayName,
+                SignedUploadId = r.SignedUploadId,
+                UploadedAtUtc = r.UploadedAtUtc,
+                GeneratedVersionAtUpload = r.GeneratedVersionAtUpload,
+                VersionMatchesCurrent = r.VersionMatchesCurrent
+            })
+            .ToList();
+
+        ViewData["SigningInbox.Page"] = page;
+        ViewData["SigningInbox.PageSize"] = pageSize;
+        ViewData["SigningInbox.TotalCount"] = result.TotalCount;
+
+        return View(rows);
+    }
+
+    [HttpGet]
+    [Route("Review/GenerateAgreement")]
+    public async Task<IActionResult> GenerateAgreement(int page = 1)
+    {
+        if (page < 1) page = 1;
+
+        var (items, totalCount) = await _reviewService.GetGenerateAgreementQueueAsync(page);
+
+        const int pageSize = 25;
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+        var viewModel = new GenerateAgreementQueueViewModel
+        {
+            Applications = items.Select(i => new GenerateAgreementQueueItemViewModel
+            {
+                ApplicationId = i.ApplicationId,
+                ApplicantDisplayName = i.ApplicantDisplayName,
+                ResponseFinalizedAtUtc = i.ResponseFinalizedAtUtc,
+            }).ToList(),
+            CurrentPage = page,
+            TotalPages = totalPages,
+            TotalCount = totalCount,
+        };
+
+        return View(viewModel);
     }
 
     [HttpGet]

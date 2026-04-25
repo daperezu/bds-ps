@@ -1,4 +1,5 @@
-@model FundingPlatform.Web.ViewModels.FundingAgreementPanelViewModel
+@using FundingPlatform.Domain.Enums
+@model FundingPlatform.Web.ViewModels.SigningStagePanelViewModel
 
 <div class="card mb-4" id="funding-agreement-panel" data-application-id="@Model.ApplicationId">
     <div class="card-header">
@@ -18,10 +19,17 @@
             </div>
         }
 
+        @if (Model.IsExecuted)
+        {
+            <div class="alert alert-success" role="alert" data-testid="funding-agreement-executed-badge">
+                Agreement executed.
+            </div>
+        }
+
         @if (Model.AgreementExists)
         {
             <p class="mb-2" data-testid="funding-agreement-metadata">
-                <strong>Status:</strong> Generated
+                <strong>Status:</strong> @(Model.IsExecuted ? "Executed" : "Generated")
                 @if (Model.GeneratedAtUtc.HasValue)
                 {
                     <text> &mdash; @Model.GeneratedAtUtc.Value.ToString("yyyy-MM-dd HH:mm") UTC</text>
@@ -30,25 +38,143 @@
                 {
                     <text> by @Model.GeneratedByDisplayName</text>
                 }
+                <span class="text-muted"> &middot; version @Model.GeneratedVersion</span>
             </p>
 
             @if (!string.IsNullOrWhiteSpace(Model.AgreementDownloadUrl))
             {
                 <a class="btn btn-primary" data-testid="funding-agreement-download"
-                   href="@Model.AgreementDownloadUrl">Download PDF</a>
+                   href="@Model.AgreementDownloadUrl"
+                   title="Downloading appends an AgreementDownloaded audit entry.">Download agreement</a>
             }
 
-            @if (Model.ShowActions && Model.CanRegenerate)
+            @if (Model.ShowActions)
             {
-                <form method="post" class="d-inline ms-2"
-                      action="@Url.RouteUrl(new { controller = "FundingAgreement", action = "Generate", applicationId = Model.ApplicationId })"
-                      onsubmit="return confirm('This will overwrite the current agreement. Continue?');">
+                if (Model.CanRegenerate)
+                {
+                    <form method="post" class="d-inline ms-2"
+                          action="@Url.RouteUrl(new { controller = "FundingAgreement", action = "Generate", applicationId = Model.ApplicationId })"
+                          onsubmit="return confirm('This will overwrite the current agreement. Continue?');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-warning"
+                                data-testid="funding-agreement-regenerate">
+                            Regenerate
+                        </button>
+                    </form>
+                }
+                else if (!string.IsNullOrWhiteSpace(Model.DisabledReason))
+                {
+                    <span class="text-muted ms-2" data-testid="funding-agreement-regenerate-disabled">
+                        Regenerate disabled: @Model.DisabledReason
+                    </span>
+                }
+            }
+
+            <hr />
+            <h5 class="mt-3">Signed agreement</h5>
+
+            @if (Model.IsExecuted && !string.IsNullOrWhiteSpace(Model.ApprovedSignedDownloadUrl))
+            {
+                <a class="btn btn-outline-primary"
+                   data-testid="signed-agreement-download"
+                   href="@Model.ApprovedSignedDownloadUrl">Download signed agreement</a>
+            }
+            else if (Model.PendingUpload is not null)
+            {
+                <div class="card border-info mb-3" data-testid="signed-upload-pending">
+                    <div class="card-body">
+                        <p class="mb-1"><strong>Pending reviewer decision.</strong></p>
+                        <p class="mb-1 small">
+                            @Model.PendingUpload.FileName
+                            &middot; @Model.PendingUpload.Size bytes
+                            &middot; uploaded @Model.PendingUpload.UploadedAtUtc.ToString("yyyy-MM-dd HH:mm") UTC
+                        </p>
+                        @if (Model.PendingUpload.GeneratedVersionAtUpload != Model.GeneratedVersion)
+                        {
+                            <p class="text-warning small mb-0" data-testid="signed-upload-version-mismatch">
+                                This upload references version @Model.PendingUpload.GeneratedVersionAtUpload,
+                                current version is @Model.GeneratedVersion.
+                            </p>
+                        }
+
+                        @if (Model.CanApplicantReplaceOrWithdraw)
+                        {
+                            <div class="mt-2 d-flex gap-2 flex-wrap">
+                                <form method="post"
+                                      enctype="multipart/form-data"
+                                      action="@Url.Action("ReplaceUpload", "FundingAgreement", new { applicationId = Model.ApplicationId, signedUploadId = Model.PendingUpload.SignedUploadId })">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="GeneratedVersion" value="@Model.GeneratedVersion" />
+                                    <input type="file" name="File" accept="application/pdf" required
+                                           data-testid="signed-upload-replace-file" />
+                                    <button type="submit" class="btn btn-outline-warning btn-sm"
+                                            data-testid="signed-upload-replace">Replace pending upload</button>
+                                </form>
+                                <form method="post"
+                                      action="@Url.Action("WithdrawUpload", "FundingAgreement", new { applicationId = Model.ApplicationId, signedUploadId = Model.PendingUpload.SignedUploadId })"
+                                      onsubmit="return confirm('Withdraw the pending upload?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm"
+                                            data-testid="signed-upload-withdraw">Withdraw pending upload</button>
+                                </form>
+                            </div>
+                        }
+
+                        @if (Model.CanReviewerAct)
+                        {
+                            <div class="mt-3 d-flex gap-2 flex-wrap align-items-start">
+                                <form method="post"
+                                      action="@Url.Action("Approve", "FundingAgreement", new { applicationId = Model.ApplicationId })">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="signedUploadId" value="@Model.PendingUpload.SignedUploadId" />
+                                    <input type="text" name="comment" class="form-control form-control-sm d-inline-block"
+                                           placeholder="Optional comment" style="max-width: 280px;"
+                                           data-testid="signed-upload-approve-comment" />
+                                    <button type="submit" class="btn btn-success btn-sm"
+                                            data-testid="signed-upload-approve">Approve</button>
+                                </form>
+                                <form method="post"
+                                      action="@Url.Action("Reject", "FundingAgreement", new { applicationId = Model.ApplicationId })">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="signedUploadId" value="@Model.PendingUpload.SignedUploadId" />
+                                    <textarea name="comment" class="form-control form-control-sm"
+                                              placeholder="Rejection comment (required)" rows="1"
+                                              style="max-width: 280px; display: inline-block;"
+                                              data-testid="signed-upload-reject-comment"></textarea>
+                                    <button type="submit" class="btn btn-outline-danger btn-sm"
+                                            data-testid="signed-upload-reject">Reject</button>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else if (Model.CanApplicantUpload)
+            {
+                @if (Model.LastDecision is not null && Model.LastDecision.Outcome == SigningDecisionOutcome.Rejected)
+                {
+                    <div class="alert alert-warning" data-testid="signed-upload-last-rejection">
+                        <strong>Last upload rejected.</strong>
+                        <span>@(string.IsNullOrWhiteSpace(Model.LastDecision.Comment) ? "(no comment provided)" : Model.LastDecision.Comment)</span>
+                    </div>
+                }
+                <form method="post"
+                      enctype="multipart/form-data"
+                      action="@Url.Action("Upload", "FundingAgreement", new { applicationId = Model.ApplicationId })">
                     @Html.AntiForgeryToken()
-                    <button type="submit" class="btn btn-outline-warning"
-                            data-testid="funding-agreement-regenerate">
-                        Regenerate
-                    </button>
+                    <input type="hidden" name="GeneratedVersion" value="@Model.GeneratedVersion" />
+                    <div class="mb-2">
+                        <label class="form-label">Upload signed agreement (PDF)</label>
+                        <input type="file" name="File" accept="application/pdf" required
+                               data-testid="signed-upload-file" />
+                    </div>
+                    <button type="submit" class="btn btn-success btn-sm"
+                            data-testid="signed-upload-submit">Upload signed agreement</button>
                 </form>
+            }
+            else
+            {
+                <p class="text-muted" data-testid="signed-upload-disabled">No pending signed upload.</p>
             }
         }
         else

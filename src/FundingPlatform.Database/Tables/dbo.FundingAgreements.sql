@@ -8,6 +8,7 @@ CREATE TABLE [dbo].[FundingAgreements]
     [StoragePath]       NVARCHAR(500)  NOT NULL,
     [GeneratedAtUtc]    DATETIME2(3)   NOT NULL,
     [GeneratedByUserId] NVARCHAR(450)  NOT NULL,
+    [GeneratedVersion]  INT            NOT NULL CONSTRAINT DF_FundingAgreements_GeneratedVersion DEFAULT(1),
     [RowVersion]        ROWVERSION     NOT NULL,
 
     CONSTRAINT [PK_FundingAgreements] PRIMARY KEY CLUSTERED ([Id]),
@@ -16,7 +17,8 @@ CREATE TABLE [dbo].[FundingAgreements]
         FOREIGN KEY ([ApplicationId]) REFERENCES [dbo].[Applications] ([Id]) ON DELETE NO ACTION,
     CONSTRAINT [FK_FundingAgreements_AspNetUsers]
         FOREIGN KEY ([GeneratedByUserId]) REFERENCES [dbo].[AspNetUsers] ([Id]) ON DELETE NO ACTION,
-    CONSTRAINT [CK_FundingAgreements_Size_Positive] CHECK ([Size] > 0)
+    CONSTRAINT [CK_FundingAgreements_Size_Positive] CHECK ([Size] > 0),
+    CONSTRAINT [CK_FundingAgreements_GeneratedVersion_Positive] CHECK ([GeneratedVersion] >= 1)
 );
 GO
 

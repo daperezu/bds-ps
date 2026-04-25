@@ -29,7 +29,21 @@ public class RazorFundingAgreementHtmlRenderer : IFundingAgreementHtmlRenderer
     public async Task<string> RenderAsync<TModel>(string viewPath, TModel model)
     {
         var httpContext = new DefaultHttpContext { RequestServices = _serviceProvider };
-        var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+        var routeData = new RouteData();
+
+        // Razor's default ViewLocationFormats substitute {1} = controller. When this
+        // renderer runs outside an MVC pipeline the value is otherwise empty, so any
+        // relative partial or layout reference (e.g. "Partials/_Foo", "_Layout") falls
+        // back to /Views/Shared and misses sibling files under /Views/{controller}/.
+        // Derive the controller from a "~/Views/{controller}/..." viewPath so partials
+        // and layouts resolve the same way they would inside a real controller action.
+        var controllerName = ExtractControllerFromViewPath(viewPath);
+        if (controllerName is not null)
+        {
+            routeData.Values["controller"] = controllerName;
+        }
+
+        var actionContext = new ActionContext(httpContext, routeData, new ActionDescriptor());
 
         var viewResult = viewPath.StartsWith('~') || viewPath.StartsWith('/')
             ? _viewEngine.GetView(executingFilePath: null, viewPath, isMainPage: true)
@@ -60,5 +74,16 @@ public class RazorFundingAgreementHtmlRenderer : IFundingAgreementHtmlRenderer
 
         await viewResult.View.RenderAsync(viewContext);
         return writer.ToString();
+    }
+
+    private static string? ExtractControllerFromViewPath(string viewPath)
+    {
+        var trimmed = viewPath.TrimStart('~', '/');
+        var segments = trimmed.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (segments.Length >= 3 && string.Equals(segments[0], "Views", StringComparison.OrdinalIgnoreCase))
+        {
+            return segments[1];
+        }
+        return null;
     }
 }
