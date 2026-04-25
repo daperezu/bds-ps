@@ -52,4 +52,25 @@ public class ReviewQueuePage
         var classAttr = await InitialQueueTab.GetAttributeAsync("class");
         return classAttr is not null && classAttr.Contains("active");
     }
+
+    public ILocator GenerateAgreementTab => _page.Locator("[data-testid=review-tab-generate]");
+    public ILocator GenerateAgreementTable => _page.Locator("[data-testid=generate-agreement-table]");
+    public ILocator GenerateAgreementRows => _page.Locator("[data-testid=generate-agreement-row]");
+    public ILocator GenerateAgreementEmpty => _page.Locator("[data-testid=generate-agreement-empty]");
+
+    public async Task ClickGenerateAgreementTab()
+    {
+        await GenerateAgreementTab.ClickAsync();
+    }
+
+    public async Task<bool> IsGenerateAgreementTabActive()
+    {
+        var classAttr = await GenerateAgreementTab.GetAttributeAsync("class");
+        return classAttr is not null && classAttr.Contains("active");
+    }
+
+    public async Task GotoGenerateAgreementAsync(string baseUrl)
+    {
+        await _page.GotoAsync($"{baseUrl}/Review/GenerateAgreement");
+    }
 }
