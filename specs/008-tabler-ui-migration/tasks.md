@@ -78,9 +78,9 @@ description: "Tasks for 008-tabler-ui-migration"
 
 ### Tests for User Story 1 (write first; expect red before implementation)
 
-- [ ] T024 [P] [US1] Extend `tests/FundingPlatform.Tests.E2E/PageObjects/LoginPage.cs` with an `IsAuthShellVisible()` predicate that asserts the page contains a Tabler `page-center` chrome and **does not** contain `[data-testid="sidebar"]`. This page object's existing assertions stay intact.
-- [ ] T025 [P] [US1] Extend `tests/FundingPlatform.Tests.E2E/PageObjects/RegisterPage.cs` with the same `IsAuthShellVisible()` predicate as T024.
-- [ ] T026 [US1] Create `tests/FundingPlatform.Tests.E2E/Tests/RoleAwareSidebarTests.cs` per `contracts/README.md §3 "Test contract"` with **four** `[Test]` methods:
+- [X] T024 [P] [US1] Extend `tests/FundingPlatform.Tests.E2E/PageObjects/LoginPage.cs` with an `IsAuthShellVisible()` predicate that asserts the page contains a Tabler `page-center` chrome and **does not** contain `[data-testid="sidebar"]`. This page object's existing assertions stay intact.
+- [X] T025 [P] [US1] Extend `tests/FundingPlatform.Tests.E2E/PageObjects/RegisterPage.cs` with the same `IsAuthShellVisible()` predicate as T024.
+- [X] T026 [US1] Create `tests/FundingPlatform.Tests.E2E/Tests/RoleAwareSidebarTests.cs` per `contracts/README.md §3 "Test contract"` with **four** `[Test]` methods:
   - `ApplicantSidebarShowsApplicantEntries` — log in as Applicant, navigate to `/`, assert sidebar contains exactly Home + My Applications, and does NOT contain Review Queue, Signing Inbox, or Admin.
   - `ReviewerSidebarShowsReviewerEntries` — log in as Reviewer, assert sidebar contains exactly Home + Review Queue + Signing Inbox, and does NOT contain My Applications or Admin.
   - `AdminSidebarShowsAdminEntries` — log in as Admin, assert sidebar contains Home + Review Queue + Signing Inbox + Admin.
@@ -89,10 +89,10 @@ description: "Tasks for 008-tabler-ui-migration"
 
 ### Implementation for User Story 1
 
-- [ ] T027 [US1] Create `src/FundingPlatform.Web/Views/Shared/_AuthLayout.cshtml` per `research.md §R-005`: a Razor layout file with `<!DOCTYPE html>`, head referencing `~/lib/tabler/dist/css/tabler.min.css` and `~/lib/tabler/dist/css/tabler-icons.min.css`, body wrapped in Tabler's `page page-center` chrome (centered card pattern), `@RenderBody()` inside the card. **No sidebar, no topbar.** Include scripts `~/lib/tabler/dist/js/tabler.min.js` at end of body. Title from `@ViewData["Title"]`.
-- [ ] T028 [US1] Modify `src/FundingPlatform.Web/Views/Account/Login.cshtml` to set `Layout = "_AuthLayout";` in the top `@{ }` block. Do NOT change form markup, controller post target, anti-forgery token, or any tag helper. (Form internals get re-skinned in US3.)
-- [ ] T029 [US1] Modify `src/FundingPlatform.Web/Views/Account/Register.cshtml` to set `Layout = "_AuthLayout";` in the top `@{ }` block. Same constraint as T028 — no internal markup changes.
-- [ ] T030 [US1] **REPLACE** `src/FundingPlatform.Web/Views/Shared/_Layout.cshtml` with the Tabler shell per `plan.md §Project Structure` and `contracts/README.md §3`:
+- [X] T027 [US1] Create `src/FundingPlatform.Web/Views/Shared/_AuthLayout.cshtml` per `research.md §R-005`: a Razor layout file with `<!DOCTYPE html>`, head referencing `~/lib/tabler/dist/css/tabler.min.css` and `~/lib/tabler/dist/css/tabler-icons.min.css`, body wrapped in Tabler's `page page-center` chrome (centered card pattern), `@RenderBody()` inside the card. **No sidebar, no topbar.** Include scripts `~/lib/tabler/dist/js/tabler.min.js` at end of body. Title from `@ViewData["Title"]`.
+- [X] T028 [US1] Modify `src/FundingPlatform.Web/Views/Account/Login.cshtml` to set `Layout = "_AuthLayout";` in the top `@{ }` block. Do NOT change form markup, controller post target, anti-forgery token, or any tag helper. (Form internals get re-skinned in US3.)
+- [X] T029 [US1] Modify `src/FundingPlatform.Web/Views/Account/Register.cshtml` to set `Layout = "_AuthLayout";` in the top `@{ }` block. Same constraint as T028 — no internal markup changes.
+- [X] T030 [US1] **REPLACE** `src/FundingPlatform.Web/Views/Shared/_Layout.cshtml` with the Tabler shell per `plan.md §Project Structure` and `contracts/README.md §3`:
   - `<!DOCTYPE html>`, head linking `~/lib/tabler/dist/css/tabler.min.css`, `~/lib/tabler/dist/css/tabler-icons.min.css`, `~/css/site.css`, `~/FundingPlatform.Web.styles.css`. Title from `@ViewData["Title"]`.
   - Body uses Tabler's `page` wrapper containing:
     - `<aside class="navbar navbar-vertical navbar-expand-lg navbar-dark" data-testid="sidebar">` — brand at top, role-aware nav entries (filter the canonical sidebar entry list per `contracts/README.md §3` against `User.IsInRole(...)`), each entry rendered as `<a class="nav-link" href="@entry.Url"><i class="@entry.Icon"></i> @entry.Label</a>` with a stable `data-testid="sidebar-entry-<slug>"` (slug derived from label).
@@ -101,22 +101,22 @@ description: "Tasks for 008-tabler-ui-migration"
     - Footer.
   - Scripts `~/lib/tabler/dist/js/tabler.min.js`, jQuery (kept), `~/js/site.js`, `@RenderSection("Scripts", required: false)`.
   - Define the canonical sidebar entry list inline (or in a `_SidebarEntries.cshtml` partial referenced from this file — author's choice) per `contracts/README.md §3` table.
-- [ ] T031 [US1] Modify `src/FundingPlatform.Web/Views/Shared/_Layout.cshtml.css` to remove any styles that targeted the prior Bootstrap navbar but no longer apply, OR delete the file if no overrides remain. (Trivial; the Tabler-base shell does not need most of the prior overrides.)
-- [ ] T032 [US1] Modify `src/FundingPlatform.Web/Views/Shared/Error.cshtml` to render its content inside the new shell with consistent error-page styling (a centered Tabler `empty` block with an error icon, the error code, and the message). Preserve the controller binding and the `RequestId` model field.
-- [ ] T033 [US1] Modify `src/FundingPlatform.Web/wwwroot/css/site.css` to remove any project-specific overrides that conflict with Tabler defaults; keep the file as the single home for legitimate overrides going forward (FR-017 will be enforced in US3 grep checks).
+- [X] T031 [US1] Modify `src/FundingPlatform.Web/Views/Shared/_Layout.cshtml.css` to remove any styles that targeted the prior Bootstrap navbar but no longer apply, OR delete the file if no overrides remain. (Trivial; the Tabler-base shell does not need most of the prior overrides.)
+- [X] T032 [US1] Modify `src/FundingPlatform.Web/Views/Shared/Error.cshtml` to render its content inside the new shell with consistent error-page styling (a centered Tabler `empty` block with an error icon, the error code, and the message). Preserve the controller binding and the `RequestId` model field.
+- [X] T033 [US1] Modify `src/FundingPlatform.Web/wwwroot/css/site.css` to remove any project-specific overrides that conflict with Tabler defaults; keep the file as the single home for legitimate overrides going forward (FR-017 will be enforced in US3 grep checks).
 
 ### PageObject selector updates for User Story 1 (FR-019: existing E2E must keep passing)
 
 These are needed because the shell DOM changes in T030 — the prior navbar selectors (`.navbar.navbar-dark.bg-primary`) no longer exist. Each PageObject is updated to inherit/compose `BasePage` (T023) so future shell changes touch one file, not many. Assertions on user-visible behavior remain identical (FR-019).
 
-- [ ] T034 [P] [US1] Modify `tests/FundingPlatform.Tests.E2E/PageObjects/ApplicationPage.cs` to inherit from / compose `BasePage` (T023) and replace any prior shell-locator strings with calls into the base. Existing assertions on application-list rows, status badges (still raw Bootstrap badges in US1), and action links remain intact.
-- [ ] T035 [P] [US1] Modify `tests/FundingPlatform.Tests.E2E/PageObjects/ReviewQueuePage.cs` similarly (inherit BasePage; preserve queue-row, tab-nav assertions from spec 007).
-- [ ] T036 [P] [US1] Modify `tests/FundingPlatform.Tests.E2E/PageObjects/ReviewApplicationPage.cs` similarly.
-- [ ] T037 [P] [US1] Modify `tests/FundingPlatform.Tests.E2E/PageObjects/SigningReviewInboxPage.cs` similarly.
-- [ ] T038 [P] [US1] Modify `tests/FundingPlatform.Tests.E2E/PageObjects/ApplicantResponsePage.cs` similarly (preserve banner predicates from spec 007).
-- [ ] T039 [P] [US1] Modify `tests/FundingPlatform.Tests.E2E/PageObjects/SigningStagePanelPage.cs` similarly (panel selector remains unchanged because the panel partial has not yet been re-skinned in US1).
-- [ ] T040 [P] [US1] Modify `tests/FundingPlatform.Tests.E2E/PageObjects/AdminPage.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/ItemPage.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/QuotationPage.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/SupplierPage.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/AppealThreadPage.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/FundingAgreementDownloadFlow.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/FundingAgreementPanelPage.cs` to use `BasePage` for shell selectors. Most non-shell selectors do not change in US1; document anything that did need changing.
-- [ ] T041 [US1] Run `dotnet test tests/FundingPlatform.Tests.E2E --nologo` and confirm:
+- [X] T034 [P] [US1] Modify `tests/FundingPlatform.Tests.E2E/PageObjects/ApplicationPage.cs` to inherit from / compose `BasePage` (T023) and replace any prior shell-locator strings with calls into the base. Existing assertions on application-list rows, status badges (still raw Bootstrap badges in US1), and action links remain intact.
+- [X] T035 [P] [US1] Modify `tests/FundingPlatform.Tests.E2E/PageObjects/ReviewQueuePage.cs` similarly (inherit BasePage; preserve queue-row, tab-nav assertions from spec 007).
+- [X] T036 [P] [US1] Modify `tests/FundingPlatform.Tests.E2E/PageObjects/ReviewApplicationPage.cs` similarly.
+- [X] T037 [P] [US1] Modify `tests/FundingPlatform.Tests.E2E/PageObjects/SigningReviewInboxPage.cs` similarly.
+- [X] T038 [P] [US1] Modify `tests/FundingPlatform.Tests.E2E/PageObjects/ApplicantResponsePage.cs` similarly (preserve banner predicates from spec 007).
+- [X] T039 [P] [US1] Modify `tests/FundingPlatform.Tests.E2E/PageObjects/SigningStagePanelPage.cs` similarly (panel selector remains unchanged because the panel partial has not yet been re-skinned in US1).
+- [X] T040 [P] [US1] Modify `tests/FundingPlatform.Tests.E2E/PageObjects/AdminPage.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/ItemPage.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/QuotationPage.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/SupplierPage.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/AppealThreadPage.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/FundingAgreementDownloadFlow.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/FundingAgreementPanelPage.cs` to use `BasePage` for shell selectors. Most non-shell selectors do not change in US1; document anything that did need changing.
+- [X] T041 [US1] Run `dotnet test tests/FundingPlatform.Tests.E2E --nologo` and confirm:
   - All four `RoleAwareSidebarTests` are now green (red→green transition from T026).
   - The entire prior E2E suite (specs 001–007 tests) is still green.
   If any prior test regresses, the regression IS the defect — diagnose and fix in this task before checkpoint.

@@ -2,18 +2,15 @@ using Microsoft.Playwright;
 
 namespace FundingPlatform.Tests.E2E.PageObjects;
 
-public class FundingAgreementDownloadFlow
+public class FundingAgreementDownloadFlow : BasePage
 {
-    private readonly IPage _page;
-
-    public FundingAgreementDownloadFlow(IPage page)
+    public FundingAgreementDownloadFlow(IPage page) : base(page)
     {
-        _page = page;
     }
 
     public async Task<byte[]> CaptureDownloadBytesAsync(ILocator downloadTrigger)
     {
-        var downloadTask = _page.WaitForDownloadAsync();
+        var downloadTask = Page.WaitForDownloadAsync();
         await downloadTrigger.ClickAsync();
         var download = await downloadTask;
 

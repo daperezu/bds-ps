@@ -2,34 +2,31 @@ using Microsoft.Playwright;
 
 namespace FundingPlatform.Tests.E2E.PageObjects;
 
-public class SigningStagePanelPage
+public class SigningStagePanelPage : BasePage
 {
-    private readonly IPage _page;
-
-    public SigningStagePanelPage(IPage page)
+    public SigningStagePanelPage(IPage page) : base(page)
     {
-        _page = page;
     }
 
-    public ILocator Panel => _page.Locator("#funding-agreement-panel");
-    public ILocator ExecutedBadge => _page.Locator("[data-testid=funding-agreement-executed-badge]");
-    public ILocator PendingCard => _page.Locator("[data-testid=signed-upload-pending]");
-    public ILocator UploadInput => _page.Locator("[data-testid=signed-upload-file]");
-    public ILocator UploadSubmitButton => _page.Locator("[data-testid=signed-upload-submit]");
-    public ILocator ReplaceInput => _page.Locator("[data-testid=signed-upload-replace-file]");
-    public ILocator ReplaceSubmitButton => _page.Locator("[data-testid=signed-upload-replace]");
-    public ILocator WithdrawButton => _page.Locator("[data-testid=signed-upload-withdraw]");
-    public ILocator ApproveButton => _page.Locator("[data-testid=signed-upload-approve]");
-    public ILocator ApproveCommentInput => _page.Locator("[data-testid=signed-upload-approve-comment]");
-    public ILocator RejectButton => _page.Locator("[data-testid=signed-upload-reject]");
-    public ILocator RejectCommentInput => _page.Locator("[data-testid=signed-upload-reject-comment]");
-    public ILocator LastRejectionNotice => _page.Locator("[data-testid=signed-upload-last-rejection]");
-    public ILocator SignedDownloadLink => _page.Locator("[data-testid=signed-agreement-download]");
-    public ILocator VersionMismatchHint => _page.Locator("[data-testid=signed-upload-version-mismatch]");
+    public ILocator Panel => Page.Locator("#funding-agreement-panel");
+    public ILocator ExecutedBadge => Page.Locator("[data-testid=funding-agreement-executed-badge]");
+    public ILocator PendingCard => Page.Locator("[data-testid=signed-upload-pending]");
+    public ILocator UploadInput => Page.Locator("[data-testid=signed-upload-file]");
+    public ILocator UploadSubmitButton => Page.Locator("[data-testid=signed-upload-submit]");
+    public ILocator ReplaceInput => Page.Locator("[data-testid=signed-upload-replace-file]");
+    public ILocator ReplaceSubmitButton => Page.Locator("[data-testid=signed-upload-replace]");
+    public ILocator WithdrawButton => Page.Locator("[data-testid=signed-upload-withdraw]");
+    public ILocator ApproveButton => Page.Locator("[data-testid=signed-upload-approve]");
+    public ILocator ApproveCommentInput => Page.Locator("[data-testid=signed-upload-approve-comment]");
+    public ILocator RejectButton => Page.Locator("[data-testid=signed-upload-reject]");
+    public ILocator RejectCommentInput => Page.Locator("[data-testid=signed-upload-reject-comment]");
+    public ILocator LastRejectionNotice => Page.Locator("[data-testid=signed-upload-last-rejection]");
+    public ILocator SignedDownloadLink => Page.Locator("[data-testid=signed-agreement-download]");
+    public ILocator VersionMismatchHint => Page.Locator("[data-testid=signed-upload-version-mismatch]");
 
     public async Task UploadSigned(string filePath)
     {
-        _page.Dialog += async (_, dialog) => await dialog.AcceptAsync();
+        Page.Dialog += async (_, dialog) => await dialog.AcceptAsync();
         await UploadInput.SetInputFilesAsync(filePath);
         await UploadSubmitButton.ClickAsync();
     }
@@ -56,14 +53,14 @@ public class SigningStagePanelPage
 
     public async Task ReplacePending(string filePath)
     {
-        _page.Dialog += async (_, dialog) => await dialog.AcceptAsync();
+        Page.Dialog += async (_, dialog) => await dialog.AcceptAsync();
         await ReplaceInput.SetInputFilesAsync(filePath);
         await ReplaceSubmitButton.ClickAsync();
     }
 
     public async Task WithdrawPending()
     {
-        _page.Dialog += async (_, dialog) => await dialog.AcceptAsync();
+        Page.Dialog += async (_, dialog) => await dialog.AcceptAsync();
         await WithdrawButton.ClickAsync();
     }
 

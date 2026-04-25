@@ -2,24 +2,21 @@ using Microsoft.Playwright;
 
 namespace FundingPlatform.Tests.E2E.PageObjects;
 
-public class ItemPage
+public class ItemPage : BasePage
 {
-    private readonly IPage _page;
-
-    public ItemPage(IPage page)
+    public ItemPage(IPage page) : base(page)
     {
-        _page = page;
     }
 
-    public ILocator ProductNameInput => _page.Locator("[name=ProductName]");
-    public ILocator CategorySelect => _page.Locator("[name=CategoryId]");
-    public ILocator TechnicalSpecificationsInput => _page.Locator("[name=TechnicalSpecifications]");
-    public ILocator SubmitButton => _page.Locator("main button[type=submit]");
-    public ILocator ValidationSummary => _page.Locator(".text-danger");
+    public ILocator ProductNameInput => Page.Locator("[name=ProductName]");
+    public ILocator CategorySelect => Page.Locator("[name=CategoryId]");
+    public ILocator TechnicalSpecificationsInput => Page.Locator("[name=TechnicalSpecifications]");
+    public ILocator SubmitButton => Page.Locator("main button[type=submit]");
+    public ILocator ValidationSummary => Page.Locator(".text-danger");
 
     public async Task AddItemAsync(int appId, string productName, int categoryIndex, string techSpecs, string baseUrl)
     {
-        await _page.GotoAsync($"{baseUrl}/Application/{appId}/Item/Add");
+        await Page.GotoAsync($"{baseUrl}/Application/{appId}/Item/Add");
         await ProductNameInput.FillAsync(productName);
 
         var options = await CategorySelect.Locator("option").AllAsync();
@@ -38,7 +35,7 @@ public class ItemPage
 
     public async Task EditItemAsync(int appId, int itemId, string productName, int categoryIndex, string techSpecs, string baseUrl)
     {
-        await _page.GotoAsync($"{baseUrl}/Application/{appId}/Item/{itemId}/Edit");
+        await Page.GotoAsync($"{baseUrl}/Application/{appId}/Item/{itemId}/Edit");
         await ProductNameInput.ClearAsync();
         await ProductNameInput.FillAsync(productName);
 

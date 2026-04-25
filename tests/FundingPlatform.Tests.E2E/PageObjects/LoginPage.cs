@@ -2,22 +2,27 @@ using Microsoft.Playwright;
 
 namespace FundingPlatform.Tests.E2E.PageObjects;
 
-public class LoginPage
+public class LoginPage : BasePage
 {
-    private readonly IPage _page;
-
-    public LoginPage(IPage page)
+    public LoginPage(IPage page) : base(page)
     {
-        _page = page;
     }
 
-    public ILocator EmailInput => _page.Locator("[name=Email]");
-    public ILocator PasswordInput => _page.Locator("[name=Password]");
-    public ILocator SubmitButton => _page.Locator("main button[type=submit]");
+    public ILocator AuthShell => Page.Locator("[data-testid=\"auth-shell\"]");
+
+    public async Task<bool> IsAuthShellVisibleAsync()
+    {
+        if (await Sidebar.CountAsync() > 0) return false;
+        return await AuthShell.CountAsync() > 0;
+    }
+
+    public ILocator EmailInput => Page.Locator("[name=Email]");
+    public ILocator PasswordInput => Page.Locator("[name=Password]");
+    public ILocator SubmitButton => Page.Locator("main button[type=submit]");
 
     public async Task GotoAsync(string baseUrl)
     {
-        await _page.GotoAsync($"{baseUrl}/Account/Login");
+        await Page.GotoAsync($"{baseUrl}/Account/Login");
     }
 
     public async Task LoginAsync(string email, string password)
