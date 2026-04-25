@@ -1,6 +1,6 @@
 # bsd-ps Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-23
+Auto-generated from all feature plans. Last updated: 2026-04-25
 
 ## Active Technologies
 - C# / .NET 10.0 + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire (002-review-approval-workflow)
@@ -10,6 +10,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-23
 - C# / .NET 10.0 + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire. No new dependencies introduced by this feature. (006-digital-signatures)
 - SQL Server (Aspire-managed container for dev, dacpac schema management); local file system for signed-PDF bytes via the existing `IFileStorageService`. No new storage subsystems. (006-digital-signatures)
 - SQL Server (Aspire-managed container for dev, dacpac schema management). **No schema changes.** No new storage subsystems. (007-signing-wayfinding)
+- C# / .NET 10.0 (matches all prior specs) + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire. **NEW vendored static-asset dependency**: Tabler.io open-source build (CSS + JS) and Tabler Icons. No new NuGet packages, no new managed dependencies. (008-tabler-ui-migration)
+- SQL Server (Aspire-managed for dev, dacpac schema management). **No schema changes.** (008-tabler-ui-migration)
 
 - C# / .NET 8+ (latest LTS) + ASP.NET MVC, .NET Aspire, EF Core, ASP.NET Identity, Playwright (001-core-model-submission)
 
@@ -29,9 +31,9 @@ tests/
 C# / .NET 8+ (latest LTS): Follow standard conventions
 
 ## Recent Changes
+- 008-tabler-ui-migration: Added C# / .NET 10.0 (matches all prior specs) + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire. **NEW vendored static-asset dependency**: Tabler.io open-source build (CSS + JS) and Tabler Icons. No new NuGet packages, no new managed dependencies.
 - 007-signing-wayfinding: Added C# / .NET 10.0 + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire. **No new dependencies introduced by this feature.**
 - 006-digital-signatures: Added C# / .NET 10.0 + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire. No new dependencies introduced by this feature.
-- 005-funding-agreement-generation: Added C# / .NET 10.0 + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire, Syncfusion.HtmlToPdfConverter.Net.Linux (31.2.x), Syncfusion.Licensing
 
 
 <!-- MANUAL ADDITIONS START -->

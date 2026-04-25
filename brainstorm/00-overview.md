@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-04-23
+Last updated: 2026-04-25
 
 ## Sessions
 
@@ -13,6 +13,7 @@ Last updated: 2026-04-23
 | 05 | 2026-04-17 | document-generation | spec-created | 005 |
 | 06 | 2026-04-18 | digital-signatures | spec-created | 006 |
 | 07 | 2026-04-23 | signing-wayfinding | spec-created | 007 |
+| 08 | 2026-04-25 | tabler-ui-strategy | spec-created | 008 |
 
 ## Open Threads
 
@@ -44,6 +45,15 @@ Last updated: 2026-04-23
 - Should `AppealOpen` get its own banner string on the applicant response page, or remain silent as currently specified? (from #07)
 - Is the two-click threshold (SC-001) the right long-term bar, or will future volume eventually justify a top-level nav entry for Signing alongside the sub-tabs? (from #07)
 - The 006 signing panel partial is assumed to be shape-clean enough to embed on a second host page; if implementation discovers it is not, reshaping it is within 007 scope but may expose further 006 refactors worth tracking (from #07)
+- Specific Tabler.io version pin — deferred to planning (latest stable at planning time) (from #08)
+- Sidebar default-open vs. default-collapsed on first load — deferred to planning (from #08)
+- Whether the absolute "no badges outside `_StatusPill`" rule should permit non-status badges (e.g., quantity counters) — to be revisited if the planning phase surfaces concrete cases (from #08)
+- Whether to invest in visual-regression tooling (Playwright screenshot comparison or Percy) before the sweep, or leave manual side-by-side as the v1 visual gate (from #08)
+- Whether `_ConfirmDialog` for every destructive action (including draft-item deletes) is the right baseline, or whether specific exceptions should be enumerated (from #08)
+- Future spec 009 (communication surface — unified messaging panel) needs its own brainstorm before any implementation (from #08)
+- Future spec 010 (notifications & inbox) needs its own brainstorm — likely SignalR (from #08)
+- Future spec 011 (localization layer) — when it lands, partials must be checked to ensure no UI copy was embedded during the 008 sweep (from #08)
+- Future spec 012 (admin/configuration surface polish) — likely needed once the 008 sweep lands (from #08)
 
 ## Closed Threads
 
