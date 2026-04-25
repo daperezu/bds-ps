@@ -128,6 +128,67 @@ UPDATE dbo.Applications SET State = 6, UpdatedAt = @now WHERE Id = @appId;";
         return signedPdfPath;
     }
 
+    /// <summary>
+    /// Inserts placeholder FundingAgreement rows for every ResponseFinalized application
+    /// (state = 5) that does not yet have one. Used by the SC-010-A empty-state test to
+    /// neutralize queue rows seeded by sibling test classes (ApplicantResponseTests,
+    /// FinalizeReviewTests) that share the same per-fixture SQL container.
+    /// </summary>
+    public static async Task ClearGenerateAgreementQueueAsync(string connectionString)
+    {
+        using var conn = new SqlConnection(connectionString);
+        await conn.OpenAsync();
+
+        const string selectSql = @"
+SELECT a.Id
+FROM dbo.Applications a
+LEFT JOIN dbo.FundingAgreements fa ON fa.ApplicationId = a.Id
+WHERE a.State = 5 AND fa.Id IS NULL";
+
+        var pendingIds = new List<int>();
+        using (var cmd = new SqlCommand(selectSql, conn))
+        using (var reader = await cmd.ExecuteReaderAsync())
+        {
+            while (await reader.ReadAsync())
+            {
+                pendingIds.Add(reader.GetInt32(0));
+            }
+        }
+
+        if (pendingIds.Count == 0) return;
+
+        // Pick any existing user as the GeneratedByUserId (the SC-010-A test only
+        // asserts the empty-state element, not who generated each placeholder).
+        string anyUserId;
+        using (var cmd = new SqlCommand("SELECT TOP 1 Id FROM dbo.AspNetUsers", conn))
+        {
+            var result = await cmd.ExecuteScalarAsync()
+                ?? throw new InvalidOperationException("No AspNetUsers row available to attribute placeholder agreements to.");
+            anyUserId = (string)result;
+        }
+
+        const string insertSql = @"
+INSERT INTO dbo.FundingAgreements
+    (ApplicationId, FileName, ContentType, Size, StoragePath, GeneratedAtUtc, GeneratedByUserId, GeneratedVersion)
+VALUES
+    (@appId, @fileName, 'application/pdf', @size, @storagePath, @generatedAt, @userId, 1)";
+
+        foreach (var appId in pendingIds)
+        {
+            var pdfPath = Path.Combine(Path.GetTempPath(), $"fa-queue-clear-{Guid.NewGuid():N}.pdf");
+            await File.WriteAllBytesAsync(pdfPath, PlaceholderPdfBytes);
+
+            using var cmd = new SqlCommand(insertSql, conn);
+            cmd.Parameters.AddWithValue("@appId", appId);
+            cmd.Parameters.AddWithValue("@fileName", $"FundingAgreement-{appId}.pdf");
+            cmd.Parameters.AddWithValue("@size", PlaceholderPdfBytes.LongLength);
+            cmd.Parameters.AddWithValue("@storagePath", pdfPath);
+            cmd.Parameters.AddWithValue("@generatedAt", DateTime.UtcNow);
+            cmd.Parameters.AddWithValue("@userId", anyUserId);
+            await cmd.ExecuteNonQueryAsync();
+        }
+    }
+
     private static async Task<string?> TryGetAgreementStoragePathAsync(SqlConnection conn, int applicationId)
     {
         using var cmd = new SqlCommand(

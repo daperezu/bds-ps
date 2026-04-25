@@ -40,13 +40,16 @@ public class GenerateAgreementQueueTests : AuthenticatedTestBase
 
     /// <summary>
     /// SC-010-A: A reviewer with no matching apps sees the empty-state message.
-    /// Runs first in the fixture so the queue is genuinely empty — sibling tests
-    /// in this class seed <c>ResponseFinalized</c> apps that share the same
-    /// (ephemeral but per-fixture) SQL container.
+    /// The Aspire fixture is shared across test classes, so sibling classes
+    /// (ApplicantResponseTests, FinalizeReviewTests) may have left ResponseFinalized
+    /// apps with no agreement — neutralize them via SQL before asserting the
+    /// empty-state element so this test is order-independent.
     /// </summary>
     [Test, Order(1)]
     public async Task GenerateAgreementTab_Empty_ShowsEmptyState()
     {
+        await FundingAgreementSeeder.ClearGenerateAgreementQueueAsync(ConnectionString);
+
         var uniqueId = Guid.NewGuid().ToString("N")[..8];
         var reviewerEmail = $"ga_empty_{uniqueId}@example.com";
         await RegisterUserAsync(Page, reviewerEmail, Password, "GA", "EmptyReviewer", $"GAE-{uniqueId}");
