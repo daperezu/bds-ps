@@ -1,8 +1,15 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var sqlServer = builder.AddSqlServer("sqlserver")
-                       .WithDataVolume("fundingplatform-sqldata")
-                       .AddDatabase("fundingdb");
+var sqlBuilder = builder.AddSqlServer("sqlserver");
+
+// Persist SQL data across runs by default (dev convenience).
+// Tests pass --EphemeralStorage=true to get a fresh container per fixture.
+if (!string.Equals(builder.Configuration["EphemeralStorage"], "true", StringComparison.OrdinalIgnoreCase))
+{
+    sqlBuilder = sqlBuilder.WithDataVolume("fundingplatform-sqldata");
+}
+
+var sqlServer = sqlBuilder.AddDatabase("fundingdb");
 
 builder.AddSqlProject<Projects.FundingPlatform_Database>("database-schema")
        .WithReference(sqlServer);

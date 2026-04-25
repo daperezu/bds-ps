@@ -1,7 +1,6 @@
 using System.Text.RegularExpressions;
 using FundingPlatform.Tests.E2E.Fixtures;
 using FundingPlatform.Tests.E2E.PageObjects;
-using Microsoft.Data.SqlClient;
 using Microsoft.Playwright;
 using NUnit.Framework;
 using static Microsoft.Playwright.Assertions;
@@ -10,14 +9,8 @@ namespace FundingPlatform.Tests.E2E.Tests;
 
 /// <summary>
 /// End-to-end tests for spec 007 Amendment 1, SC-010 (Generate Agreement Queue tab).
-///
-/// The Aspire host uses <c>.WithDataVolume("fundingplatform-sqldata")</c> which persists
-/// SQL data across test runs on the same machine.  Tests 2 and 3 seed ResponseFinalized
-/// apps that remain in the queue between runs.  Test 1 (Order 1) therefore clears any
-/// lingering queue entries via <see cref="SeedAgreementsForExistingQueueEntriesAsync"/>
-/// before asserting the empty-state element, ensuring a clean baseline on every run.
-///
-/// Note: <c>ApplicationState.ResponseFinalized = 5</c> (not 4 which is AppealOpen).
+/// Tests run against an ephemeral SQL container — see <c>AspireFixture</c> for the
+/// <c>--EphemeralStorage=true</c> flag that disables the AppHost data volume during tests.
 /// </summary>
 [TestFixture]
 [Category("GenerateAgreementQueue")]
@@ -47,15 +40,10 @@ public class GenerateAgreementQueueTests : AuthenticatedTestBase
 
     /// <summary>
     /// SC-010-A: A reviewer with no matching apps sees the empty-state message.
-    ///
-    /// <see cref="SeedAgreementsForExistingQueueEntriesAsync"/> clears leftover
-    /// ResponseFinalized apps from prior runs before the reviewer navigates to the page.
     /// </summary>
-    [Test, Order(1)]
+    [Test]
     public async Task GenerateAgreementTab_Empty_ShowsEmptyState()
     {
-        await SeedAgreementsForExistingQueueEntriesAsync();
-
         var uniqueId = Guid.NewGuid().ToString("N")[..8];
         var reviewerEmail = $"ga_empty_{uniqueId}@example.com";
         await RegisterUserAsync(Page, reviewerEmail, Password, "GA", "EmptyReviewer", $"GAE-{uniqueId}");
@@ -77,7 +65,7 @@ public class GenerateAgreementQueueTests : AuthenticatedTestBase
     /// SC-010-B: A ResponseFinalized application without an agreement appears
     /// in the queue for both Reviewer and Admin roles.
     /// </summary>
-    [Test, Order(2)]
+    [Test]
     public async Task ReviewerAndAdmin_BothSee_ResponseFinalizedApplicationWithoutAgreement()
     {
         var uniqueId = Guid.NewGuid().ToString("N")[..8];
@@ -126,7 +114,7 @@ public class GenerateAgreementQueueTests : AuthenticatedTestBase
     /// reviewer has navigated to the agreement page.  The queue-departure and
     /// banner assertions are unaffected by this bypass.
     /// </summary>
-    [Test, Order(3)]
+    [Test]
     public async Task EndToEndChain_ReviewerGeneratesAgreement_ApplicantSeesReadyToSignBanner()
     {
         var uniqueId = Guid.NewGuid().ToString("N")[..8];
@@ -182,45 +170,5 @@ public class GenerateAgreementQueueTests : AuthenticatedTestBase
         await Page.GotoAsync($"{BaseUrl}/ApplicantResponse/Index/{applicationId}");
         await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
         await Expect(Page.Locator("[data-testid=signing-banner-ready]")).ToBeVisibleAsync();
-    }
-
-    /// <summary>
-    /// Clears leftover "pending agreement" queue entries produced by previous test
-    /// runs on the persistent Aspire SQL volume (<c>fundingplatform-sqldata</c>).
-    /// Inserts a placeholder <c>FundingAgreements</c> row for every
-    /// ResponseFinalized app (State=5) that has no agreement yet, so the web app's
-    /// queue query returns zero rows when Test 1 runs.
-    /// </summary>
-    private async Task SeedAgreementsForExistingQueueEntriesAsync()
-    {
-        var pdfPath = Path.Combine(Path.GetTempPath(), $"ga-clear-{Guid.NewGuid():N}.pdf");
-        await File.WriteAllBytesAsync(pdfPath,
-            System.Text.Encoding.UTF8.GetBytes("%PDF-1.4\nqueue-clear placeholder\n%%EOF\n"));
-        _seededFiles.Add(pdfPath);
-
-        using var conn = new SqlConnection(ConnectionString);
-        await conn.OpenAsync();
-
-        // ApplicationState.ResponseFinalized = 5 (AppealOpen = 4, AgreementExecuted = 6)
-        const string clearQueueSql = @"
-INSERT INTO dbo.FundingAgreements
-    (ApplicationId, FileName, ContentType, Size, StoragePath, GeneratedAtUtc, GeneratedByUserId, GeneratedVersion)
-SELECT
-    a.Id,
-    'FundingAgreement-clear-' + CAST(a.Id AS VARCHAR) + '.pdf',
-    'application/pdf',
-    42,
-    @pdfPath,
-    GETUTCDATE(),
-    ap.UserId,
-    1
-FROM dbo.Applications a
-JOIN dbo.Applicants ap ON ap.Id = a.ApplicantId
-WHERE a.State = 5
-  AND NOT EXISTS (SELECT 1 FROM dbo.FundingAgreements fa WHERE fa.ApplicationId = a.Id);";
-
-        using var cmd = new SqlCommand(clearQueueSql, conn);
-        cmd.Parameters.AddWithValue("@pdfPath", pdfPath);
-        await cmd.ExecuteNonQueryAsync();
     }
 }

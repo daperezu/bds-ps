@@ -13,7 +13,7 @@ public class AspireFixture : IAsyncDisposable
     public async Task StartAsync()
     {
         var builder = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.FundingPlatform_AppHost>();
+            .CreateAsync<Projects.FundingPlatform_AppHost>(["--EphemeralStorage=true"]);
 
         _app = await builder.BuildAsync();
         await _app.StartAsync();
