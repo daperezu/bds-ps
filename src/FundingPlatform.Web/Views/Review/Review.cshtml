@@ -223,8 +223,7 @@
                                     </div>
                                 </div>
 
-                                <div class="mb-2 supplier-select-wrapper" id="supplierSelect_@item.ItemId"
-                                     style="@(item.ReviewStatus == "Approved" ? "" : "display:none")">
+                                <div class="mb-2 supplier-select-wrapper @(item.ReviewStatus == "Approved" ? "" : "d-none")" id="supplierSelect_@item.ItemId">
                                     <label class="form-label">Select Supplier:</label>
                                     <select name="SelectedSupplierId" class="form-select form-select-sm">
                                         <option value="">-- Select Supplier --</option>
@@ -298,7 +297,7 @@
                 const itemId = this.dataset.itemId;
                 const wrapper = document.getElementById('supplierSelect_' + itemId);
                 if (wrapper) {
-                    wrapper.style.display = this.value === 'Approve' ? '' : 'none';
+                    wrapper.classList.toggle('d-none', this.value !== 'Approve');
                 }
             });
         });

@@ -202,7 +202,7 @@ These are needed because the shell DOM changes in T030 — the prior navbar sele
 
 ### Enforce visual-consistency invariants
 
-- [ ] T083 [US3] Run the four grep commands in `quickstart.md §C` and confirm each returns zero matches outside the allowed locations:
+- [X] T083 [US3] Run the four grep commands in `quickstart.md §C` and confirm each returns zero matches outside the allowed locations:
   - Badge markup outside `_StatusPill.cshtml` (and the PDF target files): zero matches.
   - Inline `style="..."` attributes in `Views/` (excluding the PDF target files): zero matches.
   - Bare PDF anchor-tag markup outside `_DocumentCard.cshtml` (and the PDF target files): zero matches.

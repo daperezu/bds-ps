@@ -127,8 +127,8 @@
                                       action="@Url.Action("Approve", "FundingAgreement", new { applicationId = Model.ApplicationId })">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="signedUploadId" value="@Model.PendingUpload.SignedUploadId" />
-                                    <input type="text" name="comment" class="form-control form-control-sm d-inline-block"
-                                           placeholder="Optional comment" style="max-width: 280px;"
+                                    <input type="text" name="comment" class="form-control form-control-sm d-inline-block signed-comment-input"
+                                           placeholder="Optional comment"
                                            data-testid="signed-upload-approve-comment" />
                                     <button type="submit" class="btn btn-success btn-sm"
                                             data-testid="signed-upload-approve">Approve</button>
@@ -137,9 +137,8 @@
                                       action="@Url.Action("Reject", "FundingAgreement", new { applicationId = Model.ApplicationId })">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="signedUploadId" value="@Model.PendingUpload.SignedUploadId" />
-                                    <textarea name="comment" class="form-control form-control-sm"
+                                    <textarea name="comment" class="form-control form-control-sm d-inline-block signed-comment-input"
                                               placeholder="Rejection comment (required)" rows="1"
-                                              style="max-width: 280px; display: inline-block;"
                                               data-testid="signed-upload-reject-comment"></textarea>
                                     <button type="submit" class="btn btn-outline-danger btn-sm"
                                             data-testid="signed-upload-reject">Reject</button>

@@ -2,3 +2,17 @@
    Tabler.io owns base typography, color tokens, components, and spacing.
    Add here only when a project-wide override is genuinely necessary;
    never use inline style="" attributes in views (FR-017). */
+
+.icon-empty-state {
+    font-size: 2.5rem;
+    line-height: 1;
+}
+
+.icon-document-card {
+    font-size: 1.75rem;
+    line-height: 1;
+}
+
+.signed-comment-input {
+    max-width: 280px;
+}

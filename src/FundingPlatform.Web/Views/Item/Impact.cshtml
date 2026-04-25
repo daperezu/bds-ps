@@ -39,7 +39,7 @@
                 <span asp-validation-for="SelectedTemplateId" class="text-danger"></span>
             </div>
 
-            <div id="templateDescription" class="alert alert-info mb-3" style="display: none;"></div>
+            <div id="templateDescription" class="alert alert-primary mb-3 d-none"></div>
 
             <div id="parametersContainer">
                 @if (Model.Parameters.Count > 0)
@@ -85,7 +85,7 @@
                 }
             </div>
 
-            <div id="submitArea" style="@(Model.Parameters.Count > 0 ? "" : "display: none;")">
+            <div id="submitArea" class="@(Model.Parameters.Count > 0 ? "" : "d-none")">
                 <button type="submit" class="btn btn-primary">Save Impact</button>
             </div>
             <a asp-controller="Application" asp-action="Details" asp-route-id="@Model.ApplicationId" class="btn btn-secondary">Cancel</a>
@@ -110,14 +110,14 @@
                 const description = selectedOption.getAttribute('data-description');
                 if (description) {
                     templateDescription.textContent = description;
-                    templateDescription.style.display = 'block';
+                    templateDescription.classList.remove('d-none');
                 } else {
-                    templateDescription.style.display = 'none';
+                    templateDescription.classList.add('d-none');
                 }
 
                 if (!templateId) {
                     parametersContainer.innerHTML = '';
-                    submitArea.style.display = 'none';
+                    submitArea.classList.add('d-none');
                     return;
                 }
 
@@ -161,10 +161,10 @@
                     });
 
                     parametersContainer.innerHTML = html;
-                    submitArea.style.display = parameters.length > 0 ? '' : 'none';
+                    submitArea.classList.toggle('d-none', parameters.length === 0);
                 } catch (error) {
                     parametersContainer.innerHTML = '<div class="alert alert-danger">Failed to load template parameters.</div>';
-                    submitArea.style.display = 'none';
+                    submitArea.classList.add('d-none');
                 }
             });
         });
