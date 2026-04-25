@@ -218,12 +218,12 @@ These are needed because the shell DOM changes in T030 — the prior navbar sele
 
 **Purpose**: Manual verification per `quickstart.md`, PDF parity check, viewport sanity, full final test sweep.
 
-- [ ] T085 Run `dotnet test --nologo` (full suite — Unit, Integration, E2E) at the repo root and confirm zero failures across all three tiers. If any non-E2E test regresses, the regression is the defect (FR-016 forbids logic changes; any unit/integration regression therefore indicates an unintended logic touch).
+- [X] T085 Run `dotnet test --nologo` (full suite — Unit, Integration, E2E) at the repo root and confirm zero failures across all three tiers. If any non-E2E test regresses, the regression is the defect (FR-016 forbids logic changes; any unit/integration regression therefore indicates an unintended logic touch).
 - [ ] T086 Walk `quickstart.md §A.1` (Applicant golden path) end-to-end as the Applicant test user. Confirm every assertion. DevTools console must show zero errors and zero warnings.
 - [ ] T087 Walk `quickstart.md §A.2` (Reviewer golden path) end-to-end as the Reviewer test user. Same console-clean requirement.
 - [ ] T088 Walk `quickstart.md §A.3` (Admin golden path) end-to-end as the Admin test user. Same console-clean requirement.
 - [ ] T089 Walk `quickstart.md §B` (Sidebar visibility) for all four user states. Manual sanity check that mirrors what `RoleAwareSidebarTests` automates.
-- [ ] T090 Run the four grep commands from `quickstart.md §C` one final time and confirm each returns zero matches outside allowed locations. (Re-run of T083 to catch any drift introduced after.)
+- [X] T090 Run the four grep commands from `quickstart.md §C` one final time and confirm each returns zero matches outside allowed locations. (Re-run of T083 to catch any drift introduced after.)
 - [ ] T091 Execute `quickstart.md §D` PDF parity check: (a) `git diff main -- src/FundingPlatform.Web/Views/FundingAgreement/Document.cshtml src/FundingPlatform.Web/Views/FundingAgreement/_FundingAgreementLayout.cshtml` MUST report zero changes (FR-015 / SC-007 byte-identity); (b) generate a fresh PDF for the same application that produced `baseline-pre-008.pdf` (T001), save as `current-008.pdf`, open both side-by-side and confirm visual identity. If either check fails, diagnose immediately — likely a CSS leak or accidental modification of the PDF target.
 - [ ] T092 Execute `quickstart.md §E` viewport sanity at desktop (1280×800) and mobile (360×740) viewports in both Chromium and Firefox. Confirm sidebar collapse, table responsive scroll, page-header truncation, and modal stacking all behave per Tabler defaults.
 
