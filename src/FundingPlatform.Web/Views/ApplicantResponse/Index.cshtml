@@ -5,12 +5,24 @@
     ViewData["Title"] = $"Application #{Model.ApplicationId} — Applicant Response";
 }
 
-<h2 class="applicant-response-header">Application #@Model.ApplicationId — Applicant Response</h2>
+<div class="applicant-response-header">
+    @await Html.PartialAsync("Components/_PageHeader",
+        new PageHeaderViewModel(
+            Title: $"Application #{Model.ApplicationId} — Applicant Response",
+            Breadcrumbs: new[]
+            {
+                new BreadcrumbItem("My Applications", Url.Action("Index", "Application")),
+                new BreadcrumbItem($"Application #{Model.ApplicationId}", Url.Action("Details", "Application", new { id = Model.ApplicationId })),
+                new BreadcrumbItem("Response"),
+            }))
+</div>
 
 <div class="card mb-3">
     <div class="card-body">
         <strong>State:</strong>
-        <span class="badge bg-info application-state">@Model.State</span>
+        <span class="application-state">
+            @await Html.PartialAsync("Components/_StatusPill", new StatusPillViewModel(Model.State))
+        </span>
         @if (Model.SubmittedAt is not null)
         {
             <span class="ms-3 submitted-at"><strong>Response submitted:</strong> @Model.SubmittedAt.Value.ToString("yyyy-MM-dd HH:mm")</span>
@@ -37,75 +49,83 @@ else if (Model.State == ApplicationState.ResponseFinalized && Model.HasFundingAg
 
 <form method="post" asp-action="Submit" asp-route-id="@Model.ApplicationId" id="applicantResponseForm">
     @Html.AntiForgeryToken()
-    <table class="table table-striped response-items">
-        <thead>
-            <tr>
-                <th>Item</th>
-                <th>Reviewer Decision</th>
-                <th>Supplier</th>
-                <th>Amount</th>
-                <th>Comment</th>
-                <th>Your Decision</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.Items)
-            {
-                <tr class="response-item" data-item-id="@item.ItemId">
-                    <td class="item-name">@item.ProductName</td>
-                    <td>
-                        <span class="badge review-status review-status-@item.ReviewStatus.ToString().ToLowerInvariant()">@item.ReviewStatus</span>
-                    </td>
-                    <td class="supplier-name">@(item.SelectedSupplierName ?? "—")</td>
-                    <td class="amount">@(item.Amount.HasValue ? item.Amount.Value.ToString("C") : "—")</td>
-                    <td class="review-comment">@(item.ReviewComment ?? "—")</td>
-                    <td>
-                        @if (isReadOnly)
-                        {
-                            if (item.Decision.HasValue)
-                            {
-                                <span class="badge decision-display bg-@(item.Decision == ItemResponseDecision.Accept ? "success" : "danger")">
-                                    @item.Decision
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table card-table table-vcenter response-items">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Reviewer Decision</th>
+                        <th>Supplier</th>
+                        <th>Amount</th>
+                        <th>Comment</th>
+                        <th>Your Decision</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr class="response-item" data-item-id="@item.ItemId">
+                            <td class="item-name">@item.ProductName</td>
+                            <td>
+                                <span class="review-status review-status-@item.ReviewStatus.ToString().ToLowerInvariant()">
+                                    @await Html.PartialAsync("Components/_StatusPill", new StatusPillViewModel(item.ReviewStatus))
                                 </span>
-                            }
-                            else
-                            {
-                                <span class="text-muted">—</span>
-                            }
-                        }
-                        else
-                        {
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input decision-accept"
-                                       type="radio"
-                                       name="decisions[@item.ItemId]"
-                                       value="@((int)ItemResponseDecision.Accept)"
-                                       id="accept-@item.ItemId"
-                                       @(item.Decision == ItemResponseDecision.Accept ? "checked" : "")
-                                       required>
-                                <label class="form-check-label" for="accept-@item.ItemId">Accept</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input decision-reject"
-                                       type="radio"
-                                       name="decisions[@item.ItemId]"
-                                       value="@((int)ItemResponseDecision.Reject)"
-                                       id="reject-@item.ItemId"
-                                       @(item.Decision == ItemResponseDecision.Reject ? "checked" : "")
-                                       required>
-                                <label class="form-check-label" for="reject-@item.ItemId">Reject</label>
-                            </div>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                            </td>
+                            <td class="supplier-name">@(item.SelectedSupplierName ?? "—")</td>
+                            <td class="amount">@(item.Amount.HasValue ? item.Amount.Value.ToString("C") : "—")</td>
+                            <td class="review-comment">@(item.ReviewComment ?? "—")</td>
+                            <td>
+                                @if (isReadOnly)
+                                {
+                                    if (item.Decision.HasValue)
+                                    {
+                                        var color = item.Decision == ItemResponseDecision.Accept ? "green" : "red";
+                                        var icon = item.Decision == ItemResponseDecision.Accept ? "ti ti-check" : "ti ti-x";
+                                        <span class="decision-display status status-@color"><i class="@icon"></i> @item.Decision</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-secondary">—</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input decision-accept"
+                                               type="radio"
+                                               name="decisions[@item.ItemId]"
+                                               value="@((int)ItemResponseDecision.Accept)"
+                                               id="accept-@item.ItemId"
+                                               @(item.Decision == ItemResponseDecision.Accept ? "checked" : "")
+                                               required>
+                                        <label class="form-check-label" for="accept-@item.ItemId">Accept</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input decision-reject"
+                                               type="radio"
+                                               name="decisions[@item.ItemId]"
+                                               value="@((int)ItemResponseDecision.Reject)"
+                                               id="reject-@item.ItemId"
+                                               @(item.Decision == ItemResponseDecision.Reject ? "checked" : "")
+                                               required>
+                                        <label class="form-check-label" for="reject-@item.ItemId">Reject</label>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     @if (!isReadOnly)
     {
-        <div class="mt-3">
-            <button type="submit" class="btn btn-primary submit-response" id="submitResponseButton" disabled>Submit Response</button>
+        <div class="mt-3 d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary submit-response" id="submitResponseButton" disabled>
+                <i class="ti ti-send me-1"></i>Submit Response
+            </button>
         </div>
     }
 </form>
@@ -115,7 +135,9 @@ else if (Model.State == ApplicationState.ResponseFinalized && Model.HasFundingAg
     <div class="mt-4">
         <form method="post" asp-action="OpenAppeal" asp-route-id="@Model.ApplicationId">
             @Html.AntiForgeryToken()
-            <button type="submit" class="btn btn-warning open-appeal-button">Open Appeal</button>
+            <button type="submit" class="btn btn-warning open-appeal-button">
+                <i class="ti ti-alert-triangle me-1"></i>Open Appeal
+            </button>
         </form>
     </div>
 }

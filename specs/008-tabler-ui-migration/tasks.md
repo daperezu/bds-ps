@@ -173,32 +173,32 @@ These are needed because the shell DOM changes in T030 — the prior navbar sele
 
 ### Refactor remaining views (parallel-safe by file)
 
-- [ ] T060 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Account/Login.cshtml` to use `_FormSection` for each input (Username, Password, Remember Me) and `_ActionBar` for Submit + secondary "Register" link. Layout already set to `_AuthLayout` in T028. Preserve every `asp-for`, `asp-validation-for`, anti-forgery token, post target.
-- [ ] T061 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Account/Register.cshtml` analogously to T060.
-- [ ] T062 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Admin/Index.cshtml` to use `_PageHeader` + a Tabler card grid (each card a link to a sub-section: Configuration, Impact Templates).
-- [ ] T063 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Admin/Configuration.cshtml` to use `_PageHeader` + `_FormSection` per setting + `_ActionBar` (Save = Primary).
-- [ ] T064 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Admin/ImpactTemplates.cshtml` to use `_PageHeader` (with primary action "Create Template") + `_DataTable` + `_EmptyState`.
-- [ ] T065 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Admin/CreateTemplate.cshtml` to use `_PageHeader` + `_FormSection` per field + `_ActionBar` (Create = Primary, Cancel = Secondary).
-- [ ] T066 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Admin/EditTemplate.cshtml` analogously to T065 (with Update = Primary, Delete = Destructive wired to `_ConfirmDialog`).
-- [ ] T067 [P] [US3] Refactor `src/FundingPlatform.Web/Views/ApplicantResponse/Index.cshtml` to use `_PageHeader` (title from application reference, status-driven banner expressed via the subtitle slot per spec 007), `_StatusPill` for the application state, `_ActionBar` for response actions. Preserve the spec 007 banner predicates (`data-testid="signing-banner-ready"`, `data-testid="signing-banner-executed"`) verbatim — FR-019 prohibits removing them.
-- [ ] T068 [P] [US3] Refactor `src/FundingPlatform.Web/Views/ApplicantResponse/Appeal.cshtml` to use `_PageHeader` + `_FormSection` (appeal text) + `_ActionBar` (Submit Appeal = Primary, Cancel = Secondary).
-- [ ] T069 [P] [US3] Restyle `src/FundingPlatform.Web/Views/ApplicantResponse/_AppealMessage.cshtml` to use Tabler comment-row markup (avatar, name, timestamp, message body). Preserve the message structure and any data-test hooks already in use.
-- [ ] T070 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Application/Create.cshtml` to use `_PageHeader` + `_FormSection` (description if present) + `_ActionBar` (Create Draft = Primary, Back = Secondary).
-- [ ] T071 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Application/Edit.cshtml` analogously to T070.
-- [ ] T072 [P] [US3] Restyle `src/FundingPlatform.Web/Views/Application/_FundingAgreementPanel.cshtml` to themed Tabler markup. Preserve the spec 006/007 panel selector contract (the panel is embedded on two host pages) and any `data-testid` hooks.
-- [ ] T073 [P] [US3] Refactor `src/FundingPlatform.Web/Views/FundingAgreement/Details.cshtml` to use `_PageHeader` + `_StatusPill` for `SignedUploadStatus` + `_DocumentCard` for the generated PDF and any signed uploads + `_ActionBar` (Generate / Download / Approve / Reject classified per spec).
-- [ ] T074 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Home/Index.cshtml` to use `_PageHeader` + a role-aware welcome card grid (different card sets for Applicant / Reviewer / Admin / unauthenticated). Preserve the existing controller bindings.
-- [ ] T075 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Item/Add.cshtml` to use `_PageHeader` + `_FormSection` per field + `_ActionBar`.
-- [ ] T076 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Item/Edit.cshtml` analogously to T075.
-- [ ] T077 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Item/Impact.cshtml` to use `_PageHeader` + `_FormSection`.
-- [ ] T078 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Quotation/Add.cshtml` to use `_PageHeader` + `_FormSection` (quotation amount, supplier, attached document) + `_ActionBar` (Save = Primary, Back = Secondary).
-- [ ] T079 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Review/GenerateAgreement.cshtml` to use `_PageHeader` + `_ActionBar` (Generate = StateLocking, Cancel = Secondary) wired to a `_ConfirmDialog`.
+- [X] T060 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Account/Login.cshtml` to use `_FormSection` for each input (Username, Password, Remember Me) and `_ActionBar` for Submit + secondary "Register" link. Layout already set to `_AuthLayout` in T028. Preserve every `asp-for`, `asp-validation-for`, anti-forgery token, post target.
+- [X] T061 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Account/Register.cshtml` analogously to T060.
+- [X] T062 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Admin/Index.cshtml` to use `_PageHeader` + a Tabler card grid (each card a link to a sub-section: Configuration, Impact Templates).
+- [X] T063 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Admin/Configuration.cshtml` to use `_PageHeader` + `_FormSection` per setting + `_ActionBar` (Save = Primary).
+- [X] T064 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Admin/ImpactTemplates.cshtml` to use `_PageHeader` (with primary action "Create Template") + `_DataTable` + `_EmptyState`.
+- [X] T065 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Admin/CreateTemplate.cshtml` to use `_PageHeader` + `_FormSection` per field + `_ActionBar` (Create = Primary, Cancel = Secondary).
+- [X] T066 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Admin/EditTemplate.cshtml` analogously to T065 (with Update = Primary, Delete = Destructive wired to `_ConfirmDialog`).
+- [X] T067 [P] [US3] Refactor `src/FundingPlatform.Web/Views/ApplicantResponse/Index.cshtml` to use `_PageHeader` (title from application reference, status-driven banner expressed via the subtitle slot per spec 007), `_StatusPill` for the application state, `_ActionBar` for response actions. Preserve the spec 007 banner predicates (`data-testid="signing-banner-ready"`, `data-testid="signing-banner-executed"`) verbatim — FR-019 prohibits removing them.
+- [X] T068 [P] [US3] Refactor `src/FundingPlatform.Web/Views/ApplicantResponse/Appeal.cshtml` to use `_PageHeader` + `_FormSection` (appeal text) + `_ActionBar` (Submit Appeal = Primary, Cancel = Secondary).
+- [X] T069 [P] [US3] Restyle `src/FundingPlatform.Web/Views/ApplicantResponse/_AppealMessage.cshtml` to use Tabler comment-row markup (avatar, name, timestamp, message body). Preserve the message structure and any data-test hooks already in use.
+- [X] T070 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Application/Create.cshtml` to use `_PageHeader` + `_FormSection` (description if present) + `_ActionBar` (Create Draft = Primary, Back = Secondary).
+- [X] T071 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Application/Edit.cshtml` analogously to T070.
+- [X] T072 [P] [US3] Restyle `src/FundingPlatform.Web/Views/Application/_FundingAgreementPanel.cshtml` to themed Tabler markup. Preserve the spec 006/007 panel selector contract (the panel is embedded on two host pages) and any `data-testid` hooks.
+- [X] T073 [P] [US3] Refactor `src/FundingPlatform.Web/Views/FundingAgreement/Details.cshtml` to use `_PageHeader` + `_StatusPill` for `SignedUploadStatus` + `_DocumentCard` for the generated PDF and any signed uploads + `_ActionBar` (Generate / Download / Approve / Reject classified per spec).
+- [X] T074 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Home/Index.cshtml` to use `_PageHeader` + a role-aware welcome card grid (different card sets for Applicant / Reviewer / Admin / unauthenticated). Preserve the existing controller bindings.
+- [X] T075 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Item/Add.cshtml` to use `_PageHeader` + `_FormSection` per field + `_ActionBar`.
+- [X] T076 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Item/Edit.cshtml` analogously to T075.
+- [X] T077 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Item/Impact.cshtml` to use `_PageHeader` + `_FormSection`.
+- [X] T078 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Quotation/Add.cshtml` to use `_PageHeader` + `_FormSection` (quotation amount, supplier, attached document) + `_ActionBar` (Save = Primary, Back = Secondary).
+- [X] T079 [P] [US3] Refactor `src/FundingPlatform.Web/Views/Review/GenerateAgreement.cshtml` to use `_PageHeader` + `_ActionBar` (Generate = StateLocking, Cancel = Secondary) wired to a `_ConfirmDialog`.
 
 ### Update remaining PageObjects to track new partial markup
 
-- [ ] T080 [P] [US3] Modify `tests/FundingPlatform.Tests.E2E/PageObjects/ItemPage.cs` to retarget any selectors that broke due to T075–T077; use `_FormSection`-anchored selectors (`[data-testid="form-section"][data-field="<name>"]`) where helpful. Preserve all assertions on user-visible behavior.
-- [ ] T081 [P] [US3] Modify `tests/FundingPlatform.Tests.E2E/PageObjects/QuotationPage.cs` analogously for T078.
-- [ ] T082 [P] [US3] Modify `tests/FundingPlatform.Tests.E2E/PageObjects/AdminPage.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/AppealThreadPage.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/SupplierPage.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/FundingAgreementDownloadFlow.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/FundingAgreementPanelPage.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/LoginPage.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/RegisterPage.cs` to retarget any selectors that broke due to T060–T074. **No assertion semantics relaxed.**
+- [X] T080 [P] [US3] Modify `tests/FundingPlatform.Tests.E2E/PageObjects/ItemPage.cs` to retarget any selectors that broke due to T075–T077; use `_FormSection`-anchored selectors (`[data-testid="form-section"][data-field="<name>"]`) where helpful. Preserve all assertions on user-visible behavior.
+- [X] T081 [P] [US3] Modify `tests/FundingPlatform.Tests.E2E/PageObjects/QuotationPage.cs` analogously for T078.
+- [X] T082 [P] [US3] Modify `tests/FundingPlatform.Tests.E2E/PageObjects/AdminPage.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/AppealThreadPage.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/SupplierPage.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/FundingAgreementDownloadFlow.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/FundingAgreementPanelPage.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/LoginPage.cs`, `tests/FundingPlatform.Tests.E2E/PageObjects/RegisterPage.cs` to retarget any selectors that broke due to T060–T074. **No assertion semantics relaxed.**
 
 ### Enforce visual-consistency invariants
 
@@ -208,7 +208,7 @@ These are needed because the shell DOM changes in T030 — the prior navbar sele
   - Bare PDF anchor-tag markup outside `_DocumentCard.cshtml` (and the PDF target files): zero matches.
   - `alert-info` outside `_Layout.cshtml` (which legitimately renders `TempData` alerts): zero matches.
   If any grep returns a match outside allowed locations, the offending view is incomplete — return to it in this task.
-- [ ] T084 [US3] Run `dotnet test tests/FundingPlatform.Tests.E2E --nologo` and confirm the entire E2E suite remains green after the lower-traffic sweep + PageObject retargeting. FR-019 invariant must hold.
+- [X] T084 [US3] Run `dotnet test tests/FundingPlatform.Tests.E2E --nologo` and confirm the entire E2E suite remains green after the lower-traffic sweep + PageObject retargeting. FR-019 invariant must hold.
 
 **Checkpoint**: US3 is fully functional. The entire view tree (excluding the PDF target files) speaks one visual language. The grep invariants hold. The E2E suite is green. The MVP delivered at the US1 checkpoint is now polished across every surface.
 

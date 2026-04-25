@@ -87,7 +87,7 @@ public class AdminImpactTemplateTests : AuthenticatedTestBase
         await Expect(paramCountCell).ToHaveTextAsync("2");
 
         // Verify status is Active
-        var activeBadge = templateRow.Locator(".badge:has-text('Active')");
+        var activeBadge = templateRow.Locator(".status:has-text('Active')");
         await Expect(activeBadge).ToBeVisibleAsync();
     }
 

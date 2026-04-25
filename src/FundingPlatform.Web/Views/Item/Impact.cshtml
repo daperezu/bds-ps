@@ -4,8 +4,16 @@
     ViewData["Title"] = $"Impact Assessment - {Model.ItemProductName}";
 }
 
-<h2>Impact Assessment</h2>
-<p class="text-muted">Item: <strong>@Model.ItemProductName</strong></p>
+@await Html.PartialAsync("Components/_PageHeader",
+    new PageHeaderViewModel(
+        Title: "Impact Assessment",
+        Subtitle: $"Item: {Model.ItemProductName}",
+        Breadcrumbs: new[]
+        {
+            new BreadcrumbItem("My Applications", Url.Action("Index", "Application")),
+            new BreadcrumbItem($"Application #{Model.ApplicationId}", Url.Action("Details", "Application", new { id = Model.ApplicationId })),
+            new BreadcrumbItem("Impact"),
+        }))
 
 <div class="row">
     <div class="col-md-8">

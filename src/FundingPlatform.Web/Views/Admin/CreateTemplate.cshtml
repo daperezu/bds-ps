@@ -4,7 +4,15 @@
     ViewData["Title"] = "Create Impact Template";
 }
 
-<h2>Create Impact Template</h2>
+@await Html.PartialAsync("Components/_PageHeader",
+    new PageHeaderViewModel(
+        Title: "Create Impact Template",
+        Breadcrumbs: new[]
+        {
+            new BreadcrumbItem("Admin Dashboard", Url.Action("Index")),
+            new BreadcrumbItem("Impact Templates", Url.Action("ImpactTemplates")),
+            new BreadcrumbItem("Create New"),
+        }))
 
 <div class="row">
     <div class="col-md-10">
