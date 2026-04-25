@@ -25,6 +25,14 @@ public class AuthenticatedTestBase : PageTest
     [OneTimeSetUp]
     public async Task OneTimeSetup()
     {
+        // Playwright's default Expect timeout is 5s. The applicant impact-picker JS
+        // (Views/Item/Impact.cshtml) fetches /Item/TemplateParameters/{id} on dropdown
+        // change and renders .parameter-field after the response. Under shared-fixture
+        // load (one Aspire container, ~20 test classes back-to-back), that fetch can
+        // tip past 5s and time the assertion out before .parameter-field is rendered.
+        // 15s gives enough headroom for transient slowness without masking real bugs.
+        Assertions.SetDefaultExpectTimeout(15_000);
+
         await _initLock.WaitAsync();
         try
         {
@@ -38,6 +46,41 @@ public class AuthenticatedTestBase : PageTest
         {
             _initLock.Release();
         }
+    }
+
+    /// <summary>
+    /// Pick the first real impact template and wait until the JS-rendered
+    /// <c>.parameter-field</c> elements are in the DOM. Encapsulates two race
+    /// hazards observed under shared-fixture load:
+    ///   1) <see cref="ILocator.ClickAsync"/> on the Impact link does not block
+    ///      until <c>DOMContentLoaded</c>, so the DCL handler in
+    ///      <c>Views/Item/Impact.cshtml</c> that binds the dropdown's
+    ///      <c>change</c> listener may not yet have run when we call
+    ///      <see cref="ILocator.SelectOptionAsync"/>. Without an explicit DCL
+    ///      wait, the change event is fired with no listener and no fetch
+    ///      happens. Waiting for <see cref="LoadState.DOMContentLoaded"/>
+    ///      guarantees the handler is bound before we interact.
+    ///   2) The change handler issues an async fetch; pinning the action to
+    ///      <see cref="IPage.RunAndWaitForResponseAsync"/> so the test only
+    ///      proceeds once the response arrives, instead of relying on the
+    ///      <c>Expect(.parameter-field).ToBeVisibleAsync()</c> 5s/15s timeout.
+    /// </summary>
+    protected async Task PickFirstImpactTemplateAsync()
+    {
+        await Page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+
+        var templateSelector = Page.Locator("#templateSelector");
+        await Expect(templateSelector).ToBeVisibleAsync();
+        var options = await templateSelector.Locator("option").AllAsync();
+        var value = await options[1].GetAttributeAsync("value");
+        Assert.That(value, Is.Not.Null.And.Not.Empty,
+            "Impact template options[1] must have a non-empty value (seed templates expected).");
+
+        await Page.RunAndWaitForResponseAsync(
+            async () => await templateSelector.SelectOptionAsync(value!),
+            r => r.Url.Contains("/Item/TemplateParameters/"));
+
+        await Expect(Page.Locator(".parameter-field").First).ToBeVisibleAsync();
     }
 
     protected async Task RegisterUserAsync(IPage page, string email, string password, string firstName, string lastName, string legalId)
@@ -117,11 +160,7 @@ public class AuthenticatedTestBase : PageTest
 
         var impactButton = Page.Locator("a:has-text('Impact')").First;
         await impactButton.ClickAsync();
-        var templateSelector = Page.Locator("#templateSelector");
-        await Expect(templateSelector).ToBeVisibleAsync();
-        var templateOptions = await templateSelector.Locator("option").AllAsync();
-        await templateSelector.SelectOptionAsync(await templateOptions[1].GetAttributeAsync("value") ?? "");
-        await Expect(Page.Locator(".parameter-field").First).ToBeVisibleAsync();
+        await PickFirstImpactTemplateAsync();
         var paramInputs = Page.Locator(".parameter-field input.form-control");
         var inputCount = await paramInputs.CountAsync();
         for (var i = 0; i < inputCount; i++)

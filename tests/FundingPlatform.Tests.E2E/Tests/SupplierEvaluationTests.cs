@@ -259,11 +259,7 @@ public class SupplierEvaluationTests : AuthenticatedTestBase
         // Set impact assessment
         var impactButton = Page.Locator("a:has-text('Impact')").First;
         await impactButton.ClickAsync();
-        var templateSelector = Page.Locator("#templateSelector");
-        await Expect(templateSelector).ToBeVisibleAsync();
-        var options = await templateSelector.Locator("option").AllAsync();
-        await templateSelector.SelectOptionAsync(await options[1].GetAttributeAsync("value") ?? "");
-        await Expect(Page.Locator(".parameter-field").First).ToBeVisibleAsync();
+        await PickFirstImpactTemplateAsync();
         var paramInputs = Page.Locator(".parameter-field input.form-control");
         var inputCount = await paramInputs.CountAsync();
         for (int i = 0; i < inputCount; i++)
@@ -321,11 +317,7 @@ public class SupplierEvaluationTests : AuthenticatedTestBase
         // Set impact and submit
         var impactButton = Page.Locator("a:has-text('Impact')").First;
         await impactButton.ClickAsync();
-        var templateSelector = Page.Locator("#templateSelector");
-        await Expect(templateSelector).ToBeVisibleAsync();
-        var options = await templateSelector.Locator("option").AllAsync();
-        await templateSelector.SelectOptionAsync(await options[1].GetAttributeAsync("value") ?? "");
-        await Expect(Page.Locator(".parameter-field").First).ToBeVisibleAsync();
+        await PickFirstImpactTemplateAsync();
         var paramInputs = Page.Locator(".parameter-field input.form-control");
         var inputCount = await paramInputs.CountAsync();
         for (int i = 0; i < inputCount; i++)
@@ -381,11 +373,7 @@ public class SupplierEvaluationTests : AuthenticatedTestBase
         // Set impact and submit
         var impactButton = Page.Locator("a:has-text('Impact')").First;
         await impactButton.ClickAsync();
-        var templateSelector = Page.Locator("#templateSelector");
-        await Expect(templateSelector).ToBeVisibleAsync();
-        var options = await templateSelector.Locator("option").AllAsync();
-        await templateSelector.SelectOptionAsync(await options[1].GetAttributeAsync("value") ?? "");
-        await Expect(Page.Locator(".parameter-field").First).ToBeVisibleAsync();
+        await PickFirstImpactTemplateAsync();
         var paramInputs = Page.Locator(".parameter-field input.form-control");
         var inputCount = await paramInputs.CountAsync();
         for (int i = 0; i < inputCount; i++)
