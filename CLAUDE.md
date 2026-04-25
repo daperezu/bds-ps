@@ -35,4 +35,9 @@ C# / .NET 8+ (latest LTS): Follow standard conventions
 
 
 <!-- MANUAL ADDITIONS START -->
+
+## Testing conventions
+
+- **E2E tests use ephemeral SQL.** `AppHost.cs` skips `WithDataVolume("fundingplatform-sqldata")` when `--EphemeralStorage=true` is passed, and `AspireFixture` passes that flag — so every E2E fixture run starts with a clean SQL Server container. `dotnet run --project src/FundingPlatform.AppHost` (dev mode) keeps the persistent volume.
+
 <!-- MANUAL ADDITIONS END -->
