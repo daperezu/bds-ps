@@ -40,8 +40,11 @@ public class GenerateAgreementQueueTests : AuthenticatedTestBase
 
     /// <summary>
     /// SC-010-A: A reviewer with no matching apps sees the empty-state message.
+    /// Runs first in the fixture so the queue is genuinely empty — sibling tests
+    /// in this class seed <c>ResponseFinalized</c> apps that share the same
+    /// (ephemeral but per-fixture) SQL container.
     /// </summary>
-    [Test]
+    [Test, Order(1)]
     public async Task GenerateAgreementTab_Empty_ShowsEmptyState()
     {
         var uniqueId = Guid.NewGuid().ToString("N")[..8];
