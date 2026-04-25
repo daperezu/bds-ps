@@ -91,6 +91,29 @@ public class ApplicationRepository : IApplicationRepository
         return (items, totalCount);
     }
 
+    public async Task<(List<AppEntity> Items, int TotalCount)> GetPendingAgreementPagedAsync(int page, int pageSize)
+    {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 25;
+
+        var query = _context.Applications
+            .AsNoTracking()
+            .Include(a => a.Applicant)
+            .Include(a => a.ApplicantResponses)
+            .Where(a => a.State == Domain.Enums.ApplicationState.ResponseFinalized
+                     && a.FundingAgreement == null)
+            .OrderBy(a => a.ApplicantResponses.Max(r => r.SubmittedAt));
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
+    }
+
     public async Task AddAsync(AppEntity application)
     {
         await _context.Applications.AddAsync(application);
