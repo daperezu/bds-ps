@@ -16,3 +16,11 @@
 .signed-comment-input {
     max-width: 280px;
 }
+
+.admin-users-filter-search {
+    max-width: 280px;
+}
+
+.admin-users-filter-select {
+    max-width: 200px;
+}

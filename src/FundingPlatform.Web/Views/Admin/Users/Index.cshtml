@@ -32,15 +32,15 @@
 
     <form method="get" asp-action="Index" class="mb-3 d-flex gap-2 flex-wrap" data-testid="admin-users-filter-form">
         <input type="search" name="search" value="@Model.Search" placeholder="Search name or email"
-               class="form-control" style="max-width:280px" data-testid="admin-users-search" />
-        <select name="roleFilter" class="form-select" style="max-width:200px" data-testid="admin-users-role-filter">
+               class="form-control admin-users-filter-search" data-testid="admin-users-search" />
+        <select name="roleFilter" class="form-select admin-users-filter-select" data-testid="admin-users-role-filter">
             <option value="">All roles</option>
             @foreach (var r in roles)
             {
                 <option value="@r" selected="@(Model.RoleFilter == r)">@r</option>
             }
         </select>
-        <select name="statusFilter" class="form-select" style="max-width:200px" data-testid="admin-users-status-filter">
+        <select name="statusFilter" class="form-select admin-users-filter-select" data-testid="admin-users-status-filter">
             <option value="">All statuses</option>
             @foreach (var s in statuses)
             {

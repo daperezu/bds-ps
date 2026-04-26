@@ -317,7 +317,7 @@ description: "Tasks for 009-admin-area"
 
 ### Tests for User Story 6 (write first; expect red before implementation)
 
-- [ ] T070 [US6] Create `tests/FundingPlatform.Tests.E2E/Tests/Admin/RoleAwareSidebarAdminEntriesTests.cs`:
+- [X] T070 [US6] Create `tests/FundingPlatform.Tests.E2E/Tests/Admin/RoleAwareSidebarAdminEntriesTests.cs`:
   - `Admin_SidebarShows_UsersAndReports` — log in as Admin, visit `/`; assert the sidebar contains entries with text "Users" linking to `/Admin/Users` and "Reports" linking to `/Admin/Reports`.
   - `Reviewer_SidebarDoesNotShow_AdminEntries` — log in as Reviewer; assert sidebar does NOT contain "Users" or "Reports" entries.
   - `Applicant_SidebarDoesNotShow_AdminEntries` — log in as Applicant; same assertion.
@@ -325,16 +325,16 @@ description: "Tasks for 009-admin-area"
 
 ### Implementation for User Story 6
 
-- [ ] T071 [US6] Modify the role-aware sidebar partial introduced by spec 008 (the file under `Views/Shared/` named per spec 008's plan — likely `_Layout.cshtml`'s sidebar section, or a dedicated partial / view-component). Append two new `SidebarEntry` items to the canonical entry list per `data-model.md §"Sidebar entries"`:
+- [X] T071 [US6] Modify the role-aware sidebar partial introduced by spec 008 (the file under `Views/Shared/` named per spec 008's plan — likely `_Layout.cshtml`'s sidebar section, or a dedicated partial / view-component). Append two new `SidebarEntry` items to the canonical entry list per `data-model.md §"Sidebar entries"`:
   - `new SidebarEntry("Users", "/Admin/Users", "ti ti-users", new[] { "Admin" })`
   - `new SidebarEntry("Reports", "/Admin/Reports", "ti ti-chart-line", new[] { "Admin" })`
   Place after the existing Reviewer entries (so Admins see Home → My Applications [N/A for them] → Review queue → Signing inbox → Users → Reports). Use stable `data-testid` values consistent with spec 008's pattern (e.g., `data-testid="sidebar-entry-users"`, `data-testid="sidebar-entry-reports"`).
-- [ ] T072 [US6] Verify the admin-area views (`Views/Admin/Users/Index.cshtml`, `Create.cshtml`, `Edit.cshtml`, `ResetPassword.cshtml`, `Views/Admin/Reports/Index.cshtml`, `Views/Account/AccessDenied.cshtml`, `Views/Account/ChangePassword.cshtml`) obey spec 008's invariants. Run greps:
+- [X] T072 [US6] Verify the admin-area views (`Views/Admin/Users/Index.cshtml`, `Create.cshtml`, `Edit.cshtml`, `ResetPassword.cshtml`, `Views/Admin/Reports/Index.cshtml`, `Views/Account/AccessDenied.cshtml`, `Views/Account/ChangePassword.cshtml`) obey spec 008's invariants. Run greps:
   - `rg --pcre2 'style="[^"]+"' src/FundingPlatform.Web/Views/Admin/ src/FundingPlatform.Web/Views/Account/AccessDenied.cshtml src/FundingPlatform.Web/Views/Account/ChangePassword.cshtml || echo "OK: no inline style attributes"`
   - `rg 'class="badge' src/FundingPlatform.Web/Views/Admin/ src/FundingPlatform.Web/Views/Account/AccessDenied.cshtml src/FundingPlatform.Web/Views/Account/ChangePassword.cshtml | rg -v _StatusPill || echo "OK: no badge markup outside _StatusPill"`
   - `rg --pcre2 '<a[^>]*href="[^"]*\\.(pdf|docx?|xlsx?)"' src/FundingPlatform.Web/Views/Admin/ src/FundingPlatform.Web/Views/Account/AccessDenied.cshtml src/FundingPlatform.Web/Views/Account/ChangePassword.cshtml || echo "OK: no document anchor tags outside _DocumentCard"`
   All three must report OK / no matches. (The third invariant is mostly trivial since the new admin views don't reference documents.)
-- [ ] T073 [US6] Run `dotnet build --nologo` and `dotnet test tests/FundingPlatform.Tests.E2E --nologo`. Confirm `RoleAwareSidebarAdminEntriesTests` green plus every other test added in this spec plus every existing test from specs 001–008.
+- [X] T073 [US6] Run `dotnet build --nologo` and `dotnet test tests/FundingPlatform.Tests.E2E --nologo`. Confirm `RoleAwareSidebarAdminEntriesTests` green plus every other test added in this spec plus every existing test from specs 001–008.
 
 **Checkpoint**: All six user stories complete. Admin area is visually and structurally consistent with the rest of the platform.
 
