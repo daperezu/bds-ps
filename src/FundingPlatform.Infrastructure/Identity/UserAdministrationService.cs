@@ -198,8 +198,32 @@ public class UserAdministrationService : IUserAdministrationService
         var emailChanged = !string.Equals(target.Email, request.Email, StringComparison.OrdinalIgnoreCase);
         var roleChanged = !string.Equals(currentRole, request.Role, StringComparison.Ordinal);
 
-        // Self-modification guard wired in Phase 5 (US3).
-        // Last-admin guard wired in Phase 5 (US3).
+        if (string.Equals(actorUserId, target.Id, StringComparison.Ordinal))
+        {
+            if (roleChanged)
+            {
+                throw new SelfModificationException(SelfModificationAction.ChangeOwnRole);
+            }
+            if (emailChanged)
+            {
+                throw new SelfModificationException(SelfModificationAction.ChangeOwnEmail);
+            }
+        }
+
+        if (roleChanged
+            && string.Equals(currentRole, AdminRole, StringComparison.Ordinal)
+            && !string.Equals(request.Role, AdminRole, StringComparison.Ordinal))
+        {
+            var activeAdmins = await CountActiveNonSentinelAdminsAsync(ct);
+            // The current target is an active admin counted above; demoting them subtracts 1.
+            // Only block if the target is currently active (not disabled).
+            var nowUtc = DateTimeOffset.UtcNow;
+            var targetIsActive = target.LockoutEnd == null || target.LockoutEnd <= nowUtc;
+            if (targetIsActive && activeAdmins - 1 <= 0)
+            {
+                throw new LastAdministratorException();
+            }
+        }
 
         target.FirstName = request.FirstName;
         target.LastName = request.LastName;
@@ -293,7 +317,25 @@ public class UserAdministrationService : IUserAdministrationService
             throw new SentinelUserModificationException();
         }
 
-        // Self-modification + last-admin guards wired in Phase 5 (US3).
+        if (string.Equals(actorUserId, target.Id, StringComparison.Ordinal))
+        {
+            throw new SelfModificationException(SelfModificationAction.DisableSelf);
+        }
+
+        var roles = await _userManager.GetRolesAsync(target);
+        if (roles.Contains(AdminRole))
+        {
+            var nowUtc = DateTimeOffset.UtcNow;
+            var targetIsActive = target.LockoutEnd == null || target.LockoutEnd <= nowUtc;
+            if (targetIsActive)
+            {
+                var activeAdmins = await CountActiveNonSentinelAdminsAsync(ct);
+                if (activeAdmins - 1 <= 0)
+                {
+                    throw new LastAdministratorException();
+                }
+            }
+        }
 
         await _userManager.SetLockoutEnabledAsync(target, true);
         await _userManager.SetLockoutEndDateAsync(target, DateTimeOffset.MaxValue);
@@ -333,7 +375,10 @@ public class UserAdministrationService : IUserAdministrationService
             throw new SentinelUserModificationException();
         }
 
-        // Self-modification guard wired in Phase 5 (US3).
+        if (string.Equals(actorUserId, target.Id, StringComparison.Ordinal))
+        {
+            throw new SelfModificationException(SelfModificationAction.ResetOwnPassword);
+        }
 
         var hasPassword = await _userManager.HasPasswordAsync(target);
         if (hasPassword)
@@ -415,6 +460,25 @@ public class UserAdministrationService : IUserAdministrationService
 
     private static bool IsDisabled(ApplicationUser user, DateTimeOffset nowUtc) =>
         user.LockoutEnd != null && user.LockoutEnd > nowUtc;
+
+    private async Task<int> CountActiveNonSentinelAdminsAsync(CancellationToken ct)
+    {
+        var adminRoleId = await _dbContext.Roles
+            .Where(r => r.Name == AdminRole)
+            .Select(r => r.Id)
+            .FirstOrDefaultAsync(ct);
+        if (adminRoleId is null) return 0;
+
+        var nowUtc = DateTimeOffset.UtcNow;
+        return await _dbContext.UserRoles
+            .IgnoreQueryFilters()
+            .Where(ur => ur.RoleId == adminRoleId)
+            .Join(_dbContext.Users.IgnoreQueryFilters(),
+                ur => ur.UserId,
+                u => u.Id,
+                (ur, u) => u)
+            .CountAsync(u => !u.IsSystemSentinel && (u.LockoutEnd == null || u.LockoutEnd <= nowUtc), ct);
+    }
 
     private static string ComposeFullName(ApplicationUser user)
     {

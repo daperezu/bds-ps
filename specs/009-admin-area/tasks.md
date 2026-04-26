@@ -211,12 +211,12 @@ description: "Tasks for 009-admin-area"
 
 ### Tests for User Story 3 (write first; expect red before implementation)
 
-- [ ] T054 [P] [US3] Create `tests/FundingPlatform.Tests.E2E/Tests/Admin/SelfModificationGuardTests.cs`:
+- [X] T054 [P] [US3] Create `tests/FundingPlatform.Tests.E2E/Tests/Admin/SelfModificationGuardTests.cs`:
   - `Admin_CannotDisableSelf_Rejected` — admin opens own row in `/Admin/Users`, attempts Disable; assert `SELF_MODIFICATION_BLOCKED` named-rule error in the UI.
   - `Admin_CannotChangeOwnRole_Rejected` — admin opens own Edit page, changes Role from `Admin` to `Reviewer`, submits; assert rejection with the `ChangeOwnRole` action in the message.
   - `Admin_CannotChangeOwnEmail_Rejected` — same pattern; change Email; rejection with `ChangeOwnEmail` action.
   - `Admin_CanChangeOwnFirstNameLastNamePhone_Allowed` — admin opens own Edit page, changes first/last/phone only, submits; success.
-- [ ] T055 [P] [US3] Create `tests/FundingPlatform.Tests.E2E/Tests/Admin/LastAdminGuardTests.cs`:
+- [X] T055 [P] [US3] Create `tests/FundingPlatform.Tests.E2E/Tests/Admin/LastAdminGuardTests.cs`:
   - `LastAdmin_CannotDisableSelf` — set up the platform with exactly one non-sentinel admin (the demo `admin@demo.com`); attempt to disable them; assert `LAST_ADMIN_PROTECTED`.
   - `LastAdmin_CannotDemoteSelf` — same setup; attempt to demote them to Reviewer; assert rejection.
   - `WithTwoAdmins_DisablingFirstSucceeds` — set up two active admins; disable one; assert success and the listing shows one Active admin remaining.
@@ -225,12 +225,12 @@ description: "Tasks for 009-admin-area"
 
 ### Implementation for User Story 3
 
-- [ ] T056 [US3] Modify `src/FundingPlatform.Application/Admin/Users/Services/UserAdministrationService.cs`: add the **self-modification guard** to `UpdateUserAsync`, `DisableUserAsync`, `ResetUserPasswordAsync`. Logic:
+- [X] T056 [US3] Modify `src/FundingPlatform.Application/Admin/Users/Services/UserAdministrationService.cs`: add the **self-modification guard** to `UpdateUserAsync`, `DisableUserAsync`, `ResetUserPasswordAsync`. Logic:
   - Compare `actorUserId == request.UserId`. If equal:
     - In `DisableUserAsync`: throw `SelfModificationException(SelfModificationAction.DisableSelf)`.
     - In `UpdateUserAsync`: if the request changes role (compare against current role) → throw `SelfModificationException(SelfModificationAction.ChangeOwnRole)`. If the request changes email (compare against current email) → throw `SelfModificationException(SelfModificationAction.ChangeOwnEmail)`. Changes to first/last/phone/legal-id are ALLOWED on self.
     - `ResetUserPasswordAsync` on self is also blocked? Spec says self-edit of password through the standard account surface is outside the spec. So an admin attempting to reset their OWN password from the admin area is also a self-modification. Let me block: throw `SelfModificationException(SelfModificationAction.DisableSelf)` — actually use a new action `ResetOwnPassword` if the enum has it. Add the enum member if absent.
-- [ ] T057 [US3] Modify `src/FundingPlatform.Application/Admin/Users/Services/UserAdministrationService.cs`: add the **last-non-sentinel-admin guard** per `research.md §Decision 9`. Helper method:
+- [X] T057 [US3] Modify `src/FundingPlatform.Application/Admin/Users/Services/UserAdministrationService.cs`: add the **last-non-sentinel-admin guard** per `research.md §Decision 9`. Helper method:
   ```text
   private async Task<int> CountActiveNonSentinelAdminsAsync(CancellationToken ct)
   {
@@ -246,9 +246,9 @@ description: "Tasks for 009-admin-area"
   - `DisableUserAsync` AFTER the sentinel + self-mod guards: simulate `count - 1`; if would be `0`, throw `LastAdministratorException`.
   - `UpdateUserAsync` when the change demotes an Admin to a non-Admin role: simulate `count - 1`; if `0`, throw.
   - `EnableUserAsync` does NOT call the guard (re-enable always increases the count; per `data-model.md §"State transitions"` and `research.md §Decision 9`).
-- [ ] T058 [US3] Modify `src/FundingPlatform.Web/Controllers/Admin/AdminUsersController.cs`: extend the existing `try/catch` block in each action to catch `SelfModificationException` and `LastAdministratorException` in addition to `SentinelUserModificationException` (added in T050). Map each exception to a `ModelState` error using the `AdminErrorMessages` dictionary keyed on `ErrorCode`. For `SelfModificationException`, build the user-friendly message based on the `Action` enum value (e.g., "Administrators cannot disable their own account.", "Administrators cannot change their own role from the admin area.", "Administrators cannot change their own email from the admin area.").
-- [ ] T059 [US3] Modify `src/FundingPlatform.Web/Views/Admin/Users/Index.cshtml` to **dim or hide** self-targeting destructive actions on the actor's own row when `IsSelf == true` (per the `AdminUserSummaryRowViewModel.IsSelf` flag computed in the controller). Specifically: hide the Disable action; hide the Reset Password action; for the Edit link, allow it but the Edit form's role/email fields will be server-rejected if changed. (The UI hiding is a defense-in-depth UX layer; the service-layer guard is the contract.)
-- [ ] T060 [US3] Run `dotnet build --nologo` and `dotnet test tests/FundingPlatform.Tests.E2E --nologo`. Confirm: existing tests + `AdminUserLifecycleTests` + `SentinelExclusionTests` + `SentinelImmutabilityTests` + `SelfModificationGuardTests` + `LastAdminGuardTests` all green.
+- [X] T058 [US3] Modify `src/FundingPlatform.Web/Controllers/Admin/AdminUsersController.cs`: extend the existing `try/catch` block in each action to catch `SelfModificationException` and `LastAdministratorException` in addition to `SentinelUserModificationException` (added in T050). Map each exception to a `ModelState` error using the `AdminErrorMessages` dictionary keyed on `ErrorCode`. For `SelfModificationException`, build the user-friendly message based on the `Action` enum value (e.g., "Administrators cannot disable their own account.", "Administrators cannot change their own role from the admin area.", "Administrators cannot change their own email from the admin area.").
+- [X] T059 [US3] Modify `src/FundingPlatform.Web/Views/Admin/Users/Index.cshtml` to **dim or hide** self-targeting destructive actions on the actor's own row when `IsSelf == true` (per the `AdminUserSummaryRowViewModel.IsSelf` flag computed in the controller). Specifically: hide the Disable action; hide the Reset Password action; for the Edit link, allow it but the Edit form's role/email fields will be server-rejected if changed. (The UI hiding is a defense-in-depth UX layer; the service-layer guard is the contract.)
+- [X] T060 [US3] Run `dotnet build --nologo` and `dotnet test tests/FundingPlatform.Tests.E2E --nologo`. Confirm: existing tests + `AdminUserLifecycleTests` + `SentinelExclusionTests` + `SentinelImmutabilityTests` + `SelfModificationGuardTests` + `LastAdminGuardTests` all green.
 
 **Checkpoint**: All three P1 stories are now complete. The system has user management, sentinel protection at every layer, and self-modification + last-admin lockout protection.
 
