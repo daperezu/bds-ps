@@ -12,6 +12,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-25
 - SQL Server (Aspire-managed container for dev, dacpac schema management). **No schema changes.** No new storage subsystems. (007-signing-wayfinding)
 - C# / .NET 10.0 (matches all prior specs) + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire. **NEW vendored static-asset dependency**: Tabler.io open-source build (CSS + JS) and Tabler Icons. No new NuGet packages, no new managed dependencies. (008-tabler-ui-migration)
 - SQL Server (Aspire-managed for dev, dacpac schema management). **No schema changes.** (008-tabler-ui-migration)
+- C# / .NET 10.0 (matches all prior specs). + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire. **No new dependencies introduced by this feature.** The Tabler.io static-asset bundle vendored by spec 008 is reused as-is. (009-admin-area)
+- SQL Server (Aspire-managed for dev, dacpac schema management). **Schema change**: four new columns on `dbo.AspNetUsers` (`FirstName`, `LastName`, `IsSystemSentinel`, `MustChangePassword`) plus one filtered index on `IsSystemSentinel = 1` for fast sentinel lookup. No new tables. No new managed storage subsystems. (009-admin-area)
 
 - C# / .NET 8+ (latest LTS) + ASP.NET MVC, .NET Aspire, EF Core, ASP.NET Identity, Playwright (001-core-model-submission)
 
@@ -31,9 +33,9 @@ tests/
 C# / .NET 8+ (latest LTS): Follow standard conventions
 
 ## Recent Changes
+- 009-admin-area: Added C# / .NET 10.0 (matches all prior specs). + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire. **No new dependencies introduced by this feature.** The Tabler.io static-asset bundle vendored by spec 008 is reused as-is.
 - 008-tabler-ui-migration: Added C# / .NET 10.0 (matches all prior specs) + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire. **NEW vendored static-asset dependency**: Tabler.io open-source build (CSS + JS) and Tabler Icons. No new NuGet packages, no new managed dependencies.
 - 007-signing-wayfinding: Added C# / .NET 10.0 + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire. **No new dependencies introduced by this feature.**
-- 006-digital-signatures: Added C# / .NET 10.0 + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire. No new dependencies introduced by this feature.
 
 
 <!-- MANUAL ADDITIONS START -->
