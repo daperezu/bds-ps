@@ -3,6 +3,7 @@ using FundingPlatform.Application.Interfaces;
 using FundingPlatform.Domain.Entities;
 using FundingPlatform.Infrastructure;
 using FundingPlatform.Infrastructure.DocumentGeneration;
+using FundingPlatform.Infrastructure.Identity;
 using FundingPlatform.Infrastructure.Persistence;
 using FundingPlatform.Web.Middleware;
 using FundingPlatform.Web.Services;
@@ -25,6 +26,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
         options.Password.RequireNonAlphanumeric = false;
     })
     .AddEntityFrameworkStores<AppDbContext>()
+    .AddUserStore<SentinelAwareUserStore>()
     .AddDefaultTokenProviders();
 
 builder.Services.AddControllersWithViews();
@@ -57,6 +59,11 @@ using (var scope = app.Services.CreateScope())
     try
     {
         await FundingPlatform.Infrastructure.Identity.IdentityConfiguration.SeedRolesAsync(scope.ServiceProvider);
+
+        var identityLogger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>()
+            .CreateLogger("FundingPlatform.Infrastructure.Identity.IdentityConfiguration");
+        await FundingPlatform.Infrastructure.Identity.IdentityConfiguration.SeedSentinelAdminAsync(
+            scope.ServiceProvider, app.Configuration, identityLogger);
 
         if (app.Environment.IsDevelopment())
         {

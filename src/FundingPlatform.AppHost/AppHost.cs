@@ -31,7 +31,14 @@ var funderContactEmail = builder.Configuration["FundingAgreement:Funder:ContactE
 var funderContactPhone = builder.Configuration["FundingAgreement:Funder:ContactPhone"] ?? "";
 var signedUploadMaxSizeBytes = builder.Configuration["SignedUpload:MaxSizeBytes"] ?? "20971520";
 
-builder.AddProject<Projects.FundingPlatform_Web>("webapp")
+// E2E fixture runs with EphemeralStorage=true and a fresh DB per fixture run, so
+// the sentinel admin (admin@FundingPlatform.com) is seeded on every startup. Setting
+// Admin:DefaultPassword to a known value when ephemeral keeps test sentinel sign-in
+// deterministic — otherwise the seeder generates a fresh base64 password each run.
+var adminDefaultPassword = builder.Configuration["Admin:DefaultPassword"]
+    ?? (ephemeralStorage ? "Sentinel123!" : null);
+
+var webApp = builder.AddProject<Projects.FundingPlatform_Web>("webapp")
     .WithExternalHttpEndpoints()
     .WithReference(sqlServer)
     .WaitFor(sqlServer)
@@ -44,5 +51,10 @@ builder.AddProject<Projects.FundingPlatform_Web>("webapp")
     .WithEnvironment("FundingAgreement__Funder__ContactEmail", funderContactEmail)
     .WithEnvironment("FundingAgreement__Funder__ContactPhone", funderContactPhone)
     .WithEnvironment("SignedUpload__MaxSizeBytes", signedUploadMaxSizeBytes);
+
+if (!string.IsNullOrEmpty(adminDefaultPassword))
+{
+    webApp.WithEnvironment("Admin__DefaultPassword", adminDefaultPassword);
+}
 
 builder.Build().Run();
