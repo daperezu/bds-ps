@@ -79,13 +79,16 @@ public class UserAdministrationService : IUserAdministrationService
             .ToListAsync(ct);
 
         var userIdList = users.Select(u => u.Id).ToList();
-        var rolesByUser = await _dbContext.UserRoles
+        var userRolePairs = await _dbContext.UserRoles
             .Where(ur => userIdList.Contains(ur.UserId))
             .Join(_dbContext.Roles,
                 ur => ur.RoleId,
                 r => r.Id,
                 (ur, r) => new { ur.UserId, RoleName = r.Name ?? "" })
-            .ToDictionaryAsync(x => x.UserId, x => x.RoleName, ct);
+            .ToListAsync(ct);
+        var rolesByUser = userRolePairs
+            .GroupBy(x => x.UserId)
+            .ToDictionary(g => g.Key, g => SelectPrimaryRole(g.Select(x => x.RoleName)));
 
         var nowUtc2 = DateTimeOffset.UtcNow;
         var items = users.Select(u => new UserSummaryDto(
@@ -118,8 +121,6 @@ public class UserAdministrationService : IUserAdministrationService
                     "Email already in use by another account."));
         }
 
-        await using var tx = await _dbContext.Database.BeginTransactionAsync(ct);
-
         var user = new ApplicationUser(request.Email, request.FirstName, request.LastName, request.Phone)
         {
             MustChangePassword = true,
@@ -128,14 +129,13 @@ public class UserAdministrationService : IUserAdministrationService
         var createResult = await _userManager.CreateAsync(user, request.InitialPassword);
         if (!createResult.Succeeded)
         {
-            await tx.RollbackAsync(ct);
             return Result<UserDetailDto>.Failure(MapIdentityErrors(createResult.Errors));
         }
 
         var roleResult = await _userManager.AddToRoleAsync(user, request.Role);
         if (!roleResult.Succeeded)
         {
-            await tx.RollbackAsync(ct);
+            await _userManager.DeleteAsync(user);
             return Result<UserDetailDto>.Failure(MapIdentityErrors(roleResult.Errors));
         }
 
@@ -147,7 +147,7 @@ public class UserAdministrationService : IUserAdministrationService
             {
                 if (await _dbContext.Applicants.AnyAsync(a => a.LegalId == request.LegalId, ct))
                 {
-                    await tx.RollbackAsync(ct);
+                    await _userManager.DeleteAsync(user);
                     return Result<UserDetailDto>.Failure(
                         new DomainError("LEGAL_ID_IN_USE", nameof(CreateUserRequest.LegalId),
                             "Legal ID already in use by another applicant."));
@@ -167,8 +167,6 @@ public class UserAdministrationService : IUserAdministrationService
             }
             await _dbContext.SaveChangesAsync(ct);
         }
-
-        await tx.CommitAsync(ct);
 
         var detail = await MapToDetailAsync(user, ct);
         return Result<UserDetailDto>.Success(detail!);
@@ -194,7 +192,7 @@ public class UserAdministrationService : IUserAdministrationService
         if (validation.Count > 0) return Result<UserDetailDto>.Failure(validation);
 
         var currentRoles = await _userManager.GetRolesAsync(target);
-        var currentRole = currentRoles.FirstOrDefault() ?? "";
+        var currentRole = SelectPrimaryRole(currentRoles);
         var emailChanged = !string.Equals(target.Email, request.Email, StringComparison.OrdinalIgnoreCase);
         var roleChanged = !string.Equals(currentRole, request.Role, StringComparison.Ordinal);
 
@@ -404,7 +402,7 @@ public class UserAdministrationService : IUserAdministrationService
     private async Task<UserDetailDto?> MapToDetailAsync(ApplicationUser user, CancellationToken ct)
     {
         var roles = await _userManager.GetRolesAsync(user);
-        var role = roles.FirstOrDefault() ?? "";
+        var role = SelectPrimaryRole(roles);
         string? legalId = null;
         if (string.Equals(role, ApplicantRole, StringComparison.Ordinal))
         {
@@ -460,6 +458,18 @@ public class UserAdministrationService : IUserAdministrationService
 
     private static bool IsDisabled(ApplicationUser user, DateTimeOffset nowUtc) =>
         user.LockoutEnd != null && user.LockoutEnd > nowUtc;
+
+    // FR-001 says one role per user, but the existing /Account/Register + /Account/AssignRole
+    // flow assigns multiple (Applicant + Reviewer/Admin). The admin area surfaces ONE role,
+    // picked Admin > Reviewer > Applicant so reviewers / admins read as their elevated role.
+    private static string SelectPrimaryRole(IEnumerable<string> roles)
+    {
+        var set = roles.ToHashSet(StringComparer.Ordinal);
+        if (set.Contains(AdminRole)) return AdminRole;
+        if (set.Contains(ReviewerRole)) return ReviewerRole;
+        if (set.Contains(ApplicantRole)) return ApplicantRole;
+        return set.FirstOrDefault() ?? "";
+    }
 
     private async Task<int> CountActiveNonSentinelAdminsAsync(CancellationToken ct)
     {

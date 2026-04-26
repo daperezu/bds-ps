@@ -38,40 +38,8 @@ public class AdminInheritsReviewerTests : AuthenticatedTestBase
             "Admin user should reach Reviewer-gated /Review/SigningInbox without 403.");
     }
 
-    [Test]
-    public async Task NoExistingReviewerGate_HasBeen_BroadenedTo_RolesIncludingAdmin()
-    {
-        // Meta-test: confirm spec 009 did not modify any [Authorize(Roles="Reviewer")] attribute
-        // to add ",Admin" — Reviewer-inheritance is delivered by AdminImpliesReviewerClaimsTransformation,
-        // not by attribute edits (FR-002).
-        var repoRoot = LocateRepoRoot();
-        var controllerPaths = new[]
-        {
-            Path.Combine(repoRoot, "src/FundingPlatform.Web/Controllers/ReviewController.cs"),
-            Path.Combine(repoRoot, "src/FundingPlatform.Web/Controllers/ApplicantResponseController.cs"),
-            Path.Combine(repoRoot, "src/FundingPlatform.Web/Controllers/FundingAgreementController.cs"),
-        };
-
-        foreach (var path in controllerPaths.Where(File.Exists))
-        {
-            var contents = await File.ReadAllTextAsync(path);
-            Assert.That(contents,
-                Does.Not.Contain("Roles=\"Reviewer,Admin\"").And.Not.Contain("Roles = \"Reviewer,Admin\""),
-                $"{Path.GetFileName(path)} must not have been broadened to 'Reviewer,Admin'; rely on the claims transformation instead.");
-            Assert.That(contents,
-                Does.Not.Contain("Roles=\"Admin,Reviewer\"").And.Not.Contain("Roles = \"Admin,Reviewer\""),
-                $"{Path.GetFileName(path)} must not have been broadened to 'Admin,Reviewer'; rely on the claims transformation instead.");
-        }
-    }
-
-    private static string LocateRepoRoot()
-    {
-        var dir = new DirectoryInfo(AppContext.BaseDirectory);
-        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "FundingPlatform.slnx")))
-        {
-            dir = dir.Parent;
-        }
-        Assert.That(dir, Is.Not.Null, "Could not locate repo root from test BaseDirectory.");
-        return dir!.FullName;
-    }
+    // Note: a meta-test that asserts on the literal Authorize attribute strings was tried
+    // and removed — pre-spec-009 commits in main already use Roles="Reviewer,Admin", so a
+    // string-match check fires false positives. The two functional tests above are the
+    // real contract: an Admin-only user reaches Reviewer-gated routes.
 }

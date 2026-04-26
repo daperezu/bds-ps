@@ -34,6 +34,11 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
+builder.Services.Configure<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions>(options =>
+{
+    options.ViewLocationExpanders.Add(new AdminAreaViewLocationExpander());
+});
+
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
@@ -60,24 +65,47 @@ using (var scope = app.Services.CreateScope())
         logger.LogWarning("Syncfusion license validation skipped: {Message}", ex.Message);
     }
 
-    try
+    var bootstrapLogger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    var identityLogger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>()
+        .CreateLogger("FundingPlatform.Infrastructure.Identity.IdentityConfiguration");
+
+    // E2E fixture deploys the dacpac AFTER the web app starts; production deploys
+    // it before (Aspire WaitFor). The seed steps below need the schema (and the
+    // dacpac post-deploy role rows). Retry SqlException with bounded backoff so
+    // both scenarios converge.
+    const int maxAttempts = 60;
+    var seeded = false;
+    for (var attempt = 0; attempt < maxAttempts; attempt++)
     {
-        await FundingPlatform.Infrastructure.Identity.IdentityConfiguration.SeedRolesAsync(scope.ServiceProvider);
-
-        var identityLogger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>()
-            .CreateLogger("FundingPlatform.Infrastructure.Identity.IdentityConfiguration");
-        await FundingPlatform.Infrastructure.Identity.IdentityConfiguration.SeedSentinelAdminAsync(
-            scope.ServiceProvider, app.Configuration, identityLogger);
-
-        if (app.Environment.IsDevelopment())
+        try
         {
-            await FundingPlatform.Infrastructure.Identity.IdentityConfiguration.SeedUsersAsync(scope.ServiceProvider);
+            await FundingPlatform.Infrastructure.Identity.IdentityConfiguration.SeedRolesAsync(scope.ServiceProvider);
+
+            await FundingPlatform.Infrastructure.Identity.IdentityConfiguration.SeedSentinelAdminAsync(
+                scope.ServiceProvider, app.Configuration, identityLogger);
+
+            if (app.Environment.IsDevelopment())
+            {
+                await FundingPlatform.Infrastructure.Identity.IdentityConfiguration.SeedUsersAsync(scope.ServiceProvider);
+            }
+            seeded = true;
+            break;
+        }
+        catch (Microsoft.Data.SqlClient.SqlException ex)
+        {
+            if (attempt == maxAttempts - 1)
+            {
+                bootstrapLogger.LogWarning(
+                    "Database schema not ready after {Attempts} attempts; seed skipped. Error: {Message}",
+                    maxAttempts, ex.Message);
+                break;
+            }
+            await Task.Delay(TimeSpan.FromSeconds(1));
         }
     }
-    catch (Microsoft.Data.SqlClient.SqlException ex)
+    if (seeded)
     {
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogWarning("Database schema not ready — deploy the dacpac and restart. Error: {Message}", ex.Message);
+        bootstrapLogger.LogInformation("Identity seed completed.");
     }
 }
 
