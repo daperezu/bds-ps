@@ -14,6 +14,7 @@ Last updated: 2026-04-25
 | 06 | 2026-04-18 | digital-signatures | spec-created | 006 |
 | 07 | 2026-04-23 | signing-wayfinding | spec-created | 007 |
 | 08 | 2026-04-25 | tabler-ui-strategy | spec-created | 008 |
+| 09 | 2026-04-25 | admin-area | spec-created | 009 |
 
 ## Open Threads
 
@@ -54,6 +55,13 @@ Last updated: 2026-04-25
 - Future spec 010 (notifications & inbox) needs its own brainstorm — likely SignalR (from #08)
 - Future spec 011 (localization layer) — when it lands, partials must be checked to ensure no UI copy was embedded during the 008 sweep (from #08)
 - Future spec 012 (admin/configuration surface polish) — likely needed once the 008 sweep lands (from #08)
+- Applicant demotion in-flight applications: when an Applicant is demoted, what should the original applicant see for their existing applications? Most likely read-only, pin during planning (from #09)
+- `ADMIN_DEFAULT_PASSWORD` configuration key shape and Aspire/user-secret wiring — settle precise key path during planning (from #09)
+- Sentinel password rotation procedure (post first-deploy) — no in-product rotation in v1; operational runbook needed in the plan (from #09)
+- Sentinel-password WARN-log emission ordering — a crash between user-row commit and log-flush could leave the password unrecoverable; plan must specify emit-before-commit or equivalent (from #09)
+- Whether the expanded admin-edited-profile scope (first/last/phone for all roles, legal id for Applicants) is right v1 surface or should narrow back to identity-level only (from #09)
+- Whether single-role-by-contract is the right call vs single-role-by-UX with a multi-role-capable data model (from #09)
+- Future audit log of admin actions — deferred to a future compliance/reporting spec; needs to land when external audit pressure surfaces (from #09)
 
 ## Closed Threads
 
