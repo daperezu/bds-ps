@@ -5,8 +5,10 @@ using FundingPlatform.Infrastructure;
 using FundingPlatform.Infrastructure.DocumentGeneration;
 using FundingPlatform.Infrastructure.Identity;
 using FundingPlatform.Infrastructure.Persistence;
+using FundingPlatform.Web.Identity;
 using FundingPlatform.Web.Middleware;
 using FundingPlatform.Web.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,6 +43,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.Configure<SecurityStampValidatorOptions>(o =>
     o.ValidationInterval = TimeSpan.FromMinutes(1));
+
+builder.Services.AddScoped<IClaimsTransformation, AdminImpliesReviewerClaimsTransformation>();
 
 var app = builder.Build();
 

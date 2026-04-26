@@ -262,7 +262,7 @@ description: "Tasks for 009-admin-area"
 
 ### Tests for User Story 4 (write first; expect red before implementation)
 
-- [ ] T061 [US4] Create `tests/FundingPlatform.Tests.E2E/Tests/Admin/AdminInheritsReviewerTests.cs`:
+- [X] T061 [US4] Create `tests/FundingPlatform.Tests.E2E/Tests/Admin/AdminInheritsReviewerTests.cs`:
   - `Admin_CanAccess_ReviewQueue` — log in as Admin (sentinel or any Admin), GET `/Review`; assert HTTP 200.
   - `Admin_CanAccess_ReviewDetailPage` — given an existing application id, GET `/Review/Review/{id}`; assert HTTP 200 (or normal review-page result if the application is in a reviewable state).
   - `Admin_CanAccess_SigningInbox` — GET `/Review/SigningInbox`; assert HTTP 200.
@@ -272,13 +272,13 @@ description: "Tasks for 009-admin-area"
 
 ### Implementation for User Story 4
 
-- [ ] T062 [P] [US4] Create `src/FundingPlatform.Infrastructure/Identity/AdminImpliesReviewerClaimsTransformation.cs` per `research.md §Decision 3`: implements `IClaimsTransformation`. The `TransformAsync(ClaimsPrincipal principal)` method:
+- [X] T062 [P] [US4] Create `src/FundingPlatform.Infrastructure/Identity/AdminImpliesReviewerClaimsTransformation.cs` per `research.md §Decision 3`: implements `IClaimsTransformation`. The `TransformAsync(ClaimsPrincipal principal)` method:
   - If `!principal.IsInRole("Admin")` → return principal unchanged.
   - If `principal.IsInRole("Reviewer")` → return principal unchanged (idempotent).
   - Else: `var identity = (ClaimsIdentity)principal.Identity!; identity.AddClaim(new Claim(identity.RoleClaimType, "Reviewer")); return principal;`.
   - Returns `Task.FromResult(principal)` (no I/O).
-- [ ] T063 [US4] Modify `src/FundingPlatform.Infrastructure/DependencyInjection.cs` (or `src/FundingPlatform.Web/Program.cs` if DI registrations live there): register the transformation as `services.AddScoped<IClaimsTransformation, AdminImpliesReviewerClaimsTransformation>()`. Per `research.md §Decision 3`. Add necessary `using` directives.
-- [ ] T064 [US4] Run `dotnet build --nologo` and `dotnet test tests/FundingPlatform.Tests.E2E --nologo`. Confirm `AdminInheritsReviewerTests` is green plus all previous tests. Verify by greps that no `[Authorize(Roles="Reviewer")]` attribute in `Controllers/{ReviewController,ApplicantResponseController,FundingAgreementController}.cs` has been modified by this story.
+- [X] T063 [US4] Modify `src/FundingPlatform.Infrastructure/DependencyInjection.cs` (or `src/FundingPlatform.Web/Program.cs` if DI registrations live there): register the transformation as `services.AddScoped<IClaimsTransformation, AdminImpliesReviewerClaimsTransformation>()`. Per `research.md §Decision 3`. Add necessary `using` directives.
+- [X] T064 [US4] Run `dotnet build --nologo` and `dotnet test tests/FundingPlatform.Tests.E2E --nologo`. Confirm `AdminInheritsReviewerTests` is green plus all previous tests. Verify by greps that no `[Authorize(Roles="Reviewer")]` attribute in `Controllers/{ReviewController,ApplicantResponseController,FundingAgreementController}.cs` has been modified by this story.
 
 **Checkpoint**: Admin transparently inherits Reviewer authorization; no existing gate code was modified.
 
