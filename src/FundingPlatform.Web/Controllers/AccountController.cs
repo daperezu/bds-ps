@@ -9,14 +9,14 @@ namespace FundingPlatform.Web.Controllers;
 
 public class AccountController : Controller
 {
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly AppDbContext _dbContext;
     private readonly IWebHostEnvironment _environment;
 
     public AccountController(
-        UserManager<IdentityUser> userManager,
-        SignInManager<IdentityUser> signInManager,
+        UserManager<ApplicationUser> userManager,
+        SignInManager<ApplicationUser> signInManager,
         AppDbContext dbContext,
         IWebHostEnvironment environment)
     {
@@ -41,7 +41,13 @@ public class AccountController : Controller
             return View(model);
         }
 
-        var user = new IdentityUser { UserName = model.Email, Email = model.Email };
+        var user = new ApplicationUser
+        {
+            UserName = model.Email,
+            Email = model.Email,
+            FirstName = model.FirstName,
+            LastName = model.LastName,
+        };
         var result = await _userManager.CreateAsync(user, model.Password);
 
         if (!result.Succeeded)
@@ -73,6 +79,14 @@ public class AccountController : Controller
     [HttpGet]
     public IActionResult Login()
     {
+        return View();
+    }
+
+    [HttpGet]
+    [AllowAnonymous]
+    public IActionResult AccessDenied()
+    {
+        Response.StatusCode = StatusCodes.Status403Forbidden;
         return View();
     }
 

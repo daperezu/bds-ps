@@ -25,7 +25,7 @@ public static class IdentityConfiguration
 
     public static async Task SeedUsersAsync(IServiceProvider serviceProvider)
     {
-        var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var dbContext = serviceProvider.GetRequiredService<AppDbContext>();
 
         var seedUsers = new[]
@@ -40,7 +40,7 @@ public static class IdentityConfiguration
             if (await userManager.FindByEmailAsync(seed.Email) is not null)
                 continue;
 
-            var user = new IdentityUser { UserName = seed.Email, Email = seed.Email };
+            var user = new ApplicationUser(seed.Email, seed.FirstName, seed.LastName, phone: null);
             var result = await userManager.CreateAsync(user, seed.Password);
             if (!result.Succeeded)
                 continue;

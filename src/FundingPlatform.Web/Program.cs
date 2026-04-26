@@ -1,5 +1,6 @@
 using FundingPlatform.Application;
 using FundingPlatform.Application.Interfaces;
+using FundingPlatform.Domain.Entities;
 using FundingPlatform.Infrastructure;
 using FundingPlatform.Infrastructure.DocumentGeneration;
 using FundingPlatform.Infrastructure.Persistence;
@@ -15,7 +16,7 @@ builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<IFundingAgreementHtmlRenderer, RazorFundingAgreementHtmlRenderer>();
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
         options.SignIn.RequireConfirmedAccount = false;
         options.Password.RequireDigit = true;
@@ -32,8 +33,11 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
     options.LogoutPath = "/Account/Logout";
-    options.AccessDeniedPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/AccessDenied";
 });
+
+builder.Services.Configure<SecurityStampValidatorOptions>(o =>
+    o.ValidationInterval = TimeSpan.FromMinutes(1));
 
 var app = builder.Build();
 
