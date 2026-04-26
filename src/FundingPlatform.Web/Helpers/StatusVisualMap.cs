@@ -42,4 +42,19 @@ public static class StatusVisualMap
         SignedUploadStatus.Withdrawn => new StatusVisual("bg-secondary", "ti ti-arrow-back-up", "Withdrawn"),
         _ => throw new ArgumentOutOfRangeException(nameof(s), s, "Unhandled SignedUploadStatus"),
     };
+
+    public static StatusVisual For(AdminUserStatus s) => s switch
+    {
+        AdminUserStatus.Active => new StatusVisual("bg-success", "ti ti-circle-check", "Active"),
+        AdminUserStatus.Disabled => new StatusVisual("bg-secondary", "ti ti-ban", "Disabled"),
+        _ => throw new ArgumentOutOfRangeException(nameof(s), s, "Unhandled AdminUserStatus"),
+    };
+
+    public static StatusVisual For(AdminUserRole r) => r switch
+    {
+        AdminUserRole.Applicant => new StatusVisual("bg-info", "ti ti-user", "Applicant"),
+        AdminUserRole.Reviewer => new StatusVisual("bg-primary", "ti ti-eye", "Reviewer"),
+        AdminUserRole.Admin => new StatusVisual("bg-purple", "ti ti-shield-lock", "Admin"),
+        _ => throw new ArgumentOutOfRangeException(nameof(r), r, "Unhandled AdminUserRole"),
+    };
 }

@@ -1,0 +1,86 @@
+@using FundingPlatform.Web.ViewModels.Admin
+@model AdminUserEditViewModel
+@{
+    ViewData["Title"] = "Edit user";
+    var roles = new[] { "Applicant", "Reviewer", "Admin" };
+}
+
+<div data-testid="admin-area">
+    @await Html.PartialAsync("Components/_PageHeader",
+        new PageHeaderViewModel(
+            Title: $"Edit user — {Model.Email}",
+            Breadcrumbs: new[]
+            {
+                new BreadcrumbItem("Users", Url.Action("Index", "AdminUsers")),
+                new BreadcrumbItem("Edit"),
+            }))
+
+    <form method="post" asp-action="Edit" asp-route-id="@Model.UserId" class="row" data-testid="admin-user-edit-form">
+        @Html.AntiForgeryToken()
+        <input asp-for="UserId" type="hidden" />
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+        <div class="col-md-6 mb-3">
+            <label class="form-label" asp-for="FirstName">First name</label>
+            <input asp-for="FirstName" class="form-control" />
+            <span asp-validation-for="FirstName" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label" asp-for="LastName">Last name</label>
+            <input asp-for="LastName" class="form-control" />
+            <span asp-validation-for="LastName" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label" asp-for="Email">Email</label>
+            <input asp-for="Email" class="form-control" type="email" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label" asp-for="Phone">Phone (optional)</label>
+            <input asp-for="Phone" class="form-control" type="tel" />
+            <span asp-validation-for="Phone" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label" asp-for="Role">Role</label>
+            <select asp-for="Role" class="form-select" id="roleSelect" data-testid="admin-user-role">
+                @foreach (var r in roles)
+                {
+                    <option value="@r" selected="@(Model.Role == r)">@r</option>
+                }
+            </select>
+            <span asp-validation-for="Role" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3" data-testid="legalid-field" id="legalIdField">
+            <label class="form-label" asp-for="LegalId">Legal ID</label>
+            <input asp-for="LegalId" class="form-control" />
+            <span asp-validation-for="LegalId" class="text-danger"></span>
+        </div>
+
+        <div class="d-flex justify-content-between mt-2">
+            <a class="btn btn-outline-secondary"
+               data-testid="admin-user-edit-reset-password-link"
+               href="@Url.Action("ResetPassword", "AdminUsers", new { id = Model.UserId })">
+                <i class="ti ti-key"></i> Reset password
+            </a>
+            <div class="d-flex gap-2">
+                <a class="btn btn-secondary" href="@Url.Action("Index", "AdminUsers")">Cancel</a>
+                <button type="submit" class="btn btn-primary" data-testid="admin-user-edit-submit">Save changes</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    (function () {
+        var roleSelect = document.getElementById('roleSelect');
+        var legalField = document.getElementById('legalIdField');
+        function updateLegalIdVisibility() {
+            if (!roleSelect || !legalField) return;
+            legalField.style.display = roleSelect.value === 'Applicant' ? '' : 'none';
+        }
+        if (roleSelect) {
+            roleSelect.addEventListener('change', updateLegalIdVisibility);
+            updateLegalIdVisibility();
+        }
+    })();
+</script>

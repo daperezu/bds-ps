@@ -38,4 +38,14 @@ public class Applicant
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
+
+    public void UpdateProfile(string legalId, string firstName, string lastName, string email, string? phone)
+    {
+        LegalId = legalId;
+        FirstName = firstName;
+        LastName = lastName;
+        Email = email;
+        Phone = phone;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

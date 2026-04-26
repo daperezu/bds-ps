@@ -4,6 +4,7 @@ using FundingPlatform.Domain.Entities;
 using FundingPlatform.Infrastructure;
 using FundingPlatform.Infrastructure.DocumentGeneration;
 using FundingPlatform.Infrastructure.Persistence;
+using FundingPlatform.Web.Middleware;
 using FundingPlatform.Web.Services;
 using Microsoft.AspNetCore.Identity;
 
@@ -82,6 +83,8 @@ app.MapDefaultEndpoints();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<MustChangePasswordMiddleware>();
 
 app.MapStaticAssets();
 app.MapRazorPages();
