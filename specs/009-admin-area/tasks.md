@@ -292,8 +292,8 @@ description: "Tasks for 009-admin-area"
 
 ### Tests for User Story 5 (write first; expect red before implementation)
 
-- [ ] T065 [P] [US5] Create `tests/FundingPlatform.Tests.E2E/PageObjects/Admin/AdminReportsPage.cs` — locator for the page-header title and the empty-state region.
-- [ ] T066 [P] [US5] Create `tests/FundingPlatform.Tests.E2E/Tests/Admin/AdminReportsStubTests.cs`:
+- [X] T065 [P] [US5] Create `tests/FundingPlatform.Tests.E2E/PageObjects/Admin/AdminReportsPage.cs` — locator for the page-header title and the empty-state region.
+- [X] T066 [P] [US5] Create `tests/FundingPlatform.Tests.E2E/Tests/Admin/AdminReportsStubTests.cs`:
   - `Admin_GetReports_RendersEmptyStatePage` — log in as Admin, GET `/Admin/Reports`; assert HTTP 200 + the empty-state region is visible with copy along the lines of "Reports module coming soon".
   - `Reviewer_GetReports_403` — log in as Reviewer, GET `/Admin/Reports`; assert HTTP 403 (the new AccessDenied page); NOT a redirect to login.
   - `Applicant_GetReports_403` — log in as Applicant, GET `/Admin/Reports`; assert HTTP 403.
@@ -301,9 +301,9 @@ description: "Tasks for 009-admin-area"
 
 ### Implementation for User Story 5
 
-- [ ] T067 [P] [US5] Create `src/FundingPlatform.Web/Controllers/Admin/AdminReportsController.cs`: class attributes `[Authorize(Roles = "Admin")]` and `[Route("Admin/Reports")]`. Single action `[HttpGet] public IActionResult Index() => View()`. No injected dependencies.
-- [ ] T068 [P] [US5] Create `src/FundingPlatform.Web/Views/Admin/Reports/Index.cshtml` per `plan.md §Project Structure`: `_PageHeader` (Title = "Reports") + a single `_EmptyState` partial with icon `ti ti-chart-line` (or appropriate icon), headline "Reports coming soon", body "The reports module is not yet available. Check back in a future release.". No data, no actions, no widgets. Set `data-testid="admin-area"` on the outer wrapper.
-- [ ] T069 [US5] Run `dotnet build --nologo` and `dotnet test tests/FundingPlatform.Tests.E2E --nologo`. Confirm `AdminReportsStubTests` green plus all previous tests.
+- [X] T067 [P] [US5] Create `src/FundingPlatform.Web/Controllers/Admin/AdminReportsController.cs`: class attributes `[Authorize(Roles = "Admin")]` and `[Route("Admin/Reports")]`. Single action `[HttpGet] public IActionResult Index() => View()`. No injected dependencies.
+- [X] T068 [P] [US5] Create `src/FundingPlatform.Web/Views/Admin/Reports/Index.cshtml` per `plan.md §Project Structure`: `_PageHeader` (Title = "Reports") + a single `_EmptyState` partial with icon `ti ti-chart-line` (or appropriate icon), headline "Reports coming soon", body "The reports module is not yet available. Check back in a future release.". No data, no actions, no widgets. Set `data-testid="admin-area"` on the outer wrapper.
+- [X] T069 [US5] Run `dotnet build --nologo` and `dotnet test tests/FundingPlatform.Tests.E2E --nologo`. Confirm `AdminReportsStubTests` green plus all previous tests.
 
 **Checkpoint**: `/Admin/Reports` access-control contract is locked in. The page is reachable, gated, and visibly placeholder.
 
