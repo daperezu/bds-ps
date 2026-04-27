@@ -1,6 +1,6 @@
 # bsd-ps Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-25
+Auto-generated from all feature plans. Last updated: 2026-04-26
 
 ## Active Technologies
 - C# / .NET 10.0 + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire (002-review-approval-workflow)
@@ -14,6 +14,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-25
 - SQL Server (Aspire-managed for dev, dacpac schema management). **No schema changes.** (008-tabler-ui-migration)
 - C# / .NET 10.0 (matches all prior specs). + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire. **No new dependencies introduced by this feature.** The Tabler.io static-asset bundle vendored by spec 008 is reused as-is. (009-admin-area)
 - SQL Server (Aspire-managed for dev, dacpac schema management). **Schema change**: four new columns on `dbo.AspNetUsers` (`FirstName`, `LastName`, `IsSystemSentinel`, `MustChangePassword`) plus one filtered index on `IsSystemSentinel = 1` for fast sentinel lookup. No new tables. No new managed storage subsystems. (009-admin-area)
+- C# / .NET 10.0 (matches all prior specs). + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire. **No new dependencies introduced by this feature.** The Tabler.io static-asset bundle vendored by spec 008 is reused as-is. The Syncfusion HTML-to-PDF renderer and license validator vendored by spec 005 are reused as-is for the Funding Agreement currency-code render change. (010-admin-reports)
+- SQL Server (Aspire-managed for dev, dacpac schema management). **Schema change**: one new column on `dbo.Quotations` (`Currency` NVARCHAR(3) NOT NULL after backfill). One new seed row in `dbo.SystemConfigurations` (`DefaultCurrency`). No new tables. No new managed storage subsystems. CSV exports stream directly from the DB to the HTTP response — no temp file, no in-memory materialization beyond the page-buffer. (010-admin-reports)
 
 - C# / .NET 8+ (latest LTS) + ASP.NET MVC, .NET Aspire, EF Core, ASP.NET Identity, Playwright (001-core-model-submission)
 
@@ -33,9 +35,9 @@ tests/
 C# / .NET 8+ (latest LTS): Follow standard conventions
 
 ## Recent Changes
+- 010-admin-reports: Added C# / .NET 10.0 (matches all prior specs). + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire. **No new dependencies introduced by this feature.** The Tabler.io static-asset bundle vendored by spec 008 is reused as-is. The Syncfusion HTML-to-PDF renderer and license validator vendored by spec 005 are reused as-is for the Funding Agreement currency-code render change.
 - 009-admin-area: Added C# / .NET 10.0 (matches all prior specs). + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire. **No new dependencies introduced by this feature.** The Tabler.io static-asset bundle vendored by spec 008 is reused as-is.
 - 008-tabler-ui-migration: Added C# / .NET 10.0 (matches all prior specs) + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire. **NEW vendored static-asset dependency**: Tabler.io open-source build (CSS + JS) and Tabler Icons. No new NuGet packages, no new managed dependencies.
-- 007-signing-wayfinding: Added C# / .NET 10.0 + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire. **No new dependencies introduced by this feature.**
 
 
 <!-- MANUAL ADDITIONS START -->
