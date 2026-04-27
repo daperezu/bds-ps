@@ -6,6 +6,7 @@ public record QuotationDto(
     string SupplierName,
     string SupplierLegalId,
     decimal Price,
+    string Currency,
     DateOnly ValidUntil,
     int DocumentId,
     string DocumentFileName);

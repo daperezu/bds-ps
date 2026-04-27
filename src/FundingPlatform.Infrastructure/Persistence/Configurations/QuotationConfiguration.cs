@@ -17,6 +17,10 @@ public class QuotationConfiguration : IEntityTypeConfiguration<Quotation>
         builder.Property(q => q.Price).IsRequired().HasColumnType("decimal(18,2)");
         builder.Property(q => q.ValidUntil).IsRequired();
         builder.Property(q => q.DocumentId).IsRequired();
+        builder.Property(q => q.Currency)
+            .IsRequired()
+            .HasColumnType("NVARCHAR(3)")
+            .HasMaxLength(3);
         builder.Property(q => q.CreatedAt).IsRequired();
 
         builder.HasIndex(q => new { q.ItemId, q.SupplierId })

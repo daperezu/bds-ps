@@ -1,3 +1,5 @@
+using FundingPlatform.Application.Admin.Reports;
+using FundingPlatform.Application.Admin.Reports.Services;
 using FundingPlatform.Application.Admin.Users;
 using FundingPlatform.Application.Interfaces;
 using FundingPlatform.Application.Options;
@@ -5,6 +7,7 @@ using FundingPlatform.Domain.Interfaces;
 using FundingPlatform.Infrastructure.DocumentGeneration;
 using FundingPlatform.Infrastructure.FileStorage;
 using FundingPlatform.Infrastructure.Identity;
+using FundingPlatform.Infrastructure.Persistence.Reports;
 using FundingPlatform.Infrastructure.Persistence.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +33,10 @@ public static class DependencyInjection
 
         services.Configure<FunderOptions>(configuration.GetSection(FunderOptions.SectionName));
         services.Configure<FundingAgreementOptions>(configuration.GetSection(FundingAgreementOptions.SectionName));
+        services.Configure<AdminReportsOptions>(configuration.GetSection(AdminReportsOptions.SectionName));
+
+        services.AddScoped<IAdminReportsService, AdminReportsService>();
+        services.AddScoped<IReportQueryService, ReportQueryService>();
 
         services.AddSingleton<IFundingAgreementPdfRenderer, SyncfusionFundingAgreementPdfRenderer>();
         services.AddSingleton<SyncfusionLicenseValidator>();

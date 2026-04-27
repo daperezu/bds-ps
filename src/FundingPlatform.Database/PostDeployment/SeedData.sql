@@ -64,6 +64,31 @@ IF NOT EXISTS (SELECT 1 FROM [dbo].[SystemConfigurations] WHERE [Key] = N'MaxApp
     INSERT INTO [dbo].[SystemConfigurations] ([Key], [Value], [Description], [UpdatedAt])
     VALUES (N'MaxAppealsPerApplication', N'1', N'Maximum appeals per application across all reopen cycles. 0 disables appeals.', GETUTCDATE());
 
+IF NOT EXISTS (SELECT 1 FROM [dbo].[SystemConfigurations] WHERE [Key] = N'DefaultCurrency')
+    INSERT INTO [dbo].[SystemConfigurations] ([Key], [Value], [Description], [UpdatedAt])
+    VALUES (N'DefaultCurrency', N'$(DefaultCurrency)', N'Default 3-character ISO 4217 currency code applied to new quotations and historical backfill', GETUTCDATE());
+
+-- Backfill any quotations missing a Currency with the configured DefaultCurrency.
+-- Idempotent: re-runs are no-ops because every prior row already has Currency set.
+UPDATE [dbo].[Quotations]
+    SET [Currency] = (SELECT [Value] FROM [dbo].[SystemConfigurations] WHERE [Key] = N'DefaultCurrency')
+    WHERE [Currency] IS NULL;
+
+-- Tighten Quotations.Currency to NOT NULL after backfill. Idempotent: a second
+-- invocation finds the column already NOT NULL and short-circuits. Inlined here
+-- because Microsoft.Build.Sql 2.1.0 supports a single post-deploy script per
+-- project; deployment ordering (column add (declarative) -> backfill -> tighten)
+-- is preserved by sequential placement within this file.
+IF EXISTS (
+    SELECT 1
+    FROM sys.columns c
+    INNER JOIN sys.tables t ON t.object_id = c.object_id
+    WHERE t.name = N'Quotations' AND c.name = N'Currency' AND c.is_nullable = 1
+)
+BEGIN
+    ALTER TABLE [dbo].[Quotations] ALTER COLUMN [Currency] NVARCHAR(3) NOT NULL;
+END;
+
 -- =============================================================================
 -- Impact Templates
 -- =============================================================================

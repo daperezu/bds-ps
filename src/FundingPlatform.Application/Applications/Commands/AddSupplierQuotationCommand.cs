@@ -17,6 +17,7 @@ public class AddSupplierQuotationCommand
     public bool IsCompliantHacienda { get; set; }
     public bool IsCompliantSICOP { get; set; }
     public decimal Price { get; set; }
+    public string Currency { get; set; } = string.Empty;
     public DateOnly ValidUntil { get; set; }
     public string FileName { get; set; } = string.Empty;
     public string FileContentType { get; set; } = string.Empty;
