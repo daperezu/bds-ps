@@ -1,5 +1,10 @@
+using System.Globalization;
+using System.Net.Mime;
+using System.Text;
 using FundingPlatform.Application.Admin.Reports;
 using FundingPlatform.Application.Admin.Reports.DTOs;
+using FundingPlatform.Application.Admin.Reports.Services;
+using FundingPlatform.Application.Exceptions;
 using FundingPlatform.Web.ViewModels.Admin.Reports;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -45,5 +50,92 @@ public class AdminReportsController : Controller
         };
 
         return View(vm);
+    }
+
+    [HttpGet("Applications")]
+    public async Task<IActionResult> Applications([FromQuery] ListApplicationsRequest req, CancellationToken ct)
+    {
+        // Force the fixed page size; clients cannot override.
+        req.PageSize = AdminReportsService.PageSize;
+        var result = await _reportsService.ListApplicationsAsync(req, ct);
+
+        var totalPages = (int)Math.Ceiling((double)result.TotalCount / AdminReportsService.PageSize);
+        var vm = new ApplicationsViewModel
+        {
+            Result = result,
+            PageSize = AdminReportsService.PageSize,
+            CurrentPage = Math.Max(1, req.Page),
+            TotalPages = Math.Max(1, totalPages),
+        };
+
+        return View(vm);
+    }
+
+    [HttpGet("Applications/Export")]
+    public async Task<IActionResult> ExportApplications([FromQuery] ListApplicationsRequest req, CancellationToken ct)
+    {
+        try
+        {
+            // Materialize lazily into the response stream.
+            var enumerator = _reportsService.ExportApplicationsCsvAsync(req, ct);
+            return new CsvFileStreamResult(enumerator, "applications.csv");
+        }
+        catch (CsvRowBoundExceededException ex)
+        {
+            return BadRequest(new
+            {
+                error = "CsvRowBoundExceeded",
+                limit = ex.Limit,
+                actualCount = ex.ActualCount,
+                hint = "Narrow your filter and try again."
+            });
+        }
+    }
+}
+
+internal sealed class CsvFileStreamResult : IActionResult
+{
+    private readonly IAsyncEnumerable<string> _lines;
+    private readonly string _fileName;
+
+    public CsvFileStreamResult(IAsyncEnumerable<string> lines, string fileName)
+    {
+        _lines = lines;
+        _fileName = fileName;
+    }
+
+    public async Task ExecuteResultAsync(ActionContext context)
+    {
+        var ct = context.HttpContext.RequestAborted;
+        var response = context.HttpContext.Response;
+        response.ContentType = "text/csv; charset=utf-8";
+        response.Headers["Content-Disposition"] = $"attachment; filename={_fileName}";
+
+        // UTF-8 BOM so Excel auto-detects encoding.
+        await response.Body.WriteAsync(new byte[] { 0xEF, 0xBB, 0xBF }, ct);
+
+        try
+        {
+            await foreach (var line in _lines.WithCancellation(ct))
+            {
+                var bytes = Encoding.UTF8.GetBytes(line);
+                await response.Body.WriteAsync(bytes, ct);
+            }
+        }
+        catch (CsvRowBoundExceededException ex)
+        {
+            // The bound is enforced before any rows stream, so we can still set the
+            // status code and JSON body cleanly here.
+            if (!response.HasStarted)
+            {
+                response.Clear();
+                response.StatusCode = StatusCodes.Status400BadRequest;
+                response.ContentType = MediaTypeNames.Application.Json;
+                var payload = $"{{\"error\":\"CsvRowBoundExceeded\",\"limit\":{ex.Limit.ToString(CultureInfo.InvariantCulture)},\"actualCount\":{ex.ActualCount.ToString(CultureInfo.InvariantCulture)},\"hint\":\"Narrow your filter and try again.\"}}";
+                await response.WriteAsync(payload, ct);
+                return;
+            }
+            throw;
+        }
     }
 }

@@ -1,5 +1,7 @@
+using System.Runtime.CompilerServices;
 using FundingPlatform.Application.Admin.Reports.DTOs;
 using FundingPlatform.Application.Interfaces;
+using FundingPlatform.Domain.Entities;
 using FundingPlatform.Domain.Enums;
 using FundingPlatform.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
@@ -15,24 +17,61 @@ public sealed class ReportQueryService : IReportQueryService
         _db = db;
     }
 
-    public IQueryable<ApplicationRowDto> ApplicationsQuery(ListApplicationsRequest req)
-        => throw new NotImplementedException("Implemented in user-story phase US3.");
+    public Task<int> CountApplicationsAsync(ListApplicationsRequest req, CancellationToken ct = default)
+        => BuildApplicationsQuery(req).CountAsync(ct);
 
-    public IQueryable<ApplicantRowDto> ApplicantsQuery(ListApplicantsRequest req)
-        => throw new NotImplementedException("Implemented in user-story phase US4.");
+    public async Task<IReadOnlyList<ApplicationProjection>> ListApplicationsPageAsync(
+        ListApplicationsRequest req, int page, int pageSize, CancellationToken ct = default)
+    {
+        var q = ApplyApplicationsSort(BuildApplicationsQuery(req), req.Sort);
+        return await q.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+    }
 
-    public IQueryable<FundedItemRowDto> FundedItemsQuery(ListFundedItemsRequest req)
-        => throw new NotImplementedException("Implemented in user-story phase US5.");
+    public async IAsyncEnumerable<ApplicationProjection> StreamApplicationsAsync(
+        ListApplicationsRequest req, [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var q = ApplyApplicationsSort(BuildApplicationsQuery(req), req.Sort);
+        await foreach (var row in q.AsAsyncEnumerable().WithCancellation(ct))
+        {
+            yield return row;
+        }
+    }
 
-    public IQueryable<AgingApplicationRowDto> AgingApplicationsQuery(ListAgingApplicationsRequest req)
-        => throw new NotImplementedException("Implemented in user-story phase US6.");
+    public async Task<IReadOnlyDictionary<int, IReadOnlyList<CurrencyAmount>>>
+        ApplicationsApprovedTotalsAsync(IReadOnlyCollection<int> appIds, CancellationToken ct = default)
+    {
+        if (appIds.Count == 0)
+        {
+            return new Dictionary<int, IReadOnlyList<CurrencyAmount>>();
+        }
+
+        var rows = await (
+            from i in _db.Items.AsNoTracking()
+            where appIds.Contains(i.ApplicationId)
+                  && i.ReviewStatus == ItemReviewStatus.Approved
+                  && i.SelectedSupplierId != null
+            join q in _db.Quotations.AsNoTracking()
+                on new { ItemId = i.Id, SupplierId = i.SelectedSupplierId!.Value }
+                equals new { ItemId = q.ItemId, SupplierId = q.SupplierId }
+            select new { i.ApplicationId, q.Currency, q.Price }
+        ).ToListAsync(ct);
+
+        return rows
+            .GroupBy(r => r.ApplicationId)
+            .ToDictionary(
+                g => g.Key,
+                g => (IReadOnlyList<CurrencyAmount>)g
+                    .GroupBy(r => r.Currency)
+                    .Select(cg => new CurrencyAmount(cg.Key, cg.Sum(x => x.Price)))
+                    .OrderBy(c => c.Currency)
+                    .ToList());
+    }
 
     public async Task<DashboardResult> DashboardSnapshotAsync(DateRange range, CancellationToken ct = default)
     {
         var fromUtc = range.From.ToDateTime(TimeOnly.MinValue);
         var toUtc = range.To.ToDateTime(TimeOnly.MaxValue);
 
-        // Pipeline: count applications per state (always current, excluding Draft).
         var pipelineRaw = await _db.Applications
             .AsNoTracking()
             .Where(a => a.State != ApplicationState.Draft)
@@ -45,7 +84,6 @@ public sealed class ReportQueryService : IReportQueryService
             .Select(s => new PipelineCount(s, pipelineRaw.FirstOrDefault(p => p.State == s)?.Count ?? 0))
             .ToList();
 
-        // Financial: approved this period (per currency).
         var approvedRaw = await _db.Items
             .AsNoTracking()
             .Where(i => i.ReviewStatus == ItemReviewStatus.Approved
@@ -93,7 +131,6 @@ public sealed class ReportQueryService : IReportQueryService
             new("Pending execution",     pendingStack),
         };
 
-        // Applicant counts.
         var nonTerminalStates = new[]
         {
             ApplicationState.Draft,
@@ -131,5 +168,77 @@ public sealed class ReportQueryService : IReportQueryService
         };
 
         return new DashboardResult(range, pipeline, financial, applicants);
+    }
+
+    private IQueryable<ApplicationProjection> BuildApplicationsQuery(ListApplicationsRequest req)
+    {
+        var q = _db.Applications.AsNoTracking().AsQueryable();
+
+        if (req.States is { Count: > 0 } states)
+        {
+            q = q.Where(a => states.Contains(a.State));
+        }
+
+        if (req.From.HasValue)
+        {
+            var fromUtc = req.From.Value.ToDateTime(TimeOnly.MinValue);
+            q = q.Where(a => a.UpdatedAt >= fromUtc);
+        }
+
+        if (req.To.HasValue)
+        {
+            var toUtc = req.To.Value.ToDateTime(TimeOnly.MaxValue);
+            q = q.Where(a => a.UpdatedAt <= toUtc);
+        }
+
+        if (!string.IsNullOrWhiteSpace(req.Search))
+        {
+            var pattern = $"%{req.Search.Trim()}%";
+            q = q.Where(a =>
+                EF.Functions.Like(a.Applicant.FirstName + " " + a.Applicant.LastName, pattern)
+                || EF.Functions.Like(a.Applicant.LegalId, pattern)
+                || EF.Functions.Like(a.Applicant.Email, pattern));
+        }
+
+        if (req.HasAgreement.HasValue)
+        {
+            q = req.HasAgreement.Value
+                ? q.Where(a => a.FundingAgreement != null)
+                : q.Where(a => a.FundingAgreement == null);
+        }
+
+        if (req.HasActiveAppeal.HasValue)
+        {
+            q = req.HasActiveAppeal.Value
+                ? q.Where(a => a.Appeals.Any(ap => ap.Status == AppealStatus.Open))
+                : q.Where(a => !a.Appeals.Any(ap => ap.Status == AppealStatus.Open));
+        }
+
+        return q.Select(a => new ApplicationProjection(
+            a.Id,
+            (a.Applicant.FirstName + " " + a.Applicant.LastName).Trim(),
+            a.Applicant.LegalId,
+            a.State,
+            a.CreatedAt,
+            a.SubmittedAt,
+            a.UpdatedAt,
+            a.Items.Count,
+            a.FundingAgreement != null,
+            a.Appeals.Any(ap => ap.Status == AppealStatus.Open)
+        ));
+    }
+
+    private static IQueryable<ApplicationProjection> ApplyApplicationsSort(
+        IQueryable<ApplicationProjection> q, string? sort)
+    {
+        return sort switch
+        {
+            "updated-asc"     => q.OrderBy(a => a.UpdatedAt).ThenBy(a => a.AppId),
+            "submitted-desc"  => q.OrderByDescending(a => a.SubmittedAt).ThenByDescending(a => a.AppId),
+            "submitted-asc"   => q.OrderBy(a => a.SubmittedAt).ThenBy(a => a.AppId),
+            "applicant-asc"   => q.OrderBy(a => a.ApplicantFullName).ThenBy(a => a.AppId),
+            "applicant-desc" => q.OrderByDescending(a => a.ApplicantFullName).ThenByDescending(a => a.AppId),
+            _                 => q.OrderByDescending(a => a.UpdatedAt).ThenByDescending(a => a.AppId),
+        };
     }
 }
