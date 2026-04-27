@@ -6,4 +6,5 @@ public record FundingAgreementItemRowDto(
     string CategoryName,
     string SupplierName,
     decimal UnitPrice,
-    decimal LineTotal);
+    decimal LineTotal,
+    string Currency);

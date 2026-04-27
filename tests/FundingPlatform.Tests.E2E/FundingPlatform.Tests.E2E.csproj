@@ -17,6 +17,8 @@
     <PackageReference Include="NUnit" Version="4.3.2" />
     <PackageReference Include="NUnit.Analyzers" Version="4.7.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="5.0.0" />
+    <!-- Reused vendored dependency from src/FundingPlatform.Infrastructure (spec 005). -->
+    <PackageReference Include="Syncfusion.HtmlToPdfConverter.Net.Linux" Version="31.2.*" />
   </ItemGroup>
 
   <ItemGroup>

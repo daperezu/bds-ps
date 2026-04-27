@@ -1,9 +1,9 @@
 @model FundingPlatform.Web.ViewModels.FundingAgreementDocumentViewModel
 @{
     var culture = System.Globalization.CultureInfo.GetCultureInfo(Model.LocaleCode);
-    string Money(decimal value)
+    string Money(string currency, decimal value)
     {
-        return $"{value.ToString("N2", culture)} {Model.CurrencyIsoCode}";
+        return $"{currency} {value.ToString("N2", culture)}";
     }
 }
 
@@ -25,13 +25,16 @@
                 <td>@item.ProductName</td>
                 <td>@item.CategoryName</td>
                 <td>@item.SupplierName</td>
-                <td class="amount">@Money(item.UnitPrice)</td>
-                <td class="amount">@Money(item.LineTotal)</td>
+                <td class="amount">@Money(item.Currency, item.UnitPrice)</td>
+                <td class="amount">@Money(item.Currency, item.LineTotal)</td>
             </tr>
         }
-        <tr class="total-row">
-            <td colspan="4">Total</td>
-            <td class="amount">@Money(Model.TotalAmount)</td>
-        </tr>
+        @foreach (var t in Model.TotalsByCurrency)
+        {
+            <tr class="total-row">
+                <td colspan="4">Total (@t.Currency)</td>
+                <td class="amount">@Money(t.Currency, t.Amount)</td>
+            </tr>
+        }
     </tbody>
 </table>

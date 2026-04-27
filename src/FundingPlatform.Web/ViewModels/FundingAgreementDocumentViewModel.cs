@@ -20,4 +20,7 @@ public class FundingAgreementDocumentViewModel
 
     public IReadOnlyList<FundingAgreementItemRowDto> Items { get; set; } = Array.Empty<FundingAgreementItemRowDto>();
     public decimal TotalAmount { get; set; }
+    public IReadOnlyList<CurrencyTotal> TotalsByCurrency { get; set; } = Array.Empty<CurrencyTotal>();
 }
+
+public sealed record CurrencyTotal(string Currency, decimal Amount);
