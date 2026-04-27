@@ -143,6 +143,60 @@ public class AdminReportsController : Controller
         }
     }
 
+    [HttpGet("Aging")]
+    public async Task<IActionResult> Aging([FromQuery] ListAgingApplicationsRequest req, CancellationToken ct)
+    {
+        req.PageSize = AdminReportsService.PageSize;
+        try
+        {
+            var result = await _reportsService.ListAgingApplicationsAsync(req, ct);
+            var totalPages = (int)Math.Ceiling((double)result.TotalCount / AdminReportsService.PageSize);
+            var vm = new AgingApplicationsViewModel
+            {
+                Result = result,
+                PageSize = AdminReportsService.PageSize,
+                CurrentPage = Math.Max(1, req.Page),
+                TotalPages = Math.Max(1, totalPages),
+            };
+            return View(vm);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            ViewData["ReportFilterError"] = "Threshold (days) must be between 1 and 365 inclusive.";
+            req.ThresholdDays = 14;
+            var result = await _reportsService.ListAgingApplicationsAsync(req, ct);
+            var totalPages = (int)Math.Ceiling((double)result.TotalCount / AdminReportsService.PageSize);
+            var vm = new AgingApplicationsViewModel
+            {
+                Result = result,
+                PageSize = AdminReportsService.PageSize,
+                CurrentPage = Math.Max(1, req.Page),
+                TotalPages = Math.Max(1, totalPages),
+            };
+            return View(vm);
+        }
+    }
+
+    [HttpGet("Aging/Export")]
+    public IActionResult ExportAging([FromQuery] ListAgingApplicationsRequest req, CancellationToken ct)
+    {
+        try
+        {
+            var enumerator = _reportsService.ExportAgingApplicationsCsvAsync(req, ct);
+            return new CsvFileStreamResult(enumerator, "aging-applications.csv");
+        }
+        catch (CsvRowBoundExceededException ex)
+        {
+            return BadRequest(new
+            {
+                error = "CsvRowBoundExceeded",
+                limit = ex.Limit,
+                actualCount = ex.ActualCount,
+                hint = "Narrow your filter and try again."
+            });
+        }
+    }
+
     [HttpGet("Applications/Export")]
     public async Task<IActionResult> ExportApplications([FromQuery] ListApplicationsRequest req, CancellationToken ct)
     {

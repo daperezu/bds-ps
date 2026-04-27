@@ -161,8 +161,14 @@ public sealed class AdminReportsService : IAdminReportsService
         return new ListFundedItemsResult(rows, total, req);
     }
 
-    public Task<ListAgingApplicationsResult> ListAgingApplicationsAsync(ListAgingApplicationsRequest req, CancellationToken ct = default)
-        => throw new NotImplementedException("Implemented in user-story phase US6.");
+    public async Task<ListAgingApplicationsResult> ListAgingApplicationsAsync(ListAgingApplicationsRequest req, CancellationToken ct = default)
+    {
+        ValidateAgingThreshold(req.ThresholdDays);
+        var page = NormalizePage(req.Page);
+        var total = await _queryService.CountAgingApplicationsAsync(req, ct);
+        var rows = await _queryService.ListAgingApplicationsPageAsync(req, page, PageSize, ct);
+        return new ListAgingApplicationsResult(rows, total, req);
+    }
 
     public async IAsyncEnumerable<string> ExportApplicantsCsvAsync(
         ListApplicantsRequest req,
@@ -272,8 +278,69 @@ public sealed class AdminReportsService : IAdminReportsService
         }
     }
 
-    public IAsyncEnumerable<string> ExportAgingApplicationsCsvAsync(ListAgingApplicationsRequest req, CancellationToken ct = default)
-        => throw new NotImplementedException("Implemented in user-story phase US6.");
+    public async IAsyncEnumerable<string> ExportAgingApplicationsCsvAsync(
+        ListAgingApplicationsRequest req,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        ValidateAgingThreshold(req.ThresholdDays);
+        var actual = await _queryService.CountAgingApplicationsAsync(req, ct);
+        EnforceCsvRowBoundOrThrow(actual);
+
+        yield return CsvLine(
+            "App Id", "Applicant Name", "Email", "Legal Id", "State",
+            "Days In Current State", "Last Transition", "Last Actor", "Item Count",
+            "Approved Amount", "Currency");
+
+        const int batchSize = 200;
+        var skip = 0;
+        while (skip < actual)
+        {
+            var batch = await _queryService.ListAgingApplicationsPageAsync(req, (skip / batchSize) + 1, batchSize, ct);
+            if (batch.Count == 0) break;
+            foreach (var r in batch)
+            {
+                if (r.TotalApproved.Count == 0)
+                {
+                    yield return AgingRowLine(r, "", "");
+                }
+                else
+                {
+                    foreach (var ca in r.TotalApproved)
+                    {
+                        yield return AgingRowLine(r,
+                            ca.Amount.ToString(CultureInfo.InvariantCulture),
+                            ca.Currency);
+                    }
+                }
+            }
+            skip += batch.Count;
+        }
+    }
+
+    private static string AgingRowLine(AgingApplicationRowDto r, string approvedAmount, string currency)
+    {
+        return CsvLine(
+            r.AppId.ToString(CultureInfo.InvariantCulture),
+            r.ApplicantFullName,
+            r.ApplicantEmail,
+            r.ApplicantLegalId,
+            r.State.ToString(),
+            r.DaysInCurrentState.ToString(CultureInfo.InvariantCulture),
+            r.LastTransitionAt?.ToString("o", CultureInfo.InvariantCulture) ?? string.Empty,
+            r.LastActor ?? string.Empty,
+            r.ItemCount.ToString(CultureInfo.InvariantCulture),
+            approvedAmount,
+            currency);
+    }
+
+    private static void ValidateAgingThreshold(int thresholdDays)
+    {
+        if (thresholdDays < 1 || thresholdDays > 365)
+        {
+            throw new ArgumentOutOfRangeException(nameof(thresholdDays),
+                "Threshold (days) must be between 1 and 365 inclusive.");
+        }
+    }
 
     private void EnforceCsvRowBoundOrThrow(int actualCount)
     {

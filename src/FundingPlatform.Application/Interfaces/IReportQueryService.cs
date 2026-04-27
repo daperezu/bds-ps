@@ -47,5 +47,10 @@ public interface IReportQueryService
     Task<IReadOnlyList<FundedItemRowDto>> ListFundedItemsPageAsync(
         ListFundedItemsRequest req, int page, int pageSize, CancellationToken ct = default);
 
+    Task<int> CountAgingApplicationsAsync(ListAgingApplicationsRequest req, CancellationToken ct = default);
+
+    Task<IReadOnlyList<AgingApplicationRowDto>> ListAgingApplicationsPageAsync(
+        ListAgingApplicationsRequest req, int page, int pageSize, CancellationToken ct = default);
+
     Task<DashboardResult> DashboardSnapshotAsync(DateRange range, CancellationToken ct = default);
 }

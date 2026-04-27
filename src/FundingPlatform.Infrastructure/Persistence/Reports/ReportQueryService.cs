@@ -231,6 +231,84 @@ public sealed class ReportQueryService : IReportQueryService
         };
     }
 
+    public Task<int> CountAgingApplicationsAsync(ListAgingApplicationsRequest req, CancellationToken ct = default)
+        => BuildAgingApplicationsQuery(req).CountAsync(ct);
+
+    public async Task<IReadOnlyList<AgingApplicationRowDto>> ListAgingApplicationsPageAsync(
+        ListAgingApplicationsRequest req, int page, int pageSize, CancellationToken ct = default)
+    {
+        var q = ApplyAgingSort(BuildAgingApplicationsQuery(req), req.Sort);
+        var rows = await q.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+
+        // Per-(application, currency) Approved totals for the visible page only.
+        var ids = rows.Select(r => r.AppId).ToList();
+        var totals = await ApplicationsApprovedTotalsAsync(ids, ct);
+
+        return rows.Select(r => r with
+        {
+            TotalApproved = totals.TryGetValue(r.AppId, out var s) ? s : Array.Empty<CurrencyAmount>()
+        }).ToList();
+    }
+
+    /// <summary>
+    /// Builds the aging-applications query. LastTransitionAt is approximated as
+    /// Application.UpdatedAt (research.md §5 fallback); the LastActor column is
+    /// left as null pending VersionHistory join wiring in a follow-up.
+    /// </summary>
+    private IQueryable<AgingApplicationRowDto> BuildAgingApplicationsQuery(ListAgingApplicationsRequest req)
+    {
+        var defaultStates = new[]
+        {
+            ApplicationState.Submitted,
+            ApplicationState.UnderReview,
+            ApplicationState.Resolved,
+            ApplicationState.ResponseFinalized,
+        };
+        var states = (req.States is { Count: > 0 } provided ? provided.ToArray() : defaultStates).ToHashSet();
+
+        var threshold = Math.Clamp(req.ThresholdDays, 1, 365);
+        var nowUtc = DateTime.UtcNow;
+        var thresholdCutoff = nowUtc.AddDays(-threshold);
+
+        var q = _db.Applications.AsNoTracking()
+            .Where(a => states.Contains(a.State))
+            .Where(a => a.UpdatedAt <= thresholdCutoff);
+
+        if (!string.IsNullOrWhiteSpace(req.Search))
+        {
+            var pattern = $"%{req.Search.Trim()}%";
+            q = q.Where(a =>
+                EF.Functions.Like(a.Applicant.FirstName + " " + a.Applicant.LastName, pattern)
+                || EF.Functions.Like(a.Applicant.LegalId, pattern)
+                || EF.Functions.Like(a.Applicant.Email, pattern));
+        }
+
+        return q.Select(a => new AgingApplicationRowDto(
+            a.Id,
+            (a.Applicant.FirstName + " " + a.Applicant.LastName).Trim(),
+            a.Applicant.Email,
+            a.Applicant.LegalId,
+            a.State,
+            (int)EF.Functions.DateDiffDay(a.UpdatedAt, nowUtc),
+            (DateTime?)a.UpdatedAt,
+            (string?)null,
+            a.Items.Count,
+            (IReadOnlyList<CurrencyAmount>)Array.Empty<CurrencyAmount>()
+        ));
+    }
+
+    private static IQueryable<AgingApplicationRowDto> ApplyAgingSort(IQueryable<AgingApplicationRowDto> q, string? sort)
+    {
+        return sort switch
+        {
+            "days-asc"      => q.OrderBy(r => r.DaysInCurrentState).ThenBy(r => r.AppId),
+            "applicant-asc" => q.OrderBy(r => r.ApplicantFullName).ThenBy(r => r.AppId),
+            "applicant-desc"=> q.OrderByDescending(r => r.ApplicantFullName).ThenByDescending(r => r.AppId),
+            "state-asc"     => q.OrderBy(r => r.State).ThenBy(r => r.AppId),
+            _               => q.OrderByDescending(r => r.DaysInCurrentState).ThenByDescending(r => r.AppId),
+        };
+    }
+
     public async Task<DashboardResult> DashboardSnapshotAsync(DateRange range, CancellationToken ct = default)
     {
         var fromUtc = range.From.ToDateTime(TimeOnly.MinValue);
