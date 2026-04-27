@@ -6,6 +6,10 @@ using FundingPlatform.Domain.Enums;
 using FundingPlatform.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
+// Disambiguate the Application entity from the FundingPlatform.Application namespace
+// (the latter is pulled in by Application.Admin.Reports.DTOs/Interfaces above).
+using ApplicationEntity = FundingPlatform.Domain.Entities.Application;
+
 namespace FundingPlatform.Infrastructure.Persistence.Reports;
 
 public sealed class ReportQueryService : IReportQueryService
@@ -18,20 +22,20 @@ public sealed class ReportQueryService : IReportQueryService
     }
 
     public Task<int> CountApplicationsAsync(ListApplicationsRequest req, CancellationToken ct = default)
-        => BuildApplicationsQuery(req).CountAsync(ct);
+        => BuildApplicationsBaseQuery(req).CountAsync(ct);
 
     public async Task<IReadOnlyList<ApplicationProjection>> ListApplicationsPageAsync(
         ListApplicationsRequest req, int page, int pageSize, CancellationToken ct = default)
     {
-        var q = ApplyApplicationsSort(BuildApplicationsQuery(req), req.Sort);
-        return await q.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+        var q = ApplyApplicationsSort(BuildApplicationsBaseQuery(req), req.Sort);
+        return await ProjectApplications(q.Skip((page - 1) * pageSize).Take(pageSize)).ToListAsync(ct);
     }
 
     public async IAsyncEnumerable<ApplicationProjection> StreamApplicationsAsync(
         ListApplicationsRequest req, [EnumeratorCancellation] CancellationToken ct = default)
     {
-        var q = ApplyApplicationsSort(BuildApplicationsQuery(req), req.Sort);
-        await foreach (var row in q.AsAsyncEnumerable().WithCancellation(ct))
+        var q = ApplyApplicationsSort(BuildApplicationsBaseQuery(req), req.Sort);
+        await foreach (var row in ProjectApplications(q).AsAsyncEnumerable().WithCancellation(ct))
         {
             yield return row;
         }
@@ -68,13 +72,13 @@ public sealed class ReportQueryService : IReportQueryService
     }
 
     public Task<int> CountApplicantsAsync(ListApplicantsRequest req, CancellationToken ct = default)
-        => BuildApplicantsQuery(req).CountAsync(ct);
+        => BuildApplicantsBaseQuery(req).CountAsync(ct);
 
     public async Task<IReadOnlyList<ApplicantProjection>> ListApplicantsPageAsync(
         ListApplicantsRequest req, int page, int pageSize, CancellationToken ct = default)
     {
-        var q = ApplyApplicantsSort(BuildApplicantsQuery(req), req.Sort);
-        return await q.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+        var q = ApplyApplicantsSort(BuildApplicantsBaseQuery(req), req.Sort);
+        return await ProjectApplicants(q.Skip((page - 1) * pageSize).Take(pageSize)).ToListAsync(ct);
     }
 
     public async Task<IReadOnlyDictionary<int, IReadOnlyList<CurrencyAmount>>>
@@ -139,18 +143,57 @@ public sealed class ReportQueryService : IReportQueryService
     }
 
     public Task<int> CountFundedItemsAsync(ListFundedItemsRequest req, CancellationToken ct = default)
-        => BuildFundedItemsQuery(req).CountAsync(ct);
+        => BuildFilteredFundedItemRows(req).CountAsync(ct);
 
     public async Task<IReadOnlyList<FundedItemRowDto>> ListFundedItemsPageAsync(
         ListFundedItemsRequest req, int page, int pageSize, CancellationToken ct = default)
     {
-        var q = ApplyFundedItemsSort(BuildFundedItemsQuery(req), req.Sort);
-        return await q.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+        // The pipeline must stay inline (anonymous-typed): EF Core treats anonymous-type
+        // join carriers as transparent identifiers and inlines property access into SQL,
+        // but treats named records as opaque constructor calls — `OrderBy(x => x.A.Id)`
+        // on a named-record carrier blows up with "could not be translated". Keep the
+        // base+sort+page+project chain in this single method.
+        var rows = BuildFilteredFundedItemRows(req);
+
+        rows = req.Sort switch
+        {
+            "approvedAt-asc"  => rows.OrderBy(x => x.A.UpdatedAt).ThenBy(x => x.A.Id),
+            "price-desc"      => rows.OrderByDescending(x => x.Q.Price).ThenBy(x => x.A.Id),
+            "price-asc"       => rows.OrderBy(x => x.Q.Price).ThenBy(x => x.A.Id),
+            "applicant-asc"   => rows.OrderBy(x => x.A.Applicant.FirstName).ThenBy(x => x.A.Applicant.LastName).ThenBy(x => x.A.Id),
+            "applicant-desc"  => rows.OrderByDescending(x => x.A.Applicant.FirstName).ThenByDescending(x => x.A.Applicant.LastName).ThenByDescending(x => x.A.Id),
+            "supplier-asc"    => rows.OrderBy(x => x.S.Name).ThenBy(x => x.A.Id),
+            "supplier-desc"   => rows.OrderByDescending(x => x.S.Name).ThenByDescending(x => x.A.Id),
+            _                 => rows.OrderByDescending(x => x.A.UpdatedAt).ThenByDescending(x => x.A.Id),
+        };
+
+        return await rows
+            .Skip((page - 1) * pageSize).Take(pageSize)
+            .Select(x => new FundedItemRowDto(
+                x.A.Id,
+                (x.A.Applicant.FirstName + " " + x.A.Applicant.LastName).Trim(),
+                x.I.ProductName,
+                x.C.Name,
+                x.S.Name,
+                x.S.LegalId,
+                x.Q.Price,
+                x.Q.Currency,
+                x.A.State,
+                x.A.SubmittedAt,
+                (DateTime?)x.A.UpdatedAt, // approximation — research §5 fallback uses application timestamp
+                x.A.FundingAgreement != null,
+                x.A.State == ApplicationState.AgreementExecuted))
+            .ToListAsync(ct);
     }
 
-    private IQueryable<FundedItemRowDto> BuildFundedItemsQuery(ListFundedItemsRequest req)
+    /// <summary>
+    /// Returns the filtered Items×Application×Quotation×Supplier×Category join, carrier
+    /// is an anonymous type so EF inlines property access through transparent identifiers
+    /// when the caller adds OrderBy/Skip/Take/Select. Default app states per FR-026:
+    /// ResponseFinalized + AgreementExecuted.
+    /// </summary>
+    private IQueryable<FundedItemsCarrier> BuildFilteredFundedItemRows(ListFundedItemsRequest req)
     {
-        // Default app states are ResponseFinalized + AgreementExecuted per FR-026 contract.
         var allowed = (req.AppStates is { Count: > 0 } provided)
             ? provided.Where(s =>
                 s == ApplicationState.ResponseFinalized
@@ -172,73 +215,46 @@ public sealed class ReportQueryService : IReportQueryService
             join s in _db.Suppliers.AsNoTracking() on q.SupplierId equals s.Id
             join c in _db.Categories.AsNoTracking() on i.CategoryId equals c.Id
             where allowedSet.Contains(a.State)
-            select new { i, a, q, s, c };
+            select new FundedItemsCarrier { I = i, A = a, Q = q, S = s, C = c };
 
         if (executedOnly)
         {
-            rows = rows.Where(x => x.a.State == ApplicationState.AgreementExecuted);
+            rows = rows.Where(x => x.A.State == ApplicationState.AgreementExecuted);
         }
 
         if (req.CategoryIds is { Count: > 0 } catIds)
         {
-            rows = rows.Where(x => catIds.Contains(x.c.Id));
+            rows = rows.Where(x => catIds.Contains(x.C.Id));
         }
 
         if (req.SupplierIds is { Count: > 0 } supIds)
         {
-            rows = rows.Where(x => supIds.Contains(x.s.Id));
+            rows = rows.Where(x => supIds.Contains(x.S.Id));
         }
 
         if (req.ApprovedFrom.HasValue)
         {
             var fromUtc = req.ApprovedFrom.Value.ToDateTime(TimeOnly.MinValue);
-            rows = rows.Where(x => x.a.UpdatedAt >= fromUtc);
+            rows = rows.Where(x => x.A.UpdatedAt >= fromUtc);
         }
         if (req.ApprovedTo.HasValue)
         {
             var toUtc = req.ApprovedTo.Value.ToDateTime(TimeOnly.MaxValue);
-            rows = rows.Where(x => x.a.UpdatedAt <= toUtc);
+            rows = rows.Where(x => x.A.UpdatedAt <= toUtc);
         }
 
-        return rows.Select(x => new FundedItemRowDto(
-            x.a.Id,
-            (x.a.Applicant.FirstName + " " + x.a.Applicant.LastName).Trim(),
-            x.i.ProductName,
-            x.c.Name,
-            x.s.Name,
-            x.s.LegalId,
-            x.q.Price,
-            x.q.Currency,
-            x.a.State,
-            x.a.SubmittedAt,
-            (DateTime?)x.a.UpdatedAt, // approximation — research §5 fallback uses application timestamp
-            x.a.FundingAgreement != null,
-            x.a.State == ApplicationState.AgreementExecuted));
-    }
-
-    private static IQueryable<FundedItemRowDto> ApplyFundedItemsSort(IQueryable<FundedItemRowDto> q, string? sort)
-    {
-        return sort switch
-        {
-            "approvedAt-asc"  => q.OrderBy(r => r.ApprovedAt).ThenBy(r => r.AppId),
-            "price-desc"      => q.OrderByDescending(r => r.Price).ThenBy(r => r.AppId),
-            "price-asc"       => q.OrderBy(r => r.Price).ThenBy(r => r.AppId),
-            "applicant-asc"   => q.OrderBy(r => r.ApplicantFullName).ThenBy(r => r.AppId),
-            "applicant-desc"  => q.OrderByDescending(r => r.ApplicantFullName).ThenByDescending(r => r.AppId),
-            "supplier-asc"    => q.OrderBy(r => r.SupplierName).ThenBy(r => r.AppId),
-            "supplier-desc"   => q.OrderByDescending(r => r.SupplierName).ThenByDescending(r => r.AppId),
-            _                 => q.OrderByDescending(r => r.ApprovedAt).ThenByDescending(r => r.AppId),
-        };
+        return rows;
     }
 
     public Task<int> CountAgingApplicationsAsync(ListAgingApplicationsRequest req, CancellationToken ct = default)
-        => BuildAgingApplicationsQuery(req).CountAsync(ct);
+        => BuildAgingApplicationsBaseQuery(req).CountAsync(ct);
 
     public async Task<IReadOnlyList<AgingApplicationRowDto>> ListAgingApplicationsPageAsync(
         ListAgingApplicationsRequest req, int page, int pageSize, CancellationToken ct = default)
     {
-        var q = ApplyAgingSort(BuildAgingApplicationsQuery(req), req.Sort);
-        var rows = await q.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+        var nowUtc = DateTime.UtcNow;
+        var q = ApplyAgingSort(BuildAgingApplicationsBaseQuery(req), req.Sort);
+        var rows = await ProjectAging(q.Skip((page - 1) * pageSize).Take(pageSize), nowUtc).ToListAsync(ct);
 
         // Per-(application, currency) Approved totals for the visible page only.
         var ids = rows.Select(r => r.AppId).ToList();
@@ -251,11 +267,14 @@ public sealed class ReportQueryService : IReportQueryService
     }
 
     /// <summary>
-    /// Builds the aging-applications query. LastTransitionAt is approximated as
-    /// Application.UpdatedAt (research.md §5 fallback); the LastActor column is
-    /// left as null pending VersionHistory join wiring in a follow-up.
+    /// Builds the base aging-applications query (entities only, sortable). LastTransitionAt
+    /// is approximated as Application.UpdatedAt (research.md §5 fallback); LastActor is
+    /// left as null pending VersionHistory join wiring in a follow-up. Sort and projection
+    /// are applied separately in <see cref="ApplyAgingSort"/> and <see cref="ProjectAging"/>
+    /// so that EF can translate ORDER BY against entity columns rather than against a
+    /// projected expression that contains correlated subqueries.
     /// </summary>
-    private IQueryable<AgingApplicationRowDto> BuildAgingApplicationsQuery(ListAgingApplicationsRequest req)
+    private IQueryable<ApplicationEntity> BuildAgingApplicationsBaseQuery(ListAgingApplicationsRequest req)
     {
         var defaultStates = new[]
         {
@@ -266,7 +285,7 @@ public sealed class ReportQueryService : IReportQueryService
         };
         var states = (req.States is { Count: > 0 } provided ? provided.ToArray() : defaultStates).ToHashSet();
 
-        var threshold = Math.Clamp(req.ThresholdDays, 1, 365);
+        var threshold = Math.Clamp(req.Threshold, 1, 365);
         var nowUtc = DateTime.UtcNow;
         var thresholdCutoff = nowUtc.AddDays(-threshold);
 
@@ -283,7 +302,11 @@ public sealed class ReportQueryService : IReportQueryService
                 || EF.Functions.Like(a.Applicant.Email, pattern));
         }
 
-        return q.Select(a => new AgingApplicationRowDto(
+        return q;
+    }
+
+    private static IQueryable<AgingApplicationRowDto> ProjectAging(IQueryable<ApplicationEntity> q, DateTime nowUtc) =>
+        q.Select(a => new AgingApplicationRowDto(
             a.Id,
             (a.Applicant.FirstName + " " + a.Applicant.LastName).Trim(),
             a.Applicant.Email,
@@ -295,17 +318,18 @@ public sealed class ReportQueryService : IReportQueryService
             a.Items.Count,
             (IReadOnlyList<CurrencyAmount>)Array.Empty<CurrencyAmount>()
         ));
-    }
 
-    private static IQueryable<AgingApplicationRowDto> ApplyAgingSort(IQueryable<AgingApplicationRowDto> q, string? sort)
+    private static IQueryable<ApplicationEntity> ApplyAgingSort(IQueryable<ApplicationEntity> q, string? sort)
     {
+        // DaysInCurrentState = DateDiff(UpdatedAt, now) — older UpdatedAt = larger days.
+        // So days-asc <-> UpdatedAt-desc; default days-desc <-> UpdatedAt-asc.
         return sort switch
         {
-            "days-asc"      => q.OrderBy(r => r.DaysInCurrentState).ThenBy(r => r.AppId),
-            "applicant-asc" => q.OrderBy(r => r.ApplicantFullName).ThenBy(r => r.AppId),
-            "applicant-desc"=> q.OrderByDescending(r => r.ApplicantFullName).ThenByDescending(r => r.AppId),
-            "state-asc"     => q.OrderBy(r => r.State).ThenBy(r => r.AppId),
-            _               => q.OrderByDescending(r => r.DaysInCurrentState).ThenByDescending(r => r.AppId),
+            "days-asc"       => q.OrderByDescending(a => a.UpdatedAt).ThenBy(a => a.Id),
+            "applicant-asc"  => q.OrderBy(a => a.Applicant.FirstName).ThenBy(a => a.Applicant.LastName).ThenBy(a => a.Id),
+            "applicant-desc" => q.OrderByDescending(a => a.Applicant.FirstName).ThenByDescending(a => a.Applicant.LastName).ThenByDescending(a => a.Id),
+            "state-asc"      => q.OrderBy(a => a.State).ThenBy(a => a.Id),
+            _                => q.OrderBy(a => a.UpdatedAt).ThenByDescending(a => a.Id),
         };
     }
 
@@ -412,7 +436,7 @@ public sealed class ReportQueryService : IReportQueryService
         return new DashboardResult(range, pipeline, financial, applicants);
     }
 
-    private IQueryable<ApplicationProjection> BuildApplicationsQuery(ListApplicationsRequest req)
+    private IQueryable<ApplicationEntity> BuildApplicationsBaseQuery(ListApplicationsRequest req)
     {
         var q = _db.Applications.AsNoTracking().AsQueryable();
 
@@ -456,7 +480,11 @@ public sealed class ReportQueryService : IReportQueryService
                 : q.Where(a => !a.Appeals.Any(ap => ap.Status == AppealStatus.Open));
         }
 
-        return q.Select(a => new ApplicationProjection(
+        return q;
+    }
+
+    private static IQueryable<ApplicationProjection> ProjectApplications(IQueryable<ApplicationEntity> q) =>
+        q.Select(a => new ApplicationProjection(
             a.Id,
             (a.Applicant.FirstName + " " + a.Applicant.LastName).Trim(),
             a.Applicant.LegalId,
@@ -468,9 +496,8 @@ public sealed class ReportQueryService : IReportQueryService
             a.FundingAgreement != null,
             a.Appeals.Any(ap => ap.Status == AppealStatus.Open)
         ));
-    }
 
-    private IQueryable<ApplicantProjection> BuildApplicantsQuery(ListApplicantsRequest req)
+    private IQueryable<Applicant> BuildApplicantsBaseQuery(ListApplicantsRequest req)
     {
         var q = _db.Applicants.AsNoTracking().AsQueryable();
 
@@ -502,7 +529,11 @@ public sealed class ReportQueryService : IReportQueryService
             q = q.Where(a => a.Applications.Any() && a.Applications.Max(app => app.UpdatedAt) <= toUtc);
         }
 
-        return q.Select(a => new ApplicantProjection(
+        return q;
+    }
+
+    private static IQueryable<ApplicantProjection> ProjectApplicants(IQueryable<Applicant> q) =>
+        q.Select(a => new ApplicantProjection(
             a.Id,
             (a.FirstName + " " + a.LastName).Trim(),
             a.LegalId,
@@ -515,35 +546,53 @@ public sealed class ReportQueryService : IReportQueryService
             a.Applications.Sum(app => app.Items.Count(i => i.ReviewStatus == ItemReviewStatus.Approved)),
             a.Applications.Any() ? (DateTime?)a.Applications.Max(app => app.UpdatedAt) : null
         ));
-    }
 
-    private static IQueryable<ApplicantProjection> ApplyApplicantsSort(
-        IQueryable<ApplicantProjection> q, string? sort)
+    private static IQueryable<Applicant> ApplyApplicantsSort(IQueryable<Applicant> q, string? sort)
     {
         return sort switch
         {
-            "executed-asc"     => q.OrderBy(a => a.AgreementExecutedCount).ThenBy(a => a.ApplicantId),
-            "approved-desc"    => q.OrderByDescending(a => a.ApprovedItems).ThenByDescending(a => a.ApplicantId),
-            "approved-asc"     => q.OrderBy(a => a.ApprovedItems).ThenBy(a => a.ApplicantId),
-            "applicant-asc"    => q.OrderBy(a => a.FullName).ThenBy(a => a.ApplicantId),
-            "applicant-desc"   => q.OrderByDescending(a => a.FullName).ThenByDescending(a => a.ApplicantId),
-            "lastActivity-desc"=> q.OrderByDescending(a => a.LastActivity).ThenByDescending(a => a.ApplicantId),
-            "lastActivity-asc" => q.OrderBy(a => a.LastActivity).ThenBy(a => a.ApplicantId),
-            _                  => q.OrderByDescending(a => a.AgreementExecutedCount).ThenByDescending(a => a.ApplicantId),
+            "executed-asc"      => q.OrderBy(a => a.Applications.Count(app => app.State == ApplicationState.AgreementExecuted)).ThenBy(a => a.Id),
+            "approved-desc"     => q.OrderByDescending(a => a.Applications.Sum(app => app.Items.Count(i => i.ReviewStatus == ItemReviewStatus.Approved))).ThenByDescending(a => a.Id),
+            "approved-asc"      => q.OrderBy(a => a.Applications.Sum(app => app.Items.Count(i => i.ReviewStatus == ItemReviewStatus.Approved))).ThenBy(a => a.Id),
+            "applicant-asc"     => q.OrderBy(a => a.FirstName).ThenBy(a => a.LastName).ThenBy(a => a.Id),
+            "applicant-desc"    => q.OrderByDescending(a => a.FirstName).ThenByDescending(a => a.LastName).ThenByDescending(a => a.Id),
+            "lastActivity-desc" => q.OrderByDescending(a => a.Applications.Max(app => (DateTime?)app.UpdatedAt)).ThenByDescending(a => a.Id),
+            "lastActivity-asc"  => q.OrderBy(a => a.Applications.Max(app => (DateTime?)app.UpdatedAt)).ThenBy(a => a.Id),
+            _                   => q.OrderByDescending(a => a.Applications.Count(app => app.State == ApplicationState.AgreementExecuted)).ThenByDescending(a => a.Id),
         };
     }
 
-    private static IQueryable<ApplicationProjection> ApplyApplicationsSort(
-        IQueryable<ApplicationProjection> q, string? sort)
+    private static IQueryable<ApplicationEntity> ApplyApplicationsSort(IQueryable<ApplicationEntity> q, string? sort)
     {
         return sort switch
         {
-            "updated-asc"     => q.OrderBy(a => a.UpdatedAt).ThenBy(a => a.AppId),
-            "submitted-desc"  => q.OrderByDescending(a => a.SubmittedAt).ThenByDescending(a => a.AppId),
-            "submitted-asc"   => q.OrderBy(a => a.SubmittedAt).ThenBy(a => a.AppId),
-            "applicant-asc"   => q.OrderBy(a => a.ApplicantFullName).ThenBy(a => a.AppId),
-            "applicant-desc" => q.OrderByDescending(a => a.ApplicantFullName).ThenByDescending(a => a.AppId),
-            _                 => q.OrderByDescending(a => a.UpdatedAt).ThenByDescending(a => a.AppId),
+            "updated-asc"     => q.OrderBy(a => a.UpdatedAt).ThenBy(a => a.Id),
+            "submitted-desc"  => q.OrderByDescending(a => a.SubmittedAt).ThenByDescending(a => a.Id),
+            "submitted-asc"   => q.OrderBy(a => a.SubmittedAt).ThenBy(a => a.Id),
+            "applicant-asc"   => q.OrderBy(a => a.Applicant.FirstName).ThenBy(a => a.Applicant.LastName).ThenBy(a => a.Id),
+            "applicant-desc"  => q.OrderByDescending(a => a.Applicant.FirstName).ThenByDescending(a => a.Applicant.LastName).ThenByDescending(a => a.Id),
+            _                 => q.OrderByDescending(a => a.UpdatedAt).ThenByDescending(a => a.Id),
         };
+    }
+
+    /// <summary>
+    /// Anonymous-style carrier for the FundedItems join graph. Holding entity references
+    /// (rather than projected primitives) lets EF apply OrderBy/Skip/Take/Project as a
+    /// single SQL plan; the alternative — sorting an already-projected DTO that contains
+    /// computed expressions — fails with EF Core's "could not be translated" diagnostic.
+    /// </summary>
+    /// <summary>
+    /// Plain class (not record) with member-initializer construction — EF Core's
+    /// expression translator handles member-init projections by inlining property
+    /// access through the join graph, whereas a record's positional constructor blocks
+    /// translation when subsequent OrderBy/Select reference its members.
+    /// </summary>
+    private sealed class FundedItemsCarrier
+    {
+        public Item I { get; init; } = null!;
+        public ApplicationEntity A { get; init; } = null!;
+        public Quotation Q { get; init; } = null!;
+        public Supplier S { get; init; } = null!;
+        public Category C { get; init; } = null!;
     }
 }

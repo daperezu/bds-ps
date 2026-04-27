@@ -103,9 +103,10 @@ public class CurrencyRolloutTests : AuthenticatedTestBase
         // Login as admin (sentinel admin account is seeded in dev/E2E)
         // We need an admin to generate the funding agreement, which the helper above
         // does not seed. Use the sentinel admin from the dev seed.
+        // CreateApplicationAndSubmitResponseAsync ends with the applicant logged out,
+        // so we go straight to the login form — no extra logout click.
         const string adminEmail = "admin@FundingPlatform.com";
         const string adminPassword = "Sentinel123!";
-        await Page.Locator("form[action*='Account/Logout'] button[type=submit]").ClickAsync();
         await LoginAsync(Page, adminEmail, adminPassword);
 
         var panelPage = new FundingAgreementPanelPage(Page);

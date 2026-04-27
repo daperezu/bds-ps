@@ -12,7 +12,7 @@
     @await Html.PartialAsync("Components/_PageHeader",
         new PageHeaderViewModel(
             Title: "Aging applications",
-            Subtitle: $"{Model.Result.TotalCount} application(s) older than {req.ThresholdDays} days."))
+            Subtitle: $"{Model.Result.TotalCount} application(s) older than {req.Threshold} days."))
 
     @await Html.PartialAsync("Components/_ReportSubTabs", "Aging")
 
@@ -27,7 +27,7 @@
                 <div class="col-md-2">
                     <label class="form-label" for="threshold">Threshold (days)</label>
                     <input type="number" id="threshold" name="threshold" class="form-control"
-                           value="@req.ThresholdDays" min="1" max="365"
+                           value="@req.Threshold" min="1" max="365"
                            data-testid="aging-filter-threshold" />
                 </div>
                 <div class="col-md-3">
@@ -47,7 +47,7 @@
                 <div class="col-md-3">
                     <button type="submit" class="btn btn-primary" data-testid="aging-filter-apply">Apply</button>
                     <a class="btn btn-outline-secondary"
-                       href="@Url.Action("ExportAging", new { threshold = req.ThresholdDays, search = req.Search, sort = req.Sort, states = req.States.Select(s => s.ToString()).ToArray() })"
+                       href="@Url.Action("ExportAging", new { threshold = req.Threshold, search = req.Search, sort = req.Sort, states = req.States.Select(s => s.ToString()).ToArray() })"
                        data-testid="aging-export-csv">Download CSV</a>
                 </div>
             </div>

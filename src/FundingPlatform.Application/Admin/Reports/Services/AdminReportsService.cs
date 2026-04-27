@@ -163,7 +163,7 @@ public sealed class AdminReportsService : IAdminReportsService
 
     public async Task<ListAgingApplicationsResult> ListAgingApplicationsAsync(ListAgingApplicationsRequest req, CancellationToken ct = default)
     {
-        ValidateAgingThreshold(req.ThresholdDays);
+        ValidateAgingThreshold(req.Threshold);
         var page = NormalizePage(req.Page);
         var total = await _queryService.CountAgingApplicationsAsync(req, ct);
         var rows = await _queryService.ListAgingApplicationsPageAsync(req, page, PageSize, ct);
@@ -282,7 +282,7 @@ public sealed class AdminReportsService : IAdminReportsService
         ListAgingApplicationsRequest req,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
-        ValidateAgingThreshold(req.ThresholdDays);
+        ValidateAgingThreshold(req.Threshold);
         var actual = await _queryService.CountAgingApplicationsAsync(req, ct);
         EnforceCsvRowBoundOrThrow(actual);
 
