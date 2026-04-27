@@ -1,0 +1,27 @@
+@model FundingPlatform.Web.ViewModels.Admin.Reports.KpiTileViewModel
+
+<div class="card" data-testid="kpi-tile" data-kpi-label="@Model.Label">
+    <div class="card-body">
+        <div class="text-secondary text-uppercase small mb-2" data-testid="kpi-tile-label">@Model.Label</div>
+        @if (Model.NumericValue.HasValue && (Model.Stack is null || Model.Stack.Count == 0))
+        {
+            <div class="h2 mb-0" data-testid="kpi-tile-numeric">@Model.NumericValue.Value.ToString("N0")</div>
+        }
+        else if (Model.Stack is { Count: > 0 } stack)
+        {
+            <ul class="list-unstyled mb-0" data-testid="kpi-tile-stack">
+                @foreach (var entry in stack)
+                {
+                    <li data-currency="@entry.Currency">
+                        <span class="fw-semibold">@entry.Currency</span>
+                        <span class="ms-2">@entry.Amount.ToString("N2")</span>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <div class="h2 mb-0 text-secondary" data-testid="kpi-tile-empty">—</div>
+        }
+    </div>
+</div>

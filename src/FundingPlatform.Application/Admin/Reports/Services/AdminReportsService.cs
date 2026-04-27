@@ -25,7 +25,11 @@ public sealed class AdminReportsService : IAdminReportsService
     }
 
     public Task<DashboardResult> GetDashboardAsync(DateRange? range, CancellationToken ct = default)
-        => throw new NotImplementedException("Implemented in user-story phase US2.");
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var resolved = range ?? new DateRange(today.AddDays(-30), today);
+        return _queryService.DashboardSnapshotAsync(resolved, ct);
+    }
 
     public Task<ListApplicationsResult> ListApplicationsAsync(ListApplicationsRequest req, CancellationToken ct = default)
         => throw new NotImplementedException("Implemented in user-story phase US3.");

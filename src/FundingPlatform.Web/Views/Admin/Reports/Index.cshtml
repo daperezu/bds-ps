@@ -1,16 +1,66 @@
+@model FundingPlatform.Web.ViewModels.Admin.Reports.DashboardViewModel
 @{
     ViewData["Title"] = "Reports";
+    var range = Model.AppliedRange;
 }
 
 <div data-testid="admin-area">
     @await Html.PartialAsync("Components/_PageHeader",
         new PageHeaderViewModel(
             Title: "Reports",
-            Subtitle: "Reporting tools for the platform."))
+            Subtitle: $"{range.From:yyyy-MM-dd} → {range.To:yyyy-MM-dd}"))
 
-    @await Html.PartialAsync("Components/_EmptyState",
-        new EmptyStateViewModel(
-            Headline: "Reports coming soon",
-            Body: "The reports module is not yet available. Check back in a future release.",
-            Icon: "ti ti-chart-line"))
+    @await Html.PartialAsync("Components/_ReportSubTabs", "Dashboard")
+
+    <form method="get" class="card mt-3" data-testid="dashboard-date-range">
+        <div class="card-body">
+            <div class="row g-2 align-items-end">
+                <div class="col-auto">
+                    <label for="from" class="form-label">From</label>
+                    <input type="date" id="from" name="from" class="form-control"
+                           value="@range.From.ToString("yyyy-MM-dd")"
+                           data-testid="dashboard-range-from" />
+                </div>
+                <div class="col-auto">
+                    <label for="to" class="form-label">To</label>
+                    <input type="date" id="to" name="to" class="form-control"
+                           value="@range.To.ToString("yyyy-MM-dd")"
+                           data-testid="dashboard-range-to" />
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary" data-testid="dashboard-range-apply">Apply</button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <h3 class="mt-4 mb-2">Pipeline</h3>
+    <div class="row row-cards" data-testid="dashboard-row-pipeline">
+        @foreach (var tile in Model.PipelineTiles)
+        {
+            <div class="col-md-2 col-sm-4">
+                @await Html.PartialAsync("Components/_KpiTile", tile)
+            </div>
+        }
+    </div>
+
+    <h3 class="mt-4 mb-2">Financial</h3>
+    <div class="row row-cards" data-testid="dashboard-row-financial">
+        @foreach (var tile in Model.FinancialTiles)
+        {
+            <div class="col-md-4">
+                @await Html.PartialAsync("Components/_KpiTile", tile)
+            </div>
+        }
+    </div>
+
+    <h3 class="mt-4 mb-2">Applicants</h3>
+    <div class="row row-cards" data-testid="dashboard-row-applicants">
+        @foreach (var tile in Model.ApplicantTiles)
+        {
+            <div class="col-md-4">
+                @await Html.PartialAsync("Components/_KpiTile", tile)
+            </div>
+        }
+    </div>
 </div>
