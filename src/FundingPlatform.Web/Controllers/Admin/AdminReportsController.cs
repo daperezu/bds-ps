@@ -107,6 +107,42 @@ public class AdminReportsController : Controller
         }
     }
 
+    [HttpGet("FundedItems")]
+    public async Task<IActionResult> FundedItems([FromQuery] ListFundedItemsRequest req, CancellationToken ct)
+    {
+        req.PageSize = AdminReportsService.PageSize;
+        var result = await _reportsService.ListFundedItemsAsync(req, ct);
+        var totalPages = (int)Math.Ceiling((double)result.TotalCount / AdminReportsService.PageSize);
+        var vm = new FundedItemsViewModel
+        {
+            Result = result,
+            PageSize = AdminReportsService.PageSize,
+            CurrentPage = Math.Max(1, req.Page),
+            TotalPages = Math.Max(1, totalPages),
+        };
+        return View(vm);
+    }
+
+    [HttpGet("FundedItems/Export")]
+    public IActionResult ExportFundedItems([FromQuery] ListFundedItemsRequest req, CancellationToken ct)
+    {
+        try
+        {
+            var enumerator = _reportsService.ExportFundedItemsCsvAsync(req, ct);
+            return new CsvFileStreamResult(enumerator, "funded-items.csv");
+        }
+        catch (CsvRowBoundExceededException ex)
+        {
+            return BadRequest(new
+            {
+                error = "CsvRowBoundExceeded",
+                limit = ex.Limit,
+                actualCount = ex.ActualCount,
+                hint = "Narrow your filter and try again."
+            });
+        }
+    }
+
     [HttpGet("Applications/Export")]
     public async Task<IActionResult> ExportApplications([FromQuery] ListApplicationsRequest req, CancellationToken ct)
     {

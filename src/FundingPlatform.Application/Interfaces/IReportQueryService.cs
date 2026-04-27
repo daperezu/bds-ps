@@ -42,5 +42,10 @@ public interface IReportQueryService
     Task<IReadOnlyDictionary<int, IReadOnlyList<CurrencyAmount>>>
         ApplicantsExecutedTotalsAsync(IReadOnlyCollection<int> applicantIds, CancellationToken ct = default);
 
+    Task<int> CountFundedItemsAsync(ListFundedItemsRequest req, CancellationToken ct = default);
+
+    Task<IReadOnlyList<FundedItemRowDto>> ListFundedItemsPageAsync(
+        ListFundedItemsRequest req, int page, int pageSize, CancellationToken ct = default);
+
     Task<DashboardResult> DashboardSnapshotAsync(DateRange range, CancellationToken ct = default);
 }

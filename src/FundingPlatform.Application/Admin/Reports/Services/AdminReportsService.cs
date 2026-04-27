@@ -153,8 +153,13 @@ public sealed class AdminReportsService : IAdminReportsService
         return new ListApplicantsResult(rows, total, req);
     }
 
-    public Task<ListFundedItemsResult> ListFundedItemsAsync(ListFundedItemsRequest req, CancellationToken ct = default)
-        => throw new NotImplementedException("Implemented in user-story phase US5.");
+    public async Task<ListFundedItemsResult> ListFundedItemsAsync(ListFundedItemsRequest req, CancellationToken ct = default)
+    {
+        var page = NormalizePage(req.Page);
+        var total = await _queryService.CountFundedItemsAsync(req, ct);
+        var rows = await _queryService.ListFundedItemsPageAsync(req, page, PageSize, ct);
+        return new ListFundedItemsResult(rows, total, req);
+    }
 
     public Task<ListAgingApplicationsResult> ListAgingApplicationsAsync(ListAgingApplicationsRequest req, CancellationToken ct = default)
         => throw new NotImplementedException("Implemented in user-story phase US6.");
@@ -229,8 +234,43 @@ public sealed class AdminReportsService : IAdminReportsService
             p.LastActivity?.ToString("o", CultureInfo.InvariantCulture) ?? string.Empty);
     }
 
-    public IAsyncEnumerable<string> ExportFundedItemsCsvAsync(ListFundedItemsRequest req, CancellationToken ct = default)
-        => throw new NotImplementedException("Implemented in user-story phase US5.");
+    public async IAsyncEnumerable<string> ExportFundedItemsCsvAsync(
+        ListFundedItemsRequest req,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var actual = await _queryService.CountFundedItemsAsync(req, ct);
+        EnforceCsvRowBoundOrThrow(actual);
+
+        yield return CsvLine(
+            "App Id", "Applicant Name", "Item Product Name", "Category", "Supplier", "Supplier Legal Id",
+            "Price", "Currency", "App State", "App Submitted", "Approved At", "Has Agreement", "Executed");
+
+        const int batchSize = 200;
+        var skip = 0;
+        while (skip < actual)
+        {
+            var batch = await _queryService.ListFundedItemsPageAsync(req, (skip / batchSize) + 1, batchSize, ct);
+            if (batch.Count == 0) break;
+            foreach (var r in batch)
+            {
+                yield return CsvLine(
+                    r.AppId.ToString(CultureInfo.InvariantCulture),
+                    r.ApplicantFullName,
+                    r.ItemProductName,
+                    r.CategoryName,
+                    r.SupplierName,
+                    r.SupplierLegalId ?? string.Empty,
+                    r.Price.ToString(CultureInfo.InvariantCulture),
+                    r.Currency,
+                    r.AppState.ToString(),
+                    r.AppSubmittedAt?.ToString("o", CultureInfo.InvariantCulture) ?? string.Empty,
+                    r.ApprovedAt?.ToString("o", CultureInfo.InvariantCulture) ?? string.Empty,
+                    r.HasAgreement ? "true" : "false",
+                    r.Executed ? "true" : "false");
+            }
+            skip += batch.Count;
+        }
+    }
 
     public IAsyncEnumerable<string> ExportAgingApplicationsCsvAsync(ListAgingApplicationsRequest req, CancellationToken ct = default)
         => throw new NotImplementedException("Implemented in user-story phase US6.");

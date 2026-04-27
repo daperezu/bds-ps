@@ -138,6 +138,99 @@ public sealed class ReportQueryService : IReportQueryService
                     .ToList());
     }
 
+    public Task<int> CountFundedItemsAsync(ListFundedItemsRequest req, CancellationToken ct = default)
+        => BuildFundedItemsQuery(req).CountAsync(ct);
+
+    public async Task<IReadOnlyList<FundedItemRowDto>> ListFundedItemsPageAsync(
+        ListFundedItemsRequest req, int page, int pageSize, CancellationToken ct = default)
+    {
+        var q = ApplyFundedItemsSort(BuildFundedItemsQuery(req), req.Sort);
+        return await q.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+    }
+
+    private IQueryable<FundedItemRowDto> BuildFundedItemsQuery(ListFundedItemsRequest req)
+    {
+        // Default app states are ResponseFinalized + AgreementExecuted per FR-026 contract.
+        var allowed = (req.AppStates is { Count: > 0 } provided)
+            ? provided.Where(s =>
+                s == ApplicationState.ResponseFinalized
+                || s == ApplicationState.AgreementExecuted).ToArray()
+            : new[] { ApplicationState.ResponseFinalized, ApplicationState.AgreementExecuted };
+        var allowedSet = allowed.ToHashSet();
+
+        var executedOnly = req.ExecutedOnly;
+
+        var items = _db.Items.AsNoTracking()
+            .Where(i => i.ReviewStatus == ItemReviewStatus.Approved && i.SelectedSupplierId != null);
+
+        var rows =
+            from i in items
+            join a in _db.Applications.AsNoTracking() on i.ApplicationId equals a.Id
+            join q in _db.Quotations.AsNoTracking()
+                on new { ItemId = i.Id, SupplierId = i.SelectedSupplierId!.Value }
+                equals new { ItemId = q.ItemId, SupplierId = q.SupplierId }
+            join s in _db.Suppliers.AsNoTracking() on q.SupplierId equals s.Id
+            join c in _db.Categories.AsNoTracking() on i.CategoryId equals c.Id
+            where allowedSet.Contains(a.State)
+            select new { i, a, q, s, c };
+
+        if (executedOnly)
+        {
+            rows = rows.Where(x => x.a.State == ApplicationState.AgreementExecuted);
+        }
+
+        if (req.CategoryIds is { Count: > 0 } catIds)
+        {
+            rows = rows.Where(x => catIds.Contains(x.c.Id));
+        }
+
+        if (req.SupplierIds is { Count: > 0 } supIds)
+        {
+            rows = rows.Where(x => supIds.Contains(x.s.Id));
+        }
+
+        if (req.ApprovedFrom.HasValue)
+        {
+            var fromUtc = req.ApprovedFrom.Value.ToDateTime(TimeOnly.MinValue);
+            rows = rows.Where(x => x.a.UpdatedAt >= fromUtc);
+        }
+        if (req.ApprovedTo.HasValue)
+        {
+            var toUtc = req.ApprovedTo.Value.ToDateTime(TimeOnly.MaxValue);
+            rows = rows.Where(x => x.a.UpdatedAt <= toUtc);
+        }
+
+        return rows.Select(x => new FundedItemRowDto(
+            x.a.Id,
+            (x.a.Applicant.FirstName + " " + x.a.Applicant.LastName).Trim(),
+            x.i.ProductName,
+            x.c.Name,
+            x.s.Name,
+            x.s.LegalId,
+            x.q.Price,
+            x.q.Currency,
+            x.a.State,
+            x.a.SubmittedAt,
+            (DateTime?)x.a.UpdatedAt, // approximation — research §5 fallback uses application timestamp
+            x.a.FundingAgreement != null,
+            x.a.State == ApplicationState.AgreementExecuted));
+    }
+
+    private static IQueryable<FundedItemRowDto> ApplyFundedItemsSort(IQueryable<FundedItemRowDto> q, string? sort)
+    {
+        return sort switch
+        {
+            "approvedAt-asc"  => q.OrderBy(r => r.ApprovedAt).ThenBy(r => r.AppId),
+            "price-desc"      => q.OrderByDescending(r => r.Price).ThenBy(r => r.AppId),
+            "price-asc"       => q.OrderBy(r => r.Price).ThenBy(r => r.AppId),
+            "applicant-asc"   => q.OrderBy(r => r.ApplicantFullName).ThenBy(r => r.AppId),
+            "applicant-desc"  => q.OrderByDescending(r => r.ApplicantFullName).ThenByDescending(r => r.AppId),
+            "supplier-asc"    => q.OrderBy(r => r.SupplierName).ThenBy(r => r.AppId),
+            "supplier-desc"   => q.OrderByDescending(r => r.SupplierName).ThenByDescending(r => r.AppId),
+            _                 => q.OrderByDescending(r => r.ApprovedAt).ThenByDescending(r => r.AppId),
+        };
+    }
+
     public async Task<DashboardResult> DashboardSnapshotAsync(DateRange range, CancellationToken ct = default)
     {
         var fromUtc = range.From.ToDateTime(TimeOnly.MinValue);
