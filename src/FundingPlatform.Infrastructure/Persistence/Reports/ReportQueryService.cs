@@ -67,6 +67,77 @@ public sealed class ReportQueryService : IReportQueryService
                     .ToList());
     }
 
+    public Task<int> CountApplicantsAsync(ListApplicantsRequest req, CancellationToken ct = default)
+        => BuildApplicantsQuery(req).CountAsync(ct);
+
+    public async Task<IReadOnlyList<ApplicantProjection>> ListApplicantsPageAsync(
+        ListApplicantsRequest req, int page, int pageSize, CancellationToken ct = default)
+    {
+        var q = ApplyApplicantsSort(BuildApplicantsQuery(req), req.Sort);
+        return await q.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyDictionary<int, IReadOnlyList<CurrencyAmount>>>
+        ApplicantsApprovedTotalsAsync(IReadOnlyCollection<int> applicantIds, CancellationToken ct = default)
+    {
+        if (applicantIds.Count == 0)
+        {
+            return new Dictionary<int, IReadOnlyList<CurrencyAmount>>();
+        }
+
+        var rows = await (
+            from i in _db.Items.AsNoTracking()
+            where i.ReviewStatus == ItemReviewStatus.Approved && i.SelectedSupplierId != null
+            join a in _db.Applications.AsNoTracking() on i.ApplicationId equals a.Id
+            where applicantIds.Contains(a.ApplicantId)
+            join q in _db.Quotations.AsNoTracking()
+                on new { ItemId = i.Id, SupplierId = i.SelectedSupplierId!.Value }
+                equals new { ItemId = q.ItemId, SupplierId = q.SupplierId }
+            select new { a.ApplicantId, q.Currency, q.Price }
+        ).ToListAsync(ct);
+
+        return rows
+            .GroupBy(r => r.ApplicantId)
+            .ToDictionary(
+                g => g.Key,
+                g => (IReadOnlyList<CurrencyAmount>)g
+                    .GroupBy(r => r.Currency)
+                    .Select(cg => new CurrencyAmount(cg.Key, cg.Sum(x => x.Price)))
+                    .OrderBy(c => c.Currency)
+                    .ToList());
+    }
+
+    public async Task<IReadOnlyDictionary<int, IReadOnlyList<CurrencyAmount>>>
+        ApplicantsExecutedTotalsAsync(IReadOnlyCollection<int> applicantIds, CancellationToken ct = default)
+    {
+        if (applicantIds.Count == 0)
+        {
+            return new Dictionary<int, IReadOnlyList<CurrencyAmount>>();
+        }
+
+        var rows = await (
+            from i in _db.Items.AsNoTracking()
+            where i.ReviewStatus == ItemReviewStatus.Approved && i.SelectedSupplierId != null
+            join a in _db.Applications.AsNoTracking() on i.ApplicationId equals a.Id
+            where applicantIds.Contains(a.ApplicantId)
+                  && a.State == ApplicationState.AgreementExecuted
+            join q in _db.Quotations.AsNoTracking()
+                on new { ItemId = i.Id, SupplierId = i.SelectedSupplierId!.Value }
+                equals new { ItemId = q.ItemId, SupplierId = q.SupplierId }
+            select new { a.ApplicantId, q.Currency, q.Price }
+        ).ToListAsync(ct);
+
+        return rows
+            .GroupBy(r => r.ApplicantId)
+            .ToDictionary(
+                g => g.Key,
+                g => (IReadOnlyList<CurrencyAmount>)g
+                    .GroupBy(r => r.Currency)
+                    .Select(cg => new CurrencyAmount(cg.Key, cg.Sum(x => x.Price)))
+                    .OrderBy(c => c.Currency)
+                    .ToList());
+    }
+
     public async Task<DashboardResult> DashboardSnapshotAsync(DateRange range, CancellationToken ct = default)
     {
         var fromUtc = range.From.ToDateTime(TimeOnly.MinValue);
@@ -226,6 +297,69 @@ public sealed class ReportQueryService : IReportQueryService
             a.FundingAgreement != null,
             a.Appeals.Any(ap => ap.Status == AppealStatus.Open)
         ));
+    }
+
+    private IQueryable<ApplicantProjection> BuildApplicantsQuery(ListApplicantsRequest req)
+    {
+        var q = _db.Applicants.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(req.Search))
+        {
+            var pattern = $"%{req.Search.Trim()}%";
+            q = q.Where(a =>
+                EF.Functions.Like(a.FirstName + " " + a.LastName, pattern)
+                || EF.Functions.Like(a.LegalId, pattern)
+                || EF.Functions.Like(a.Email, pattern));
+        }
+
+        if (req.HasExecutedAgreement.HasValue)
+        {
+            q = req.HasExecutedAgreement.Value
+                ? q.Where(a => a.Applications.Any(app => app.State == ApplicationState.AgreementExecuted))
+                : q.Where(a => !a.Applications.Any(app => app.State == ApplicationState.AgreementExecuted));
+        }
+
+        if (req.LastActivityFrom.HasValue)
+        {
+            var fromUtc = req.LastActivityFrom.Value.ToDateTime(TimeOnly.MinValue);
+            q = q.Where(a => a.Applications.Any() && a.Applications.Max(app => app.UpdatedAt) >= fromUtc);
+        }
+
+        if (req.LastActivityTo.HasValue)
+        {
+            var toUtc = req.LastActivityTo.Value.ToDateTime(TimeOnly.MaxValue);
+            q = q.Where(a => a.Applications.Any() && a.Applications.Max(app => app.UpdatedAt) <= toUtc);
+        }
+
+        return q.Select(a => new ApplicantProjection(
+            a.Id,
+            (a.FirstName + " " + a.LastName).Trim(),
+            a.LegalId,
+            a.Email,
+            a.Applications.Count(app => app.SubmittedAt != null),
+            a.Applications.Count(app => app.State == ApplicationState.Resolved),
+            a.Applications.Count(app => app.State == ApplicationState.ResponseFinalized),
+            a.Applications.Count(app => app.State == ApplicationState.AgreementExecuted),
+            a.Applications.Sum(app => app.Items.Count),
+            a.Applications.Sum(app => app.Items.Count(i => i.ReviewStatus == ItemReviewStatus.Approved)),
+            a.Applications.Any() ? (DateTime?)a.Applications.Max(app => app.UpdatedAt) : null
+        ));
+    }
+
+    private static IQueryable<ApplicantProjection> ApplyApplicantsSort(
+        IQueryable<ApplicantProjection> q, string? sort)
+    {
+        return sort switch
+        {
+            "executed-asc"     => q.OrderBy(a => a.AgreementExecutedCount).ThenBy(a => a.ApplicantId),
+            "approved-desc"    => q.OrderByDescending(a => a.ApprovedItems).ThenByDescending(a => a.ApplicantId),
+            "approved-asc"     => q.OrderBy(a => a.ApprovedItems).ThenBy(a => a.ApplicantId),
+            "applicant-asc"    => q.OrderBy(a => a.FullName).ThenBy(a => a.ApplicantId),
+            "applicant-desc"   => q.OrderByDescending(a => a.FullName).ThenByDescending(a => a.ApplicantId),
+            "lastActivity-desc"=> q.OrderByDescending(a => a.LastActivity).ThenByDescending(a => a.ApplicantId),
+            "lastActivity-asc" => q.OrderBy(a => a.LastActivity).ThenBy(a => a.ApplicantId),
+            _                  => q.OrderByDescending(a => a.AgreementExecutedCount).ThenByDescending(a => a.ApplicantId),
+        };
     }
 
     private static IQueryable<ApplicationProjection> ApplyApplicationsSort(

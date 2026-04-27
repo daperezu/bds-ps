@@ -25,5 +25,22 @@ public interface IReportQueryService
     Task<IReadOnlyDictionary<int, IReadOnlyList<CurrencyAmount>>>
         ApplicationsApprovedTotalsAsync(IReadOnlyCollection<int> appIds, CancellationToken ct = default);
 
+    Task<int> CountApplicantsAsync(ListApplicantsRequest req, CancellationToken ct = default);
+
+    Task<IReadOnlyList<ApplicantProjection>> ListApplicantsPageAsync(
+        ListApplicantsRequest req, int page, int pageSize, CancellationToken ct = default);
+
+    /// <summary>
+    /// Per-(applicant, currency) Approved totals (across all the applicant's applications).
+    /// </summary>
+    Task<IReadOnlyDictionary<int, IReadOnlyList<CurrencyAmount>>>
+        ApplicantsApprovedTotalsAsync(IReadOnlyCollection<int> applicantIds, CancellationToken ct = default);
+
+    /// <summary>
+    /// Per-(applicant, currency) Executed totals (only AgreementExecuted apps).
+    /// </summary>
+    Task<IReadOnlyDictionary<int, IReadOnlyList<CurrencyAmount>>>
+        ApplicantsExecutedTotalsAsync(IReadOnlyCollection<int> applicantIds, CancellationToken ct = default);
+
     Task<DashboardResult> DashboardSnapshotAsync(DateRange range, CancellationToken ct = default);
 }

@@ -127,8 +127,31 @@ public sealed class AdminReportsService : IAdminReportsService
         }
     }
 
-    public Task<ListApplicantsResult> ListApplicantsAsync(ListApplicantsRequest req, CancellationToken ct = default)
-        => throw new NotImplementedException("Implemented in user-story phase US4.");
+    public async Task<ListApplicantsResult> ListApplicantsAsync(ListApplicantsRequest req, CancellationToken ct = default)
+    {
+        var page = NormalizePage(req.Page);
+        var total = await _queryService.CountApplicantsAsync(req, ct);
+        var flat = await _queryService.ListApplicantsPageAsync(req, page, PageSize, ct);
+        var ids = flat.Select(p => p.ApplicantId).ToList();
+
+        var approved = await _queryService.ApplicantsApprovedTotalsAsync(ids, ct);
+        var executed = await _queryService.ApplicantsExecutedTotalsAsync(ids, ct);
+
+        var rows = flat.Select(p => new ApplicantRowDto(
+            FullName: p.FullName,
+            LegalId: p.LegalId,
+            Email: p.Email,
+            TotalApps: p.TotalApps,
+            ResolvedCount: p.ResolvedCount,
+            ResponseFinalizedCount: p.ResponseFinalizedCount,
+            AgreementExecutedCount: p.AgreementExecutedCount,
+            ApprovalRate: p.TotalItems == 0 ? null : (decimal?)((decimal)p.ApprovedItems / p.TotalItems),
+            TotalApproved: approved.TryGetValue(p.ApplicantId, out var a) ? a : Array.Empty<CurrencyAmount>(),
+            TotalExecuted: executed.TryGetValue(p.ApplicantId, out var e) ? e : Array.Empty<CurrencyAmount>(),
+            LastActivity: p.LastActivity)).ToList();
+
+        return new ListApplicantsResult(rows, total, req);
+    }
 
     public Task<ListFundedItemsResult> ListFundedItemsAsync(ListFundedItemsRequest req, CancellationToken ct = default)
         => throw new NotImplementedException("Implemented in user-story phase US5.");
@@ -136,8 +159,75 @@ public sealed class AdminReportsService : IAdminReportsService
     public Task<ListAgingApplicationsResult> ListAgingApplicationsAsync(ListAgingApplicationsRequest req, CancellationToken ct = default)
         => throw new NotImplementedException("Implemented in user-story phase US6.");
 
-    public IAsyncEnumerable<string> ExportApplicantsCsvAsync(ListApplicantsRequest req, CancellationToken ct = default)
-        => throw new NotImplementedException("Implemented in user-story phase US4.");
+    public async IAsyncEnumerable<string> ExportApplicantsCsvAsync(
+        ListApplicantsRequest req,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        var actual = await _queryService.CountApplicantsAsync(req, ct);
+        EnforceCsvRowBoundOrThrow(actual);
+
+        yield return CsvLine(
+            "Full Name", "Legal Id", "Email",
+            "Total Apps", "Resolved Count", "Response Finalized Count", "Agreement Executed Count",
+            "Approval Rate", "Approved Amount", "Executed Amount", "Currency", "Last Activity");
+
+        const int batchSize = 200;
+        var skip = 0;
+        while (skip < actual)
+        {
+            var batch = await _queryService.ListApplicantsPageAsync(req, (skip / batchSize) + 1, batchSize, ct);
+            if (batch.Count == 0) break;
+            var ids = batch.Select(b => b.ApplicantId).ToList();
+            var approved = await _queryService.ApplicantsApprovedTotalsAsync(ids, ct);
+            var executed = await _queryService.ApplicantsExecutedTotalsAsync(ids, ct);
+
+            foreach (var p in batch)
+            {
+                var aStack = approved.TryGetValue(p.ApplicantId, out var a) ? a : Array.Empty<CurrencyAmount>();
+                var eStack = executed.TryGetValue(p.ApplicantId, out var e) ? e : Array.Empty<CurrencyAmount>();
+                var currencies = aStack.Select(x => x.Currency)
+                    .Concat(eStack.Select(x => x.Currency))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(c => c)
+                    .ToList();
+
+                if (currencies.Count == 0)
+                {
+                    yield return ApplicantRowLine(p, "", "", "");
+                    continue;
+                }
+                foreach (var currency in currencies)
+                {
+                    var aAmt = aStack.FirstOrDefault(x => x.Currency == currency)?.Amount ?? 0m;
+                    var eAmt = eStack.FirstOrDefault(x => x.Currency == currency)?.Amount ?? 0m;
+                    yield return ApplicantRowLine(p, currency,
+                        aAmt.ToString(CultureInfo.InvariantCulture),
+                        eAmt.ToString(CultureInfo.InvariantCulture));
+                }
+            }
+
+            skip += batch.Count;
+        }
+    }
+
+    private static string ApplicantRowLine(ApplicantProjection p, string currency, string approvedAmount, string executedAmount)
+    {
+        var rate = p.TotalItems == 0 ? string.Empty
+                                     : ((decimal)p.ApprovedItems / p.TotalItems).ToString("0.####", CultureInfo.InvariantCulture);
+        return CsvLine(
+            p.FullName,
+            p.LegalId,
+            p.Email,
+            p.TotalApps.ToString(CultureInfo.InvariantCulture),
+            p.ResolvedCount.ToString(CultureInfo.InvariantCulture),
+            p.ResponseFinalizedCount.ToString(CultureInfo.InvariantCulture),
+            p.AgreementExecutedCount.ToString(CultureInfo.InvariantCulture),
+            rate,
+            approvedAmount,
+            executedAmount,
+            currency,
+            p.LastActivity?.ToString("o", CultureInfo.InvariantCulture) ?? string.Empty);
+    }
 
     public IAsyncEnumerable<string> ExportFundedItemsCsvAsync(ListFundedItemsRequest req, CancellationToken ct = default)
         => throw new NotImplementedException("Implemented in user-story phase US5.");
