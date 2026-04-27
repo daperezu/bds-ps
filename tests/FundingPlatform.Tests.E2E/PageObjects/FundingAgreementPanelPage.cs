@@ -2,23 +2,20 @@ using Microsoft.Playwright;
 
 namespace FundingPlatform.Tests.E2E.PageObjects;
 
-public class FundingAgreementPanelPage
+public class FundingAgreementPanelPage : BasePage
 {
-    private readonly IPage _page;
-
-    public FundingAgreementPanelPage(IPage page)
+    public FundingAgreementPanelPage(IPage page) : base(page)
     {
-        _page = page;
     }
 
-    public ILocator Panel => _page.Locator("#funding-agreement-panel");
-    public ILocator GenerateButton => _page.Locator("[data-testid=funding-agreement-generate]");
-    public ILocator RegenerateButton => _page.Locator("[data-testid=funding-agreement-regenerate]");
-    public ILocator DownloadLink => _page.Locator("[data-testid=funding-agreement-download]");
-    public ILocator DisabledReason => _page.Locator("[data-testid=funding-agreement-disabled-reason]");
-    public ILocator Metadata => _page.Locator("[data-testid=funding-agreement-metadata]");
-    public ILocator ErrorBanner => _page.Locator("[data-testid=funding-agreement-error]");
-    public ILocator SuccessBanner => _page.Locator("[data-testid=funding-agreement-success]");
+    public ILocator Panel => Page.Locator("#funding-agreement-panel");
+    public ILocator GenerateButton => Page.Locator("[data-testid=funding-agreement-generate]");
+    public ILocator RegenerateButton => Page.Locator("[data-testid=funding-agreement-regenerate]");
+    public ILocator DownloadLink => Page.Locator("[data-testid=funding-agreement-download]");
+    public ILocator DisabledReason => Page.Locator("[data-testid=funding-agreement-disabled-reason]");
+    public ILocator Metadata => Page.Locator("[data-testid=funding-agreement-metadata]");
+    public ILocator ErrorBanner => Page.Locator("[data-testid=funding-agreement-error]");
+    public ILocator SuccessBanner => Page.Locator("[data-testid=funding-agreement-success]");
 
     public async Task<bool> IsPanelVisibleAsync()
     {
@@ -61,6 +58,6 @@ public class FundingAgreementPanelPage
 
     public async Task GotoDetailsAsync(string baseUrl, int applicationId)
     {
-        await _page.GotoAsync($"{baseUrl}/Applications/{applicationId}/FundingAgreement");
+        await Page.GotoAsync($"{baseUrl}/Applications/{applicationId}/FundingAgreement");
     }
 }

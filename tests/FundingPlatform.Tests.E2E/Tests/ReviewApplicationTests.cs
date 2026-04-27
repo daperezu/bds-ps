@@ -92,7 +92,7 @@ public class ReviewApplicationTests : AuthenticatedTestBase
         await reviewAppPage.GotoAsync(BaseUrl, appId);
 
         // Verify application state shows Under Review
-        await Expect(reviewAppPage.ApplicationState).ToContainTextAsync("UnderReview");
+        await Expect(reviewAppPage.ApplicationState).ToContainTextAsync("Under Review");
 
         // Verify applicant info is displayed
         await Expect(reviewAppPage.ApplicantName).ToContainTextAsync("Review Applicant");

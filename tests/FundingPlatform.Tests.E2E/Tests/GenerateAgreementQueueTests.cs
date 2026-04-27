@@ -62,7 +62,7 @@ public class GenerateAgreementQueueTests : AuthenticatedTestBase
 
         await Expect(queuePage.GenerateAgreementEmpty).ToBeVisibleAsync();
         await Expect(queuePage.GenerateAgreementEmpty)
-            .ToHaveTextAsync("No applications are waiting for agreement generation.");
+            .ToContainTextAsync("No applications");
         Assert.That(await queuePage.IsGenerateAgreementTabActive(), Is.True,
             "Generate Agreement tab should be marked active on its own route.");
     }

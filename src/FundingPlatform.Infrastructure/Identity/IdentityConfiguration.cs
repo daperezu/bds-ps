@@ -1,13 +1,19 @@
+using System.Security.Cryptography;
 using FundingPlatform.Domain.Entities;
 using FundingPlatform.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace FundingPlatform.Infrastructure.Identity;
 
 public static class IdentityConfiguration
 {
+    public const string SentinelEmail = "admin@FundingPlatform.com";
+    public const string SentinelPasswordConfigKey = "Admin:DefaultPassword";
+
     public static async Task SeedRolesAsync(IServiceProvider serviceProvider)
     {
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -23,9 +29,63 @@ public static class IdentityConfiguration
         }
     }
 
+    public static async Task SeedSentinelAdminAsync(
+        IServiceProvider serviceProvider,
+        IConfiguration configuration,
+        ILogger logger)
+    {
+        var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+        var existing = await userManager.FindByEmailAsync(SentinelEmail);
+        if (existing is { IsSystemSentinel: true })
+        {
+            return;
+        }
+        if (existing is not null)
+        {
+            logger.LogWarning(
+                "User '{Email}' exists but is not flagged as system sentinel; sentinel seeding is skipped to avoid double-seeding.",
+                SentinelEmail);
+            return;
+        }
+
+        var configured = configuration[SentinelPasswordConfigKey];
+        var generated = string.IsNullOrWhiteSpace(configured);
+        var password = generated
+            ? Convert.ToBase64String(RandomNumberGenerator.GetBytes(24))
+            : configured!;
+
+        if (generated)
+        {
+            logger.LogWarning(
+                "Sentinel admin '{Email}' will be created with auto-generated password: {Password}",
+                SentinelEmail, password);
+        }
+
+        var sentinel = ApplicationUser.CreateSentinel(SentinelEmail);
+        var createResult = await userManager.CreateAsync(sentinel, password);
+        if (!createResult.Succeeded)
+        {
+            logger.LogError(
+                "Sentinel admin '{Email}' creation failed: {Errors}",
+                SentinelEmail,
+                string.Join("; ", createResult.Errors.Select(e => $"{e.Code}: {e.Description}")));
+            return;
+        }
+
+        var roleResult = await userManager.AddToRoleAsync(sentinel, "Admin");
+        if (!roleResult.Succeeded)
+        {
+            logger.LogError(
+                "Sentinel admin '{Email}' role assignment failed: {Errors}",
+                SentinelEmail,
+                string.Join("; ", roleResult.Errors.Select(e => $"{e.Code}: {e.Description}")));
+        }
+    }
+
     public static async Task SeedUsersAsync(IServiceProvider serviceProvider)
     {
-        var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var dbContext = serviceProvider.GetRequiredService<AppDbContext>();
 
         var seedUsers = new[]
@@ -40,7 +100,7 @@ public static class IdentityConfiguration
             if (await userManager.FindByEmailAsync(seed.Email) is not null)
                 continue;
 
-            var user = new IdentityUser { UserName = seed.Email, Email = seed.Email };
+            var user = new ApplicationUser(seed.Email, seed.FirstName, seed.LastName, phone: null);
             var result = await userManager.CreateAsync(user, seed.Password);
             if (!result.Succeeded)
                 continue;

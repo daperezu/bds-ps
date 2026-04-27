@@ -2,26 +2,31 @@ using Microsoft.Playwright;
 
 namespace FundingPlatform.Tests.E2E.PageObjects;
 
-public class RegisterPage
+public class RegisterPage : BasePage
 {
-    private readonly IPage _page;
-
-    public RegisterPage(IPage page)
+    public RegisterPage(IPage page) : base(page)
     {
-        _page = page;
     }
 
-    public ILocator EmailInput => _page.Locator("[name=Email]");
-    public ILocator PasswordInput => _page.Locator("[name=Password]");
-    public ILocator ConfirmPasswordInput => _page.Locator("[name=ConfirmPassword]");
-    public ILocator FirstNameInput => _page.Locator("[name=FirstName]");
-    public ILocator LastNameInput => _page.Locator("[name=LastName]");
-    public ILocator LegalIdInput => _page.Locator("[name=LegalId]");
-    public ILocator SubmitButton => _page.Locator("main button[type=submit]");
+    public ILocator AuthShell => Page.Locator("[data-testid=\"auth-shell\"]");
+
+    public async Task<bool> IsAuthShellVisibleAsync()
+    {
+        if (await Sidebar.CountAsync() > 0) return false;
+        return await AuthShell.CountAsync() > 0;
+    }
+
+    public ILocator EmailInput => Page.Locator("[name=Email]");
+    public ILocator PasswordInput => Page.Locator("[name=Password]");
+    public ILocator ConfirmPasswordInput => Page.Locator("[name=ConfirmPassword]");
+    public ILocator FirstNameInput => Page.Locator("[name=FirstName]");
+    public ILocator LastNameInput => Page.Locator("[name=LastName]");
+    public ILocator LegalIdInput => Page.Locator("[name=LegalId]");
+    public ILocator SubmitButton => Page.Locator("main button[type=submit]");
 
     public async Task GotoAsync(string baseUrl)
     {
-        await _page.GotoAsync($"{baseUrl}/Account/Register");
+        await Page.GotoAsync($"{baseUrl}/Account/Register");
     }
 
     public async Task RegisterAsync(string email, string password, string firstName, string lastName, string legalId)

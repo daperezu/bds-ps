@@ -2,33 +2,30 @@ using Microsoft.Playwright;
 
 namespace FundingPlatform.Tests.E2E.PageObjects;
 
-public class ReviewApplicationPage
+public class ReviewApplicationPage : BasePage
 {
-    private readonly IPage _page;
-
-    public ReviewApplicationPage(IPage page)
+    public ReviewApplicationPage(IPage page) : base(page)
     {
-        _page = page;
     }
 
-    public ILocator ApplicantName => _page.Locator(".applicant-name");
-    public ILocator PerformanceScore => _page.Locator(".performance-score");
-    public ILocator ApplicationState => _page.Locator(".application-state .badge");
-    public ILocator ItemCards => _page.Locator(".review-item");
-    public ILocator SendBackButton => _page.Locator("button:has-text('Send Back')");
-    public ILocator FinalizeButton => _page.Locator("button:has-text('Finalize Review')");
-    public ILocator ForceFinalizationConfirm => _page.Locator("#forceFinalizationConfirm");
-    public ILocator UnresolvedWarning => _page.Locator(".unresolved-warning");
-    public ILocator SuccessMessage => _page.Locator(".alert-success");
-    public ILocator ErrorMessage => _page.Locator(".alert-danger");
+    public ILocator ApplicantName => Page.Locator(".applicant-name");
+    public ILocator PerformanceScore => Page.Locator(".performance-score");
+    public ILocator ApplicationState => Page.Locator(".application-state .badge");
+    public ILocator ItemCards => Page.Locator(".review-item");
+    public ILocator SendBackButton => Page.Locator("button:has-text('Send Back')");
+    public ILocator FinalizeButton => Page.Locator("button:has-text('Finalize Review')");
+    public ILocator ForceFinalizationConfirm => Page.Locator("#forceFinalizationConfirm");
+    public ILocator UnresolvedWarning => Page.Locator(".unresolved-warning");
+    public ILocator SuccessMessage => Page.Locator(".alert-success");
+    public ILocator ErrorMessage => Page.Locator(".alert-danger");
 
     public async Task GotoAsync(string baseUrl, int applicationId)
     {
-        await _page.GotoAsync($"{baseUrl}/Review/{applicationId}");
+        await Page.GotoAsync($"{baseUrl}/Review/{applicationId}");
     }
 
     private ILocator ItemCard(int itemId) =>
-        _page.Locator($".review-item[data-item-id='{itemId}']");
+        Page.Locator($".review-item[data-item-id='{itemId}']");
 
     public ILocator ItemDecisionRadio(int itemId, string decision)
     {
@@ -47,7 +44,7 @@ public class ReviewApplicationPage
 
     public ILocator ItemSubmitButton(int itemId)
     {
-        return _page.Locator($"button[data-item-id='{itemId}'].submit-decision");
+        return Page.Locator($"button[data-item-id='{itemId}'].submit-decision");
     }
 
     public ILocator ItemReviewStatusBadge(int itemId)
@@ -57,7 +54,7 @@ public class ReviewApplicationPage
 
     public ILocator TechnicalEquivalenceSubmit(int itemId)
     {
-        return _page.Locator($"button[data-item-id='{itemId}'].submit-equivalence");
+        return Page.Locator($"button[data-item-id='{itemId}'].submit-equivalence");
     }
 
     public ILocator RecommendedBadge(int itemId)

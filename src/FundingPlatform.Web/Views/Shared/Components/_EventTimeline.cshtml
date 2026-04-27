@@ -1,0 +1,34 @@
+@model EventTimelineViewModel
+@{
+    var sorted = Model.Events.OrderByDescending(e => e.At).ToList();
+}
+@if (sorted.Count == 0)
+{
+    if (Model.ShowEmptyMessage)
+    {
+        <div class="text-secondary small" data-testid="event-timeline-empty">No events yet.</div>
+    }
+}
+else
+{
+    <ul class="timeline list-unstyled" data-testid="event-timeline">
+        @foreach (var ev in sorted)
+        {
+            <li class="timeline-event mb-3" data-testid="timeline-event" data-at="@ev.At.ToString("o")">
+                <div class="d-flex gap-2 align-items-start">
+                    <div class="text-@(ev.Color ?? "secondary") pt-1">
+                        <i class="@(ev.Icon ?? "ti ti-point")"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold">@ev.Action</div>
+                        <div class="text-secondary small">@ev.Actor &middot; @ev.At.LocalDateTime.ToString("yyyy-MM-dd HH:mm")</div>
+                        @if (!string.IsNullOrWhiteSpace(ev.Detail))
+                        {
+                            <div class="mt-1">@ev.Detail</div>
+                        }
+                    </div>
+                </div>
+            </li>
+        }
+    </ul>
+}

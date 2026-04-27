@@ -1,0 +1,16 @@
+@{
+    ViewData["Title"] = "Reports";
+}
+
+<div data-testid="admin-area">
+    @await Html.PartialAsync("Components/_PageHeader",
+        new PageHeaderViewModel(
+            Title: "Reports",
+            Subtitle: "Reporting tools for the platform."))
+
+    @await Html.PartialAsync("Components/_EmptyState",
+        new EmptyStateViewModel(
+            Headline: "Reports coming soon",
+            Body: "The reports module is not yet available. Check back in a future release.",
+            Icon: "ti ti-chart-line"))
+</div>

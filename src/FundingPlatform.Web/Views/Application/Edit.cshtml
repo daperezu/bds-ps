@@ -1,29 +1,27 @@
+@using FundingPlatform.Domain.Enums
 @model FundingPlatform.Web.ViewModels.ApplicationViewModel
 
 @{
     ViewData["Title"] = $"Edit Application #{Model.Id}";
+    var state = Enum.Parse<ApplicationState>(Model.State);
 }
 
-<h2>Edit Application #@Model.Id</h2>
+@await Html.PartialAsync("Components/_PageHeader",
+    new PageHeaderViewModel(
+        Title: $"Edit Application #{Model.Id}",
+        Breadcrumbs: new[]
+        {
+            new BreadcrumbItem("My Applications", Url.Action("Index", "Application")),
+            new BreadcrumbItem($"Application #{Model.Id}", Url.Action("Details", "Application", new { id = Model.Id })),
+            new BreadcrumbItem("Edit"),
+        }))
 
 <div class="card mb-4">
     <div class="card-body">
-        <div class="row">
+        <div class="row g-2">
             <div class="col-md-3">
                 <strong>Status:</strong>
-                @{
-                    var badgeClass = Model.State switch
-                    {
-                        "Draft" => "bg-secondary",
-                        "Submitted" => "bg-primary",
-                        "UnderReview" => "bg-info",
-                        "Resolved" => "bg-success",
-                        _ => "bg-secondary"
-                    };
-                }
-                <span class="badge @badgeClass">
-                    @Model.State
-                </span>
+                @await Html.PartialAsync("Components/_StatusPill", new StatusPillViewModel(state))
             </div>
             <div class="col-md-3">
                 <strong>Created:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")
@@ -42,78 +40,91 @@
 </div>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4>Items</h4>
-    <a asp-controller="Item" asp-action="Add" asp-route-appId="@Model.Id" class="btn btn-primary">Add Item</a>
+    <h4 class="mb-0">Items</h4>
+    <a asp-controller="Item" asp-action="Add" asp-route-appId="@Model.Id" class="btn btn-primary">
+        <i class="ti ti-plus me-1"></i>Add Item
+    </a>
 </div>
 
 @if (Model.Items.Count == 0)
 {
-    <div class="alert alert-info">
-        No items added yet. Click "Add Item" to add items to this application.
-    </div>
+    @await Html.PartialAsync("Components/_EmptyState",
+        new EmptyStateViewModel(
+            Headline: "No items added yet",
+            Body: "Add at least one item to submit your application.",
+            Icon: "ti ti-package",
+            PrimaryAction: new ActionItem("Add Item", ActionClass.Primary,
+                Url: Url.Action("Add", "Item", new { appId = Model.Id }),
+                Icon: "ti ti-plus")))
 }
 else
 {
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Product Name</th>
-                <th>Category</th>
-                <th>Quotations</th>
-                <th>Impact</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.Items)
-            {
-                <tr>
-                    <td>@item.ProductName</td>
-                    <td>@item.CategoryName</td>
-                    <td>@item.QuotationCount</td>
-                    <td>
-                        @if (item.HasImpact)
-                        {
-                            <span class="badge bg-success">Complete</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-warning text-dark">Pending</span>
-                        }
-                    </td>
-                    <td>
-                        <a asp-controller="Item" asp-action="Edit" asp-route-appId="@Model.Id" asp-route-itemId="@item.Id" class="btn btn-sm btn-warning">Edit</a>
-                        <form asp-controller="Item" asp-action="Delete" asp-route-appId="@Model.Id" asp-route-itemId="@item.Id" method="post" class="d-inline">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to remove this item?')">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-                @if (!string.IsNullOrEmpty(item.ReviewComment))
-                {
+    <div class="card mb-4">
+        <div class="table-responsive">
+            <table class="table card-table table-vcenter">
+                <thead>
                     <tr>
-                        <td colspan="5">
-                            <div class="alert alert-info py-1 mb-0">
-                                <strong>Reviewer Comment:</strong> @item.ReviewComment
-                            </div>
-                        </td>
+                        <th>Product Name</th>
+                        <th>Category</th>
+                        <th>Quotations</th>
+                        <th>Impact</th>
+                        <th>Actions</th>
                     </tr>
-                }
-            }
-        </tbody>
-    </table>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>@item.ProductName</td>
+                            <td>@item.CategoryName</td>
+                            <td>@item.QuotationCount</td>
+                            <td>
+                                @if (item.HasImpact)
+                                {
+                                    <span class="status status-green"><i class="ti ti-check"></i> Complete</span>
+                                }
+                                else
+                                {
+                                    <span class="status status-yellow"><i class="ti ti-clock"></i> Pending</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-controller="Item" asp-action="Edit" asp-route-appId="@Model.Id" asp-route-itemId="@item.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                <form asp-controller="Item" asp-action="Delete" asp-route-appId="@Model.Id" asp-route-itemId="@item.Id" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to remove this item?')">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        @if (!string.IsNullOrEmpty(item.ReviewComment))
+                        {
+                            <tr>
+                                <td colspan="5">
+                                    <div class="text-secondary small ps-2 border-start border-3 border-info py-1">
+                                        <strong>Reviewer Comment:</strong> @item.ReviewComment
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 }
 
 @if (Model.Items.Count > 0)
 {
-    <div class="mt-3">
+    <div class="d-flex justify-content-end mb-3">
         <form asp-controller="Application" asp-action="Submit" asp-route-id="@Model.Id" method="post">
             @Html.AntiForgeryToken()
-            <button type="submit" class="btn btn-success">Submit Application</button>
+            <button type="submit" class="btn btn-success">
+                <i class="ti ti-send me-1"></i>Submit Application
+            </button>
         </form>
     </div>
 }
 
 <div class="mt-3">
-    <a asp-action="Index" asp-controller="Application">Back to Applications</a>
+    <a asp-action="Index" asp-controller="Application" class="btn btn-link">&larr; Back to Applications</a>
 </div>

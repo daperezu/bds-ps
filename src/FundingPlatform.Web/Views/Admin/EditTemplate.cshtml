@@ -4,7 +4,15 @@
     ViewData["Title"] = "Edit Impact Template";
 }
 
-<h2>Edit Impact Template</h2>
+@await Html.PartialAsync("Components/_PageHeader",
+    new PageHeaderViewModel(
+        Title: "Edit Impact Template",
+        Breadcrumbs: new[]
+        {
+            new BreadcrumbItem("Admin Dashboard", Url.Action("Index")),
+            new BreadcrumbItem("Impact Templates", Url.Action("ImpactTemplates")),
+            new BreadcrumbItem("Edit"),
+        }))
 
 <div class="row">
     <div class="col-md-10">
@@ -71,10 +79,6 @@
                                             <label class="form-check-label">Required</label>
                                         </div>
                                     </div>
-                                    <div class="col-md-5 mb-2">
-                                        <label class="form-label">Validation Rules</label>
-                                        <input name="Parameters[@i].ValidationRules" value="@Model.Parameters[i].ValidationRules" class="form-control" />
-                                    </div>
                                     <div class="col-md-4 mb-2">
                                         <label class="form-label">Sort Order</label>
                                         <input name="Parameters[@i].SortOrder" type="number" value="@Model.Parameters[i].SortOrder" class="form-control" required />
@@ -140,10 +144,6 @@
                                     <input name="Parameters[${idx}].IsRequired" type="checkbox" class="form-check-input" value="true" />
                                     <label class="form-check-label">Required</label>
                                 </div>
-                            </div>
-                            <div class="col-md-5 mb-2">
-                                <label class="form-label">Validation Rules</label>
-                                <input name="Parameters[${idx}].ValidationRules" class="form-control" />
                             </div>
                             <div class="col-md-4 mb-2">
                                 <label class="form-label">Sort Order</label>

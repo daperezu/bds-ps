@@ -1,0 +1,53 @@
+@model DocumentReference
+@{
+    string FormatBytes(long bytes)
+    {
+        if (bytes >= 1_048_576) return $"{bytes / 1_048_576.0:0.#} MB";
+        if (bytes >= 1024) return $"{bytes / 1024.0:0.#} KB";
+        return $"{bytes} B";
+    }
+
+    string IconForFile()
+    {
+        if (!string.IsNullOrWhiteSpace(Model.IconOverride)) return Model.IconOverride;
+        var ext = System.IO.Path.GetExtension(Model.Filename)?.ToLowerInvariant();
+        return ext == ".pdf" ? "ti ti-file-type-pdf" : "ti ti-file-text";
+    }
+
+    var hasMeta = !string.IsNullOrWhiteSpace(Model.Signer)
+                  || Model.SignedAt.HasValue
+                  || Model.GeneratedAt.HasValue;
+}
+<div class="card document-card" data-testid="document-card" data-filename="@Model.Filename">
+    <div class="card-body d-flex align-items-center gap-3">
+        <div class="text-secondary icon-document-card">
+            <i class="@IconForFile()"></i>
+        </div>
+        <div class="flex-grow-1">
+            <div class="document-card-filename fw-bold" data-testid="document-card-filename">@Model.Filename</div>
+            <div class="document-card-size text-secondary small" data-testid="document-card-size">@FormatBytes(Model.SizeBytes)</div>
+            @if (hasMeta)
+            {
+                <div class="document-card-meta text-secondary small mt-1" data-testid="document-card-meta">
+                    @if (!string.IsNullOrWhiteSpace(Model.Signer) && Model.SignedAt.HasValue)
+                    {
+                        <span>Signed by @Model.Signer on @Model.SignedAt.Value.LocalDateTime.ToString("yyyy-MM-dd HH:mm")</span>
+                    }
+                    else if (Model.SignedAt.HasValue)
+                    {
+                        <span>Signed @Model.SignedAt.Value.LocalDateTime.ToString("yyyy-MM-dd HH:mm")</span>
+                    }
+                    else if (Model.GeneratedAt.HasValue)
+                    {
+                        <span>Generated @Model.GeneratedAt.Value.LocalDateTime.ToString("yyyy-MM-dd HH:mm")</span>
+                    }
+                </div>
+            }
+        </div>
+        <a href="@Model.DownloadUrl"
+           class="btn btn-sm btn-outline-secondary"
+           data-testid="document-card-download">
+            <i class="ti ti-download me-1"></i>Download
+        </a>
+    </div>
+</div>

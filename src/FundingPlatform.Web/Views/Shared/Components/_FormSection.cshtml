@@ -1,0 +1,9 @@
+@model FormSectionViewModel
+<div class="mb-3" data-testid="form-section" data-field="@Model.ForFieldName">
+    <label class="form-label">@Model.Label</label>
+    @if (!string.IsNullOrWhiteSpace(Model.Hint))
+    {
+        <small class="form-hint d-block mb-1 text-secondary">@Model.Hint</small>
+    }
+    @RenderBody()
+</div>

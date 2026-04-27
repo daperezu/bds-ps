@@ -2,26 +2,23 @@ using Microsoft.Playwright;
 
 namespace FundingPlatform.Tests.E2E.PageObjects;
 
-public class ApplicationPage
+public class ApplicationPage : BasePage
 {
-    private readonly IPage _page;
-
-    public ApplicationPage(IPage page)
+    public ApplicationPage(IPage page) : base(page)
     {
-        _page = page;
     }
 
-    public ILocator CreateButton => _page.Locator("a[href*='Application/Create']");
-    public ILocator SubmitDraftButton => _page.Locator("button[type=submit]:has-text('Create Draft Application')");
-    public ILocator ApplicationsTable => _page.Locator("table");
-    public ILocator AddItemButton => _page.Locator("a:has-text('Add Item')");
-    public ILocator SubmitApplicationButton => _page.Locator("button[type=submit]:has-text('Submit Application')");
-    public ILocator StatusBadge => _page.Locator(".badge");
-    public ILocator ItemRows => _page.Locator("table tbody tr");
+    public ILocator CreateButton => Page.Locator("a[href*='Application/Create']").First;
+    public ILocator SubmitDraftButton => Page.Locator("button[type=submit]:has-text('Create Draft Application')");
+    public ILocator ApplicationsTable => Page.Locator("table");
+    public ILocator AddItemButton => Page.Locator("a:has-text('Add Item')").First;
+    public ILocator SubmitApplicationButton => Page.Locator("button[type=submit]:has-text('Submit Application')");
+    public ILocator StatusBadge => Page.Locator(".badge");
+    public ILocator ItemRows => Page.Locator("table tbody tr");
 
     public async Task GotoListAsync(string baseUrl)
     {
-        await _page.GotoAsync($"{baseUrl}/Application");
+        await Page.GotoAsync($"{baseUrl}/Application");
     }
 
     public async Task CreateApplicationAsync()
@@ -32,6 +29,6 @@ public class ApplicationPage
 
     public async Task ViewApplicationAsync(int id)
     {
-        await _page.Locator($"a[href*='Application/Details/{id}'], a[href*='Application/{id}']").First.ClickAsync();
+        await Page.Locator($"a[href*='Application/Details/{id}'], a[href*='Application/{id}']").First.ClickAsync();
     }
 }

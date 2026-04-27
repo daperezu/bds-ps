@@ -1,10 +1,15 @@
+@using FundingPlatform.Domain.Enums
 @model FundingPlatform.Web.ViewModels.ReviewApplicationViewModel
 
 @{
     ViewData["Title"] = $"Review Application #{Model.ApplicationId}";
+    var appState = Enum.Parse<ApplicationState>(Model.State);
 }
 
-<h2>Review Application #@Model.ApplicationId</h2>
+@await Html.PartialAsync("Components/_PageHeader",
+    new PageHeaderViewModel(
+        Title: $"Review Application #{Model.ApplicationId}",
+        Subtitle: Model.ApplicantName))
 
 @if (Model.UnresolvedItemWarnings is not null)
 {
@@ -28,7 +33,7 @@
 
 <div class="card mb-4">
     <div class="card-body">
-        <div class="row">
+        <div class="row g-2">
             <div class="col-md-3">
                 <strong>Applicant:</strong>
                 <span class="applicant-name">@Model.ApplicantName</span>
@@ -42,14 +47,14 @@
                     }
                     else
                     {
-                        <span class="text-muted">N/A</span>
+                        <span class="text-secondary">N/A</span>
                     }
                 </span>
             </div>
             <div class="col-md-3">
                 <strong>Status:</strong>
                 <span class="application-state">
-                    <span class="badge @GetStateBadgeClass(Model.State)">@Model.State</span>
+                    @await Html.PartialAsync("Components/_StatusPill", new StatusPillViewModel(appState))
                 </span>
             </div>
             @if (Model.SubmittedAt.HasValue)
@@ -66,14 +71,15 @@
 
 @foreach (var item in Model.Items)
 {
+    var itemReviewStatus = Enum.Parse<ItemReviewStatus>(item.ReviewStatus);
     <div class="card mb-3 review-item" data-item-id="@item.ItemId">
         <div class="card-header d-flex justify-content-between align-items-center">
             <div>
                 <strong>@item.ProductName</strong>
-                <span class="text-muted ms-2">(@item.CategoryName)</span>
+                <span class="text-secondary ms-2">(@item.CategoryName)</span>
             </div>
-            <span class="badge review-status-badge @GetReviewStatusBadgeClass(item.ReviewStatus)">
-                @item.ReviewStatus
+            <span class="review-status-badge">
+                @await Html.PartialAsync("Components/_StatusPill", new StatusPillViewModel(itemReviewStatus))
             </span>
         </div>
         <div class="card-body">
@@ -125,11 +131,11 @@
                                 <td><span class="supplier-score">@q.Score/5</span></td>
                                 <td>
                                     <span class="score-breakdown">
-                                        @if (q.ScoreCCSS) { <span class="badge bg-info" title="CCSS">CCSS</span> }
-                                        @if (q.ScoreHacienda) { <span class="badge bg-info" title="Hacienda">Hac</span> }
-                                        @if (q.ScoreSICOP) { <span class="badge bg-info" title="SICOP">SICOP</span> }
-                                        @if (q.ScoreElectronicInvoice) { <span class="badge bg-info" title="E-Invoice">E-Inv</span> }
-                                        @if (q.ScoreLowestPrice) { <span class="badge bg-info" title="Lowest Price">Price</span> }
+                                        @if (q.ScoreCCSS) { <span class="status status-blue" title="CCSS">CCSS</span> }
+                                        @if (q.ScoreHacienda) { <span class="status status-blue" title="Hacienda">Hac</span> }
+                                        @if (q.ScoreSICOP) { <span class="status status-blue" title="SICOP">SICOP</span> }
+                                        @if (q.ScoreElectronicInvoice) { <span class="status status-blue" title="E-Invoice">E-Inv</span> }
+                                        @if (q.ScoreLowestPrice) { <span class="status status-blue" title="Lowest Price">Price</span> }
                                     </span>
                                 </td>
                                 <td>@q.Price.ToString("C")</td>
@@ -138,7 +144,7 @@
                                 <td>
                                     @if (q.IsRecommended)
                                     {
-                                        <span class="badge bg-success recommended-badge">Recommended</span>
+                                        <span class="recommended-badge status status-green"><i class="ti ti-star"></i> Recommended</span>
                                     }
                                 </td>
                             </tr>
@@ -162,7 +168,7 @@
                 </div>
             }
 
-            @if (Model.State == "UnderReview")
+            @if (Model.State == nameof(ApplicationState.UnderReview))
             {
                 <hr />
                 <div class="row">
@@ -217,8 +223,7 @@
                                     </div>
                                 </div>
 
-                                <div class="mb-2 supplier-select-wrapper" id="supplierSelect_@item.ItemId"
-                                     style="@(item.ReviewStatus == "Approved" ? "" : "display:none")">
+                                <div class="mb-2 supplier-select-wrapper @(item.ReviewStatus == "Approved" ? "" : "d-none")" id="supplierSelect_@item.ItemId">
                                     <label class="form-label">Select Supplier:</label>
                                     <select name="SelectedSupplierId" class="form-select form-select-sm">
                                         <option value="">-- Select Supplier --</option>
@@ -262,46 +267,28 @@
     </div>
 }
 
-@if (Model.State == "UnderReview")
+@if (Model.State == nameof(ApplicationState.UnderReview))
 {
     <div class="mt-4 d-flex gap-2">
         <form asp-action="SendBack" asp-route-id="@Model.ApplicationId" method="post">
             @Html.AntiForgeryToken()
             <button type="submit" class="btn btn-warning" onclick="return confirm('Send this application back to the applicant?')">
-                Send Back
+                <i class="ti ti-arrow-back-up me-1"></i>Send Back
             </button>
         </form>
 
         <form asp-action="Finalize" asp-route-id="@Model.ApplicationId" method="post">
             @Html.AntiForgeryToken()
-            <button type="submit" class="btn btn-success">Finalize Review</button>
+            <button type="submit" class="btn btn-success">
+                <i class="ti ti-check me-1"></i>Finalize Review
+            </button>
         </form>
     </div>
 }
 
 <div class="mt-3">
-    <a asp-action="Index">Back to Review Queue</a>
+    <a asp-action="Index" class="btn btn-link">&larr; Back to Review Queue</a>
 </div>
-
-@functions {
-    static string GetStateBadgeClass(string state) => state switch
-    {
-        "Draft" => "bg-secondary",
-        "Submitted" => "bg-primary",
-        "UnderReview" => "bg-info",
-        "Resolved" => "bg-success",
-        _ => "bg-secondary"
-    };
-
-    static string GetReviewStatusBadgeClass(string status) => status switch
-    {
-        "Pending" => "bg-secondary",
-        "Approved" => "bg-success",
-        "Rejected" => "bg-danger",
-        "NeedsInfo" => "bg-warning text-dark",
-        _ => "bg-secondary"
-    };
-}
 
 @section Scripts {
     <script>
@@ -310,7 +297,7 @@
                 const itemId = this.dataset.itemId;
                 const wrapper = document.getElementById('supplierSelect_' + itemId);
                 if (wrapper) {
-                    wrapper.style.display = this.value === 'Approve' ? '' : 'none';
+                    wrapper.classList.toggle('d-none', this.value !== 'Approve');
                 }
             });
         });

@@ -1,0 +1,20 @@
+@{
+    ViewData["Title"] = "Access Denied";
+}
+
+@await Html.PartialAsync("Components/_PageHeader",
+    new PageHeaderViewModel(
+        Title: "Access Denied",
+        Subtitle: "You do not have permission to view this resource."))
+
+<div data-testid="access-denied">
+    @await Html.PartialAsync("Components/_EmptyState",
+        new EmptyStateViewModel(
+            Headline: "403 Forbidden",
+            Body: "Your session is valid, but this resource is restricted to other roles. If you believe this is a mistake, contact a system administrator.",
+            Icon: "ti ti-lock-access",
+            PrimaryAction: new ActionItem(
+                Label: "Return to home",
+                Class: ActionClass.Primary,
+                Url: Url.Action("Index", "Home") ?? "/")))
+</div>

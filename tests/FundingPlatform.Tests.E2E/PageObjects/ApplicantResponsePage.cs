@@ -2,33 +2,30 @@ using Microsoft.Playwright;
 
 namespace FundingPlatform.Tests.E2E.PageObjects;
 
-public class ApplicantResponsePage
+public class ApplicantResponsePage : BasePage
 {
-    private readonly IPage _page;
-
-    public ApplicantResponsePage(IPage page)
+    public ApplicantResponsePage(IPage page) : base(page)
     {
-        _page = page;
     }
 
-    public ILocator Header => _page.Locator(".applicant-response-header");
-    public ILocator ApplicationState => _page.Locator(".application-state");
-    public ILocator SubmitButton => _page.Locator(".submit-response");
-    public ILocator OpenAppealButton => _page.Locator(".open-appeal-button");
-    public ILocator AppealFrozenBanner => _page.Locator(".appeal-frozen-banner");
-    public ILocator SubmittedAt => _page.Locator(".submitted-at");
-    public ILocator ItemRows => _page.Locator("tr.response-item");
-    public ILocator SuccessMessage => _page.Locator(".alert-success");
-    public ILocator ErrorMessage => _page.Locator(".alert-danger");
+    public ILocator Header => Page.Locator(".applicant-response-header");
+    public ILocator ApplicationState => Page.Locator(".application-state");
+    public ILocator SubmitButton => Page.Locator(".submit-response");
+    public ILocator OpenAppealButton => Page.Locator(".open-appeal-button");
+    public ILocator AppealFrozenBanner => Page.Locator(".appeal-frozen-banner");
+    public ILocator SubmittedAt => Page.Locator(".submitted-at");
+    public ILocator ItemRows => Page.Locator("tr.response-item");
+    public ILocator SuccessMessage => Page.Locator(".alert-success");
+    public ILocator ErrorMessage => Page.Locator(".alert-danger");
 
-    public ILocator ReadyToSignBanner => _page.Locator("[data-testid=signing-banner-ready]");
-    public ILocator AgreementExecutedBanner => _page.Locator("[data-testid=signing-banner-executed]");
+    public ILocator ReadyToSignBanner => Page.Locator("[data-testid=signing-banner-ready]");
+    public ILocator AgreementExecutedBanner => Page.Locator("[data-testid=signing-banner-executed]");
 
-    public SigningStagePanelPage SigningPanel => new(_page);
+    public SigningStagePanelPage SigningPanel => new(Page);
 
     public async Task GotoAsync(string baseUrl, int applicationId)
     {
-        await _page.GotoAsync($"{baseUrl}/ApplicantResponse/Index/{applicationId}");
+        await Page.GotoAsync($"{baseUrl}/ApplicantResponse/Index/{applicationId}");
     }
 
     public async Task<bool> IsReadyToSignBannerVisible()
@@ -42,7 +39,7 @@ public class ApplicantResponsePage
     }
 
     public ILocator ItemRow(int itemId) =>
-        _page.Locator($"tr.response-item[data-item-id='{itemId}']");
+        Page.Locator($"tr.response-item[data-item-id='{itemId}']");
 
     public ILocator AcceptRadio(int itemId) =>
         ItemRow(itemId).Locator("input.decision-accept");

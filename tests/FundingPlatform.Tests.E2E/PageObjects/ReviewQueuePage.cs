@@ -2,33 +2,30 @@ using Microsoft.Playwright;
 
 namespace FundingPlatform.Tests.E2E.PageObjects;
 
-public class ReviewQueuePage
+public class ReviewQueuePage : BasePage
 {
-    private readonly IPage _page;
-
-    public ReviewQueuePage(IPage page)
+    public ReviewQueuePage(IPage page) : base(page)
     {
-        _page = page;
     }
 
-    public ILocator QueueTable => _page.Locator("table.review-queue");
-    public ILocator QueueRows => _page.Locator("table.review-queue tbody tr");
-    public ILocator PaginationLinks => _page.Locator("nav.pagination a");
-    public ILocator PageInfo => _page.Locator(".page-info");
-    public ILocator NoApplicationsMessage => _page.Locator(".alert:has-text('No applications')");
+    public ILocator QueueTable => Page.Locator("table.review-queue");
+    public ILocator QueueRows => Page.Locator("table.review-queue tbody tr");
+    public ILocator PaginationLinks => Page.Locator("nav.pagination a");
+    public ILocator PageInfo => Page.Locator(".page-info");
+    public ILocator NoApplicationsMessage => Page.Locator(".alert:has-text('No applications')");
 
-    public ILocator ReviewTabs => _page.Locator("[data-testid=review-tabs]");
-    public ILocator InitialQueueTab => _page.Locator("[data-testid=review-tab-initial]");
-    public ILocator SigningInboxTab => _page.Locator("[data-testid=review-tab-signing]");
+    public ILocator ReviewTabs => Page.Locator("[data-testid=review-tabs]");
+    public ILocator InitialQueueTab => Page.Locator("[data-testid=review-tab-initial]");
+    public ILocator SigningInboxTab => Page.Locator("[data-testid=review-tab-signing]");
 
     public async Task GotoAsync(string baseUrl)
     {
-        await _page.GotoAsync($"{baseUrl}/Review");
+        await Page.GotoAsync($"{baseUrl}/Review");
     }
 
     public ILocator ReviewLink(int applicationId)
     {
-        return _page.Locator($"a[href*='Review/{applicationId}']");
+        return Page.Locator($"a[href*='Review/{applicationId}']");
     }
 
     public async Task<int> GetQueueCountAsync()
@@ -53,10 +50,10 @@ public class ReviewQueuePage
         return classAttr is not null && classAttr.Contains("active");
     }
 
-    public ILocator GenerateAgreementTab => _page.Locator("[data-testid=review-tab-generate]");
-    public ILocator GenerateAgreementTable => _page.Locator("[data-testid=generate-agreement-table]");
-    public ILocator GenerateAgreementRows => _page.Locator("[data-testid=generate-agreement-row]");
-    public ILocator GenerateAgreementEmpty => _page.Locator("[data-testid=generate-agreement-empty]");
+    public ILocator GenerateAgreementTab => Page.Locator("[data-testid=review-tab-generate]");
+    public ILocator GenerateAgreementTable => Page.Locator("[data-testid=generate-agreement-table]");
+    public ILocator GenerateAgreementRows => Page.Locator("[data-testid=generate-agreement-row]");
+    public ILocator GenerateAgreementEmpty => Page.Locator("[data-testid=generate-agreement-empty]");
 
     public async Task ClickGenerateAgreementTab()
     {
@@ -71,6 +68,6 @@ public class ReviewQueuePage
 
     public async Task GotoGenerateAgreementAsync(string baseUrl)
     {
-        await _page.GotoAsync($"{baseUrl}/Review/GenerateAgreement");
+        await Page.GotoAsync($"{baseUrl}/Review/GenerateAgreement");
     }
 }

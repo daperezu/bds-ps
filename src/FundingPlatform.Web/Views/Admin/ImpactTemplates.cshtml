@@ -2,53 +2,75 @@
 
 @{
     ViewData["Title"] = "Impact Templates";
+    var headerActions = new[]
+    {
+        new ActionItem("Create New Template", ActionClass.Primary,
+            Url: Url.Action("CreateTemplate"),
+            Icon: "ti ti-plus"),
+    };
 }
 
-<h2>Impact Templates</h2>
-
-<div class="mb-3">
-    <a asp-action="CreateTemplate" class="btn btn-success">Create New Template</a>
-    <a asp-action="Index" class="btn btn-secondary ms-2">Back to Dashboard</a>
-</div>
+@await Html.PartialAsync("Components/_PageHeader",
+    new PageHeaderViewModel(
+        Title: "Impact Templates",
+        Breadcrumbs: new[]
+        {
+            new BreadcrumbItem("Admin Dashboard", Url.Action("Index")),
+            new BreadcrumbItem("Impact Templates"),
+        },
+        PrimaryActions: headerActions))
 
 @if (Model.Templates.Count == 0)
 {
-    <div class="alert alert-info">No impact templates have been created yet.</div>
+    @await Html.PartialAsync("Components/_EmptyState",
+        new EmptyStateViewModel(
+            Headline: "No impact templates yet",
+            Body: "Create your first impact assessment template to start collecting structured impact data on items.",
+            Icon: "ti ti-template",
+            PrimaryAction: new ActionItem("Create New Template", ActionClass.Primary,
+                Url: Url.Action("CreateTemplate"),
+                Icon: "ti ti-plus")))
 }
 else
 {
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Parameters</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var template in Model.Templates)
-            {
-                <tr>
-                    <td>@template.Name</td>
-                    <td>@(template.Description ?? "-")</td>
-                    <td>@template.ParameterCount</td>
-                    <td>
-                        @if (template.IsActive)
-                        {
-                            <span class="badge bg-success">Active</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-secondary">Inactive</span>
-                        }
-                    </td>
-                    <td>
-                        <a asp-action="EditTemplate" asp-route-id="@template.Id" class="btn btn-sm btn-primary">Edit</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table card-table table-vcenter">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Parameters</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var template in Model.Templates)
+                    {
+                        <tr>
+                            <td>@template.Name</td>
+                            <td>@(template.Description ?? "-")</td>
+                            <td>@template.ParameterCount</td>
+                            <td>
+                                @if (template.IsActive)
+                                {
+                                    <span class="status status-green"><i class="ti ti-check"></i> Active</span>
+                                }
+                                else
+                                {
+                                    <span class="status status-secondary"><i class="ti ti-circle"></i> Inactive</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="EditTemplate" asp-route-id="@template.Id" class="btn btn-sm btn-outline-primary">
+                                    <i class="ti ti-edit me-1"></i>Edit
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 }

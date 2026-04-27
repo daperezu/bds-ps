@@ -4,38 +4,48 @@
     ViewData["Title"] = "Add Item";
 }
 
-<h2>Add Item</h2>
+@await Html.PartialAsync("Components/_PageHeader",
+    new PageHeaderViewModel(
+        Title: "Add Item",
+        Breadcrumbs: new[]
+        {
+            new BreadcrumbItem("My Applications", Url.Action("Index", "Application")),
+            new BreadcrumbItem($"Application #{Model.ApplicationId}", Url.Action("Details", "Application", new { id = Model.ApplicationId })),
+            new BreadcrumbItem("Add Item"),
+        }))
 
-<div class="row">
-    <div class="col-md-6">
+<div class="card">
+    <div class="card-body">
         <form asp-controller="Item" asp-action="Add" asp-route-appId="@Model.ApplicationId" method="post">
             @Html.AntiForgeryToken()
             <div asp-validation-summary="All" class="text-danger"></div>
 
             <input type="hidden" asp-for="ApplicationId" />
 
-            <div class="mb-3">
+            <div class="mb-3" data-testid="form-section" data-field="ProductName">
                 <label asp-for="ProductName" class="form-label"></label>
                 <input asp-for="ProductName" class="form-control" />
-                <span asp-validation-for="ProductName" class="text-danger"></span>
+                <span asp-validation-for="ProductName" class="invalid-feedback d-block"></span>
             </div>
 
-            <div class="mb-3">
+            <div class="mb-3" data-testid="form-section" data-field="CategoryId">
                 <label asp-for="CategoryId" class="form-label"></label>
                 <select asp-for="CategoryId" asp-items="Model.Categories" class="form-select">
                     <option value="">-- Select Category --</option>
                 </select>
-                <span asp-validation-for="CategoryId" class="text-danger"></span>
+                <span asp-validation-for="CategoryId" class="invalid-feedback d-block"></span>
             </div>
 
-            <div class="mb-3">
+            <div class="mb-3" data-testid="form-section" data-field="TechnicalSpecifications">
                 <label asp-for="TechnicalSpecifications" class="form-label"></label>
                 <textarea asp-for="TechnicalSpecifications" class="form-control" rows="5"></textarea>
-                <span asp-validation-for="TechnicalSpecifications" class="text-danger"></span>
+                <span asp-validation-for="TechnicalSpecifications" class="invalid-feedback d-block"></span>
             </div>
 
-            <button type="submit" class="btn btn-primary">Add Item</button>
-            <a asp-controller="Application" asp-action="Details" asp-route-id="@Model.ApplicationId" class="btn btn-secondary">Cancel</a>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Add Item</button>
+                <a asp-controller="Application" asp-action="Details" asp-route-id="@Model.ApplicationId" class="btn btn-outline-secondary">Cancel</a>
+            </div>
         </form>
     </div>
 </div>

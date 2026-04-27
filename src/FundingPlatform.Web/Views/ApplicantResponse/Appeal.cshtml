@@ -5,25 +5,36 @@
     ViewData["Title"] = $"Appeal — Application #{Model.ApplicationId}";
 }
 
-<h2 class="appeal-header">Appeal — Application #@Model.ApplicationId</h2>
+<div class="appeal-header">
+    @await Html.PartialAsync("Components/_PageHeader",
+        new PageHeaderViewModel(
+            Title: $"Appeal — Application #{Model.ApplicationId}",
+            Breadcrumbs: new[]
+            {
+                new BreadcrumbItem("My Applications", Url.Action("Index", "Application")),
+                new BreadcrumbItem("Response", Url.Action("Index", new { id = Model.ApplicationId })),
+                new BreadcrumbItem("Appeal"),
+            }))
+</div>
 
 <div class="card mb-3">
     <div class="card-body">
+        <span class="appeal-status">
+            @await Html.PartialAsync("Components/_StatusPill", new StatusPillViewModel(Model.Status))
+        </span>
         @if (Model.Status == AppealStatus.Open)
         {
-            <span class="badge bg-warning appeal-status">Open</span>
-            <span class="ms-2 text-muted">Application is frozen while this appeal is open.</span>
+            <span class="ms-2 text-secondary">Application is frozen while this appeal is open.</span>
         }
         else
         {
-            <span class="badge bg-success appeal-status">Resolved</span>
             @if (Model.Resolution is not null)
             {
                 <span class="ms-2 appeal-resolution"><strong>@Model.Resolution</strong></span>
             }
             @if (Model.ResolvedAt is not null)
             {
-                <span class="ms-2 text-muted">Resolved at @Model.ResolvedAt.Value.ToString("yyyy-MM-dd HH:mm")</span>
+                <span class="ms-2 text-secondary">Resolved at @Model.ResolvedAt.Value.ToString("yyyy-MM-dd HH:mm")</span>
             }
         }
     </div>
@@ -32,7 +43,7 @@
 <div class="appeal-messages">
     @if (Model.Messages.Count == 0)
     {
-        <div class="alert alert-info no-messages">No messages yet.</div>
+        <div class="text-secondary no-messages">No messages yet.</div>
     }
     else
     {
@@ -47,11 +58,13 @@
 {
     <form method="post" asp-action="PostMessage" asp-route-id="@Model.ApplicationId" class="mt-3">
         @Html.AntiForgeryToken()
-        <div class="mb-2">
+        <div class="mb-2" data-testid="form-section" data-field="NewMessageText">
             <label for="NewMessageText" class="form-label">Post a message</label>
             <textarea id="NewMessageText" name="NewMessageText" class="form-control message-text" rows="3" maxlength="4000" required></textarea>
         </div>
-        <button type="submit" class="btn btn-primary post-message-button">Post Message</button>
+        <button type="submit" class="btn btn-primary post-message-button">
+            <i class="ti ti-send me-1"></i>Post Message
+        </button>
     </form>
 }
 
@@ -62,7 +75,7 @@
             <h5 class="card-title">Resolve Appeal</h5>
             <form method="post" asp-action="ResolveAppeal" asp-route-id="@Model.ApplicationId" class="d-flex gap-2 flex-wrap">
                 @Html.AntiForgeryToken()
-                <button type="submit" name="resolution" value="@((int)AppealResolution.Uphold)" class="btn btn-secondary resolve-uphold">Uphold</button>
+                <button type="submit" name="resolution" value="@((int)AppealResolution.Uphold)" class="btn btn-outline-secondary resolve-uphold">Uphold</button>
                 <button type="submit" name="resolution" value="@((int)AppealResolution.GrantReopenToDraft)" class="btn btn-warning resolve-reopen-draft">Grant — Reopen to Draft</button>
                 <button type="submit" name="resolution" value="@((int)AppealResolution.GrantReopenToReview)" class="btn btn-info resolve-reopen-review">Grant — Reopen to Review</button>
             </form>
@@ -71,5 +84,5 @@
 }
 
 <div class="mt-3">
-    <a asp-action="Index" asp-route-id="@Model.ApplicationId">Back to response screen</a>
+    <a asp-action="Index" asp-route-id="@Model.ApplicationId" class="btn btn-link">&larr; Back to response screen</a>
 </div>

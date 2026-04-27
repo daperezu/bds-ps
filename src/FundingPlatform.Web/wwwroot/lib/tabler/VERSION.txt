@@ -1,0 +1,3 @@
+@tabler/core 1.4.0
+@tabler/icons-webfont 3.41.1
+copied 2026-04-25

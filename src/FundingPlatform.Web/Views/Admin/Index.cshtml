@@ -2,24 +2,35 @@
     ViewData["Title"] = "Admin Dashboard";
 }
 
-<h2>Admin Dashboard</h2>
+@await Html.PartialAsync("Components/_PageHeader",
+    new PageHeaderViewModel(Title: "Admin Dashboard"))
 
-<div class="row mt-4">
-    <div class="col-md-6 mb-3">
+<div class="row row-cards mt-3">
+    <div class="col-md-6">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Impact Templates</h5>
-                <p class="card-text">Create and manage impact assessment templates and their parameters.</p>
-                <a asp-action="ImpactTemplates" class="btn btn-primary">Manage Templates</a>
+                <div class="d-flex align-items-center mb-2">
+                    <span class="text-secondary me-2 fs-3"><i class="ti ti-template"></i></span>
+                    <h5 class="card-title mb-0">Impact Templates</h5>
+                </div>
+                <p class="card-text text-secondary">Create and manage impact assessment templates and their parameters.</p>
+                <a asp-action="ImpactTemplates" class="btn btn-primary">
+                    <i class="ti ti-arrow-right me-1"></i>Manage Templates
+                </a>
             </div>
         </div>
     </div>
-    <div class="col-md-6 mb-3">
+    <div class="col-md-6">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">System Configuration</h5>
-                <p class="card-text">View and update system-wide configuration settings.</p>
-                <a asp-action="Configuration" class="btn btn-primary">Manage Configuration</a>
+                <div class="d-flex align-items-center mb-2">
+                    <span class="text-secondary me-2 fs-3"><i class="ti ti-settings"></i></span>
+                    <h5 class="card-title mb-0">System Configuration</h5>
+                </div>
+                <p class="card-text text-secondary">View and update system-wide configuration settings.</p>
+                <a asp-action="Configuration" class="btn btn-primary">
+                    <i class="ti ti-arrow-right me-1"></i>Manage Configuration
+                </a>
             </div>
         </div>
     </div>

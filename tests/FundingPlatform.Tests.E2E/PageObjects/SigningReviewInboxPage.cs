@@ -2,22 +2,19 @@ using Microsoft.Playwright;
 
 namespace FundingPlatform.Tests.E2E.PageObjects;
 
-public class SigningReviewInboxPage
+public class SigningReviewInboxPage : BasePage
 {
-    private readonly IPage _page;
-
-    public SigningReviewInboxPage(IPage page)
+    public SigningReviewInboxPage(IPage page) : base(page)
     {
-        _page = page;
     }
 
-    public ILocator Table => _page.Locator("[data-testid=signing-inbox-table]");
-    public ILocator Rows => _page.Locator("[data-testid=signing-inbox-row]");
-    public ILocator EmptyState => _page.Locator("[data-testid=signing-inbox-empty]");
+    public ILocator Table => Page.Locator("[data-testid=signing-inbox-table]");
+    public ILocator Rows => Page.Locator("[data-testid=signing-inbox-row]");
+    public ILocator EmptyState => Page.Locator("[data-testid=signing-inbox-empty]");
 
     public async Task NavigateAsync(string baseUrl)
     {
-        await _page.GotoAsync($"{baseUrl}/Review/SigningInbox");
+        await Page.GotoAsync($"{baseUrl}/Review/SigningInbox");
     }
 
     public async Task<int> RowCount()

@@ -107,7 +107,7 @@ public class FinalizeReviewTests : AuthenticatedTestBase
         await Page.Locator(".unresolved-warning a:has-text('Cancel')").ClickAsync();
 
         // Should stay on review page with Under Review state
-        await Expect(reviewPage.ApplicationState).ToContainTextAsync("UnderReview");
+        await Expect(reviewPage.ApplicationState).ToContainTextAsync("Under Review");
     }
 
     private async Task<int> SetupSubmittedApplicationAsync()

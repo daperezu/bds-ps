@@ -132,7 +132,7 @@ public class ApplicationSubmissionTests : AuthenticatedTestBase
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
         // Verify item has complete impact
-        var completeBadge = Page.Locator("table tbody tr:has-text('Submission Test Laptop') .badge:has-text('Complete')");
+        var completeBadge = Page.Locator("table tbody tr:has-text('Submission Test Laptop') .status:has-text('Complete')");
         await Expect(completeBadge).ToBeVisibleAsync();
 
         // Submit the application

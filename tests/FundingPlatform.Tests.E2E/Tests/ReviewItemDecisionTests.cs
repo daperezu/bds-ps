@@ -38,7 +38,7 @@ public class ReviewItemDecisionTests : AuthenticatedTestBase
         await reviewPage.GotoAsync(BaseUrl, appId);
 
         // Verify Under Review state
-        await Expect(reviewPage.ApplicationState).ToContainTextAsync("UnderReview");
+        await Expect(reviewPage.ApplicationState).ToContainTextAsync("Under Review");
 
         // Get the item ID from the first review item
         var firstItem = reviewPage.ItemCards.First;
@@ -114,7 +114,7 @@ public class ReviewItemDecisionTests : AuthenticatedTestBase
         await reviewPage.ItemSubmitButton(itemId).ClickAsync();
 
         await Expect(Page.Locator(".alert-success")).ToBeVisibleAsync();
-        await Expect(reviewPage.ItemReviewStatusBadge(itemId)).ToContainTextAsync("NeedsInfo");
+        await Expect(reviewPage.ItemReviewStatusBadge(itemId)).ToContainTextAsync("Needs Info");
     }
 
     private string _uniqueId = string.Empty;

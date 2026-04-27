@@ -42,7 +42,7 @@ public class ApplicantResponseTests : AuthenticatedTestBase
         await responsePage.SubmitAsync();
 
         await Expect(responsePage.SuccessMessage).ToBeVisibleAsync();
-        await Expect(responsePage.ApplicationState).ToContainTextAsync("ResponseFinalized");
+        await Expect(responsePage.ApplicationState).ToContainTextAsync("Response Finalized");
 
         // Reload and confirm response is read-only
         await responsePage.GotoAsync(BaseUrl, appId);

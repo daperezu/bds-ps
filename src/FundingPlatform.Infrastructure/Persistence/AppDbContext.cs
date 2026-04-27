@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FundingPlatform.Infrastructure.Persistence;
 
-public class AppDbContext : IdentityDbContext
+public class AppDbContext : IdentityDbContext<ApplicationUser>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
@@ -33,6 +33,11 @@ public class AppDbContext : IdentityDbContext
     {
         base.OnModelCreating(builder);
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+        // Hide the system sentinel admin from every default user enumeration.
+        // Bypassed by SentinelAwareUserStore (sign-in path) and by service-layer
+        // guard fetches that explicitly call IgnoreQueryFilters().
+        builder.Entity<ApplicationUser>().HasQueryFilter(u => !u.IsSystemSentinel);
 
         // Bind Application.FundingAgreement to its private backing field.
         // Done after ApplyConfigurationsFromAssembly so the navigation metadata exists.

@@ -29,7 +29,7 @@ public class FundingAgreementController : Controller
     private readonly IFundingAgreementHtmlRenderer _htmlRenderer;
     private readonly IFundingAgreementPdfRenderer _pdfRenderer;
     private readonly IFileStorageService _fileStorage;
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly IOptions<FunderOptions> _funderOptions;
     private readonly IOptions<FundingAgreementOptions> _agreementOptions;
     private readonly ILogger<FundingAgreementController> _logger;
@@ -41,7 +41,7 @@ public class FundingAgreementController : Controller
         IFundingAgreementHtmlRenderer htmlRenderer,
         IFundingAgreementPdfRenderer pdfRenderer,
         IFileStorageService fileStorage,
-        UserManager<IdentityUser> userManager,
+        UserManager<ApplicationUser> userManager,
         IOptions<FunderOptions> funderOptions,
         IOptions<FundingAgreementOptions> agreementOptions,
         ILogger<FundingAgreementController> logger)

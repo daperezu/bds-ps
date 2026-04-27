@@ -1,0 +1,23 @@
+@using FundingPlatform.Domain.Enums
+@using FundingPlatform.Web.Models
+@model StatusPillViewModel
+@{
+    var enumValue = Model.EnumValue;
+    var enumTypeName = enumValue.GetType().Name;
+    var visual = enumValue switch
+    {
+        ApplicationState s => StatusVisualMap.For(s),
+        ItemReviewStatus s => StatusVisualMap.For(s),
+        AppealStatus s => StatusVisualMap.For(s),
+        SignedUploadStatus s => StatusVisualMap.For(s),
+        AdminUserStatus s => StatusVisualMap.For(s),
+        AdminUserRole s => StatusVisualMap.For(s),
+        _ => throw new ArgumentOutOfRangeException(nameof(Model.EnumValue), enumValue, $"Unsupported enum type '{enumTypeName}' in _StatusPill"),
+    };
+}
+<span class="badge @visual.Color"
+      data-testid="status-pill"
+      data-status-enum="@enumTypeName"
+      data-status-value="@enumValue">
+    <i class="@visual.Icon me-1"></i>@visual.DisplayLabel
+</span>

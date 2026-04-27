@@ -2,36 +2,33 @@ using Microsoft.Playwright;
 
 namespace FundingPlatform.Tests.E2E.PageObjects;
 
-public class SupplierPage
+public class SupplierPage : BasePage
 {
-    private readonly IPage _page;
-
-    public SupplierPage(IPage page)
+    public SupplierPage(IPage page) : base(page)
     {
-        _page = page;
     }
 
-    public ILocator SupplierLegalIdInput => _page.Locator("[name=SupplierLegalId]");
-    public ILocator SupplierNameInput => _page.Locator("[name=SupplierName]");
-    public ILocator ContactNameInput => _page.Locator("[name=ContactName]");
-    public ILocator EmailInput => _page.Locator("[name=Email]");
-    public ILocator PhoneInput => _page.Locator("[name=Phone]");
-    public ILocator LocationInput => _page.Locator("[name=Location]");
-    public ILocator HasElectronicInvoiceCheckbox => _page.Locator("input[type=checkbox][name=HasElectronicInvoice]");
-    public ILocator ShippingDetailsInput => _page.Locator("[name=ShippingDetails]");
-    public ILocator WarrantyInfoInput => _page.Locator("[name=WarrantyInfo]");
-    public ILocator IsCompliantCCSSCheckbox => _page.Locator("input[type=checkbox][name=IsCompliantCCSS]");
-    public ILocator IsCompliantHaciendaCheckbox => _page.Locator("input[type=checkbox][name=IsCompliantHacienda]");
-    public ILocator IsCompliantSICOPCheckbox => _page.Locator("input[type=checkbox][name=IsCompliantSICOP]");
-    public ILocator PriceInput => _page.Locator("[name=Price]");
-    public ILocator ValidUntilInput => _page.Locator("[name=ValidUntil]");
-    public ILocator QuotationFileInput => _page.Locator("[name=QuotationFile]");
-    public ILocator SubmitButton => _page.Locator("main button[type=submit]");
-    public ILocator ValidationSummary => _page.Locator(".text-danger");
+    public ILocator SupplierLegalIdInput => Page.Locator("[name=SupplierLegalId]");
+    public ILocator SupplierNameInput => Page.Locator("[name=SupplierName]");
+    public ILocator ContactNameInput => Page.Locator("[name=ContactName]");
+    public ILocator EmailInput => Page.Locator("[name=Email]");
+    public ILocator PhoneInput => Page.Locator("[name=Phone]");
+    public ILocator LocationInput => Page.Locator("[name=Location]");
+    public ILocator HasElectronicInvoiceCheckbox => Page.Locator("input[type=checkbox][name=HasElectronicInvoice]");
+    public ILocator ShippingDetailsInput => Page.Locator("[name=ShippingDetails]");
+    public ILocator WarrantyInfoInput => Page.Locator("[name=WarrantyInfo]");
+    public ILocator IsCompliantCCSSCheckbox => Page.Locator("input[type=checkbox][name=IsCompliantCCSS]");
+    public ILocator IsCompliantHaciendaCheckbox => Page.Locator("input[type=checkbox][name=IsCompliantHacienda]");
+    public ILocator IsCompliantSICOPCheckbox => Page.Locator("input[type=checkbox][name=IsCompliantSICOP]");
+    public ILocator PriceInput => Page.Locator("[name=Price]");
+    public ILocator ValidUntilInput => Page.Locator("[name=ValidUntil]");
+    public ILocator QuotationFileInput => Page.Locator("[name=QuotationFile]");
+    public ILocator SubmitButton => Page.Locator("main button[type=submit]");
+    public ILocator ValidationSummary => Page.Locator(".text-danger");
 
     public async Task NavigateToAddAsync(int appId, int itemId, string baseUrl)
     {
-        await _page.GotoAsync($"{baseUrl}/Application/{appId}/Item/{itemId}/Supplier/Add");
+        await Page.GotoAsync($"{baseUrl}/Application/{appId}/Item/{itemId}/Supplier/Add");
     }
 
     public async Task FillSupplierFormAsync(

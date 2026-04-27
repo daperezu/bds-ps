@@ -38,7 +38,7 @@ public class ImpactTemplateTests : AuthenticatedTestBase
         await Expect(itemRow).ToBeVisibleAsync();
 
         // Verify impact badge shows "Pending"
-        var pendingBadge = itemRow.Locator(".badge:has-text('Pending')");
+        var pendingBadge = itemRow.Locator(".status:has-text('Pending')");
         await Expect(pendingBadge).ToBeVisibleAsync();
 
         // Click Impact button
@@ -96,7 +96,7 @@ public class ImpactTemplateTests : AuthenticatedTestBase
 
         // Verify impact badge now shows "Complete"
         var updatedItemRow = Page.Locator("table tbody tr:has-text('Impact Test Laptop')");
-        var completeBadge = updatedItemRow.Locator(".badge:has-text('Complete')");
+        var completeBadge = updatedItemRow.Locator(".status:has-text('Complete')");
         await Expect(completeBadge).ToBeVisibleAsync();
     }
 

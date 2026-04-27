@@ -1,101 +1,150 @@
+@{
+    var sidebarEntries = new List<SidebarEntry>
+    {
+        new("Home", Url.Action("Index", "Home") ?? "/", "ti ti-home", Array.Empty<string>()),
+        new("My Applications", Url.Action("Index", "Application") ?? "/Application", "ti ti-files", new[] { "Applicant" }),
+        new("Review Queue", Url.Action("Index", "Review") ?? "/Review", "ti ti-clipboard-check", new[] { "Reviewer", "Admin" }),
+        new("Signing Inbox", Url.Action("SigningInbox", "Review") ?? "/Review/SigningInbox", "ti ti-pen", new[] { "Reviewer", "Admin" }),
+        new("Admin", Url.Action("Index", "Admin") ?? "/Admin", "ti ti-settings", new[] { "Admin" }),
+        new("Users", "/Admin/Users", "ti ti-users", new[] { "Admin" }),
+        new("Reports", "/Admin/Reports", "ti ti-chart-line", new[] { "Admin" }),
+    };
+
+    bool IsEntryVisible(SidebarEntry entry)
+    {
+        if (User?.Identity?.IsAuthenticated != true) return false;
+        if (entry.AllowedRoles.Length == 0) return true;
+        // Suppress Applicant-only entries when the user is also a Reviewer or Admin —
+        // every registered user implicitly holds the Applicant role on signup, so a
+        // single role-array check would otherwise show "My Applications" to staff
+        // (per contracts/README.md §3 "Reviewer ... does NOT see My Applications").
+        if (entry.AllowedRoles.Length == 1
+            && entry.AllowedRoles[0] == "Applicant"
+            && (User.IsInRole("Reviewer") || User.IsInRole("Admin")))
+        {
+            return false;
+        }
+        return entry.AllowedRoles.Any(r => User.IsInRole(r));
+    }
+
+    string Slugify(string label) => label.ToLowerInvariant().Replace(' ', '-');
+
+    var currentPath = Context.Request.Path.Value ?? "/";
+    bool IsActive(string url)
+    {
+        if (string.Equals(url, "/", StringComparison.OrdinalIgnoreCase))
+            return string.Equals(currentPath, "/", StringComparison.OrdinalIgnoreCase);
+        return currentPath.StartsWith(url, StringComparison.OrdinalIgnoreCase);
+    }
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Funding Platform</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/tabler/dist/css/tabler.min.css" />
+    <link rel="stylesheet" href="~/lib/tabler/dist/css/tabler-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/FundingPlatform.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-dark bg-primary border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-controller="Home" asp-action="Index">Funding Platform</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+    <div class="page">
+        @if (User?.Identity?.IsAuthenticated == true)
+        {
+            <aside class="navbar navbar-vertical navbar-expand-lg navbar-dark" data-bs-theme="dark" data-testid="sidebar">
+                <div class="container-fluid">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu" aria-controls="sidebar-menu" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <h1 class="navbar-brand navbar-brand-autodark">
+                        <a href="@Url.Action("Index", "Home")">Funding Platform</a>
+                    </h1>
+                    <div class="collapse navbar-collapse" id="sidebar-menu">
+                        <ul class="navbar-nav pt-lg-3">
+                            @foreach (var entry in sidebarEntries.Where(IsEntryVisible))
+                            {
+                                var slug = Slugify(entry.Label);
+                                var active = IsActive(entry.Url) ? " active" : string.Empty;
+                                <li class="nav-item@active">
+                                    <a class="nav-link" href="@entry.Url" data-testid="sidebar-entry-@slug">
+                                        <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="@entry.Icon"></i></span>
+                                        <span class="nav-link-title">@entry.Label</span>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </aside>
+        }
+        <header class="navbar navbar-expand-md d-print-none" data-testid="topbar">
+            <div class="container-xl">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Application" asp-action="Index">Applications</a>
-                            </li>
-                            @if (User.IsInRole("Reviewer"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Review" asp-action="Index">Review</a>
-                                </li>
-                            }
-                            @if (User.IsInRole("Admin"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Admin" asp-action="Index">Admin</a>
-                                </li>
-                            }
-                        }
-                    </ul>
-                    <ul class="navbar-nav">
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <li class="nav-item">
-                                <span class="nav-link">@User.Identity.Name</span>
-                            </li>
-                            <li class="nav-item">
-                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="nav-link btn btn-link">Logout</button>
-                                </form>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Account" asp-action="Login">Login</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Account" asp-action="Register">Register</a>
-                            </li>
-                        }
-                    </ul>
+                <div class="page-title mb-0 fs-3" data-testid="page-title">@ViewData["Title"]</div>
+                <div class="navbar-nav flex-row order-md-last">
+                    @if (User?.Identity?.IsAuthenticated == true)
+                    {
+                        <div class="nav-item d-flex align-items-center px-2">
+                            <span class="text-secondary">@User.Identity.Name</span>
+                        </div>
+                        <div class="nav-item d-flex align-items-center">
+                            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-link nav-link">
+                                    <i class="ti ti-logout me-1"></i> Logout
+                                </button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="nav-item">
+                            <a class="nav-link" asp-controller="Account" asp-action="Login">Login</a>
+                        </div>
+                        <div class="nav-item">
+                            <a class="nav-link" asp-controller="Account" asp-action="Register">Register</a>
+                        </div>
+                    }
                 </div>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @if (TempData["SuccessMessage"] != null)
-            {
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    @TempData["SuccessMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </header>
+        <div class="page-wrapper">
+            <div class="container-xl py-3" data-testid="breadcrumbs">
+                @await RenderSectionAsync("Breadcrumbs", required: false)
+            </div>
+            <div class="page-body">
+                <div class="container-xl">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible" role="alert">
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    <main role="main">
+                        @RenderBody()
+                    </main>
                 </div>
-            }
-            @if (TempData["ErrorMessage"] != null)
-            {
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    @TempData["ErrorMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <footer class="footer footer-transparent d-print-none">
+                <div class="container-xl">
+                    <div class="text-secondary text-center py-3">&copy; 2026 Funding Platform</div>
                 </div>
-            }
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Funding Platform
+            </footer>
         </div>
-    </footer>
+    </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/tabler/dist/js/tabler.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
