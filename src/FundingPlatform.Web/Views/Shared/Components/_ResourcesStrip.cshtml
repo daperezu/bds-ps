@@ -1,0 +1,20 @@
+@using FundingPlatform.Application.Services
+@inject IApplicantCopyProvider Copy
+@{
+    var cards = new[]
+    {
+        new { Title = Copy.ResourcesHowFundingWorks(), Body = "How we evaluate applications, what gets funded, and what doesn't.", Cta = "Read the guide", Href = "/help/how-it-works" },
+        new { Title = Copy.ResourcesSubmissionTips(),  Body = "Make your application stronger with a focused project description and accurate quotations.", Cta = "See the checklist", Href = "/help/submission-tips" },
+        new { Title = Copy.ResourcesGetHelp(),         Body = "Stuck somewhere? We can help.", Cta = "Contact us", Href = "/help/contact" },
+    };
+}
+<section class="fl-strip mt-4" data-testid="resources-strip" aria-label="Helpful resources">
+    @foreach (var card in cards)
+    {
+        <article class="fl-strip-card">
+            <h3 class="fl-strip-card-title">@card.Title</h3>
+            <p class="fl-text-secondary fl-type-body">@card.Body</p>
+            <a class="btn btn-link p-0" href="@card.Href">@card.Cta &rarr;</a>
+        </article>
+    }
+</section>

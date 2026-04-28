@@ -1,0 +1,8 @@
+@using FundingPlatform.Application.DTOs
+@model SigningCeremonyViewModel
+@{
+    ViewData["Title"] = "Funding agreement signed";
+}
+<div class="container py-5">
+    @await Html.PartialAsync("../../Shared/Components/_SigningCeremony", Model)
+</div>

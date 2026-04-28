@@ -415,6 +415,59 @@ public class FundingAgreementController : Controller
         return View(viewModel);
     }
 
+    /// <summary>
+    /// Spec 011 US3 — signing ceremony surface (research §6). The action is
+    /// bookmark-safe: <c>TempData["CeremonyFresh"]</c> drives the celebratory
+    /// motion path; bookmarks see <c>IsFresh = false</c> and render the static
+    /// summary state.
+    /// </summary>
+    [HttpGet("SignCeremony")]
+    public async Task<IActionResult> SignCeremony(int applicationId, CancellationToken ct)
+    {
+        var application = await _applicationRepository.GetByIdWithDetailsAsync(applicationId);
+        if (application is null) return NotFound();
+
+        var isFresh = TempData["CeremonyFresh"] is bool b && b;
+
+        var fa = application.FundingAgreement;
+        var hasSignedUpload = fa is not null && fa.SignedUploads.Any(s => s.Status == Domain.Enums.SignedUploadStatus.Approved);
+        var executed = application.State == Domain.Enums.ApplicationState.AgreementExecuted;
+
+        SigningCeremonyVariant variant;
+        if (executed) variant = SigningCeremonyVariant.BothCompleteApplicantLast;
+        else if (hasSignedUpload) variant = SigningCeremonyVariant.ApplicantOnlySigned;
+        else variant = SigningCeremonyVariant.FunderOnlySigned;
+
+        // Sum the lowest-price quotation per item as a proxy for the funded amount.
+        decimal totalAmount = 0m;
+        string currencyCode = "USD";
+        foreach (var item in application.Items)
+        {
+            var lowest = item.Quotations.OrderBy(q => q.Price).FirstOrDefault();
+            if (lowest is null) continue;
+            totalAmount += lowest.Price;
+            currencyCode = lowest.Currency;
+        }
+
+        var firstName = application.Applicant?.FirstName ?? "there";
+        var dashboardHref = "/";
+        var detailsHref = Url.Action("Details", "FundingAgreement", new { applicationId }) ?? $"/Applications/{applicationId}/FundingAgreement";
+
+        var vm = new SigningCeremonyViewModel(
+            ApplicationId: Guid.Empty,
+            Variant: variant,
+            IsFresh: isFresh,
+            ApplicantFirstName: firstName,
+            ProjectName: application.Items.FirstOrDefault()?.ProductName ?? $"Application #{applicationId}",
+            FundedAmount: totalAmount,
+            CurrencyCode: currencyCode,
+            DisbursementDate: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(14)),
+            ViewFundingDetailsHref: detailsHref,
+            DashboardHref: dashboardHref);
+
+        return View("Sign/Ceremony", vm);
+    }
+
     private IActionResult RenderSignedUploadRedirect(
         int applicationId, SignedUploadResult result, string successMessage)
     {

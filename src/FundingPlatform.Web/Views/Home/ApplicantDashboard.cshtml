@@ -1,0 +1,84 @@
+@using FundingPlatform.Application.DTOs
+@using FundingPlatform.Application.Services
+@using FundingPlatform.Web.Models
+@inject IApplicantCopyProvider Copy
+@model ApplicantDashboardDto
+@{
+    ViewData["Title"] = "Home";
+    bool isEmpty = Model.ActiveApplications.Count == 0
+                   && Model.Kpis.Active == 0
+                   && Model.Kpis.Funded == 0;
+}
+
+@if (isEmpty)
+{
+    var emptyVm = new EmptyStateViewModel(
+        Copy.EmptyHeroHeadline(),
+        Copy.EmptyHeroSubhead(),
+        IllustrationSceneKey: "seed",
+        IllustrationAltText: "A seedling sprouting — start your funding journey.",
+        PrimaryAction: new ActionItem(Copy.EmptyCtaLabel(), ActionClass.Primary, "/Application/Create"));
+
+    <div class="container py-5" data-testid="applicant-empty">
+        @await Html.PartialAsync("Components/_EmptyState", emptyVm)
+        <section class="fl-strip mt-5" data-testid="trust-strip" aria-label="What to expect">
+            <article class="fl-strip-card">
+                <h3 class="fl-strip-card-title">@Copy.TrustHowLongTitle()</h3>
+                <p class="fl-text-secondary fl-type-body">@Copy.TrustHowLongBody()</p>
+            </article>
+            <article class="fl-strip-card">
+                <h3 class="fl-strip-card-title">@Copy.TrustWhatYouNeedTitle()</h3>
+                <p class="fl-text-secondary fl-type-body">@Copy.TrustWhatYouNeedBody()</p>
+            </article>
+            <article class="fl-strip-card">
+                <h3 class="fl-strip-card-title">@Copy.TrustHowDecisionsTitle()</h3>
+                <p class="fl-text-secondary fl-type-body">@Copy.TrustHowDecisionsBody()</p>
+            </article>
+        </section>
+    </div>
+}
+else
+{
+    <div class="container py-3" data-testid="applicant-dashboard">
+        @await Html.PartialAsync("Components/_ApplicantHero", Model)
+
+        @if (Model.ActiveApplications.Count > 0)
+        {
+            <section class="mt-5" data-testid="application-list" aria-labelledby="apps-heading">
+                <header class="d-flex justify-content-between align-items-end mb-3 flex-wrap fl-gap-2">
+                    <h2 id="apps-heading" class="fl-font-display fl-type-heading-md mb-0">Your applications</h2>
+                    @if (Model.HasMoreApplications)
+                    {
+                        <a href="/Application" data-testid="show-all-applications">Show all &rarr;</a>
+                    }
+                </header>
+                <div class="d-grid gap-3">
+                    @foreach (var card in Model.ActiveApplications)
+                    {
+                        @await Html.PartialAsync("Components/_ApplicationCard", card)
+                    }
+                </div>
+            </section>
+        }
+
+        @if (Model.RecentActivity.Count > 0)
+        {
+            var timelineVm = new EventTimelineViewModel(
+                Events: Model.RecentActivity.Select(a => new TimelineEvent(
+                    Action: a.Title,
+                    Actor: a.ActorName ?? "you",
+                    At: a.Occurred,
+                    Detail: null,
+                    Icon: a.IconKey,
+                    Color: "secondary")).ToList(),
+                ShowEmptyMessage: true,
+                Scope: EventTimelineScope.Applicant);
+            <section class="mt-5" data-testid="recent-activity">
+                <h2 class="fl-font-display fl-type-heading-md mb-3">Recent activity</h2>
+                @await Html.PartialAsync("Components/_EventTimeline", timelineVm)
+            </section>
+        }
+
+        @await Html.PartialAsync("Components/_ResourcesStrip")
+    </div>
+}

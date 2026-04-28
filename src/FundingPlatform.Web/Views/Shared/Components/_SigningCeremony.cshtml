@@ -1,0 +1,46 @@
+@using FundingPlatform.Application.DTOs
+@using FundingPlatform.Application.Services
+@inject ICeremonyCopyProvider Copy
+@model SigningCeremonyViewModel
+@{
+    var headline = Copy.Headline(Model.Variant);
+    var subhead = Copy.Subhead(Model.Variant, Model.DisbursementDate);
+    var fireConfetti = Model.IsFresh && Copy.ShouldFireConfetti(Model.Variant);
+    var ceremonyConfig = System.Text.Json.JsonSerializer.Serialize(new
+    {
+        isFresh = Model.IsFresh,
+        confettiOn = fireConfetti,
+        dashboardHref = Model.DashboardHref,
+    });
+    var sealState = Model.IsFresh ? "animate" : "static";
+    var ariaAnnouncement = Copy.AriaLiveAnnouncement(Model.Variant);
+}
+<div class="fl-ceremony"
+     data-testid="signing-ceremony"
+     data-variant="@Model.Variant.ToString()"
+     data-is-fresh="@(Model.IsFresh ? "true" : "false")"
+     data-ceremony-config='@Html.Raw(System.Net.WebUtility.HtmlEncode(ceremonyConfig))'>
+    <div class="visually-hidden" role="status" aria-live="polite" data-testid="ceremony-aria-announcement">@ariaAnnouncement</div>
+
+    <object class="fl-ceremony-seal" data-testid="ceremony-seal" data-state="@sealState" data="~/lib/brand/seal.svg" type="image/svg+xml" aria-hidden="true">Seal</object>
+
+    <h1 class="fl-ceremony-headline" data-testid="ceremony-headline">@headline</h1>
+    <p class="fl-ceremony-subhead fl-type-body" data-testid="ceremony-subhead">@subhead</p>
+
+    <section class="fl-ceremony-summary" data-testid="ceremony-summary">
+        <div class="fl-text-secondary fl-type-meta text-uppercase">Funded amount</div>
+        <div class="fl-ceremony-amount fl-font-mono" data-testid="ceremony-amount" data-ticker-target="@Model.FundedAmount">@($"{Model.CurrencyCode} {Model.FundedAmount:N2}")</div>
+        <div class="fl-text-secondary fl-type-meta">Project</div>
+        <div class="fl-type-body fw-semibold">@Model.ProjectName</div>
+    </section>
+
+    <section class="fl-ceremony-summary" data-testid="ceremony-whats-next">
+        <div class="fl-text-secondary fl-type-meta text-uppercase">What happens next</div>
+        <div class="fl-type-body">Funds will be transferred by <strong>@Model.DisbursementDate.ToString("MMMM d, yyyy")</strong>. We'll email you when the transfer clears.</div>
+    </section>
+
+    <div class="d-flex flex-wrap fl-gap-3 mt-3">
+        <a class="btn btn-primary" data-ceremony-primary data-testid="ceremony-primary-cta" href="@Model.ViewFundingDetailsHref">@Copy.PrimaryCtaLabel(Model.Variant)</a>
+        <a class="btn btn-outline-secondary" data-testid="ceremony-secondary-cta" href="@Model.DashboardHref">@Copy.SecondaryCtaLabel()</a>
+    </div>
+</div>

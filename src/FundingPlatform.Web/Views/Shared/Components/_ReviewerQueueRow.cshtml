@@ -1,0 +1,27 @@
+@using FundingPlatform.Application.DTOs
+@model ReviewerQueueRowDto
+<tr class="fl-queue-row"
+    data-testid="reviewer-queue-row"
+    data-application-number="@Model.ApplicationNumber"
+    data-row-href="/Review/Review/@Model.ApplicationId.GetHashCode()">
+    <td class="fl-pad-2">
+        <div class="fl-app-card-mono fl-type-meta" data-testid="row-application-number">@Model.ApplicationNumber</div>
+        <div class="fl-type-meta fw-semibold" data-testid="row-project-name">@Model.ProjectName</div>
+    </td>
+    <td class="fl-pad-2">
+        <div class="d-flex align-items-center fl-gap-2">
+            <div class="avatar avatar-sm fl-bg-primary-subtle" aria-hidden="true">
+                @(Model.ApplicantName.Length > 0 ? Model.ApplicantName[0..Math.Min(2, Model.ApplicantName.Length)] : "?")
+            </div>
+            <span data-testid="row-applicant-name">@Model.ApplicantName</span>
+        </div>
+    </td>
+    <td class="fl-pad-2">
+        @await Html.PartialAsync("Components/_ApplicationJourney", Model.JourneyMicro)
+    </td>
+    <td class="fl-pad-2 fl-type-meta" data-testid="row-days-in-state">@Model.DaysInCurrentState d</td>
+    <td class="fl-pad-2 fl-type-meta fl-text-secondary" data-testid="row-last-activity">@Model.LastActivity.LocalDateTime.ToString("MMM d")</td>
+    <td class="fl-pad-2" data-no-row-nav>
+        <a class="btn btn-sm btn-outline-primary" href="@Model.PrimaryAction.Href" data-testid="row-action">@Model.PrimaryAction.Label</a>
+    </td>
+</tr>

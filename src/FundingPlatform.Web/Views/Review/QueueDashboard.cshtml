@@ -1,0 +1,68 @@
+@using FundingPlatform.Application.DTOs
+@using FundingPlatform.Application.Services
+@using FundingPlatform.Web.Models
+@inject IReviewerCopyProvider Copy
+@model ReviewerQueueDto
+@{
+    ViewData["Title"] = "Review Queue";
+    bool isEmpty = Model.Rows.Count == 0
+                   && Model.Kpis.AwaitingYourReview == 0
+                   && Model.Kpis.InProgress == 0
+                   && Model.Kpis.Aging == 0;
+}
+
+<div class="container py-3" data-testid="reviewer-queue-dashboard">
+    @await Html.PartialAsync("../Shared/Components/_ReviewerHero", Model)
+
+    @if (Model.RecentActivity.Count > 0)
+    {
+        var activityVm = new EventTimelineViewModel(
+            Events: Model.RecentActivity.Select(e => new TimelineEvent(
+                At: e.Occurred,
+                Actor: e.ApplicantName,
+                Action: e.Title,
+                Detail: e.ApplicationNumber,
+                Icon: "ti ti-point",
+                Color: "secondary")).ToList(),
+            ShowEmptyMessage: false,
+            Scope: EventTimelineScope.ReviewerQueue);
+        <section class="mt-4" data-testid="reviewer-recent-activity">
+            <h2 class="fl-font-display fl-type-heading-md mb-3">Recent activity</h2>
+            @await Html.PartialAsync("../Shared/Components/_EventTimeline", activityVm)
+        </section>
+    }
+
+    <section class="mt-4" data-testid="reviewer-queue">
+        @if (isEmpty)
+        {
+            var emptyVm = new EmptyStateViewModel(
+                Copy.EmptyHeadline(),
+                Copy.EmptyBody(),
+                IllustrationSceneKey: "calm-horizon",
+                IllustrationAltText: "All clear — nothing's awaiting your review.");
+            @await Html.PartialAsync("../Shared/Components/_EmptyState", emptyVm)
+        }
+        else
+        {
+            <div class="card fl-surface fl-surface-shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-vcenter">
+                        <thead>
+                            <tr>
+                                <th class="fl-type-meta fl-text-secondary text-uppercase">Application</th>
+                                <th class="fl-type-meta fl-text-secondary text-uppercase">Applicant</th>
+                                <th class="fl-type-meta fl-text-secondary text-uppercase">Journey</th>
+                                <th class="fl-type-meta fl-text-secondary text-uppercase">Days</th>
+                                <th class="fl-type-meta fl-text-secondary text-uppercase">Last activity</th>
+                                <th class="fl-type-meta fl-text-secondary text-uppercase">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody data-testid="reviewer-queue-tbody">
+                            @await Html.PartialAsync("_ReviewerQueueRows", Model.Rows)
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </section>
+</div>
