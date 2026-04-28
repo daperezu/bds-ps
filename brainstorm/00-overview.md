@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-04-26
+Last updated: 2026-04-27
 
 ## Sessions
 
@@ -16,6 +16,7 @@ Last updated: 2026-04-26
 | 08 | 2026-04-25 | tabler-ui-strategy | spec-created | 008 |
 | 09 | 2026-04-25 | admin-area | spec-created | 009 |
 | 10 | 2026-04-26 | admin-reports | spec-created | 010 |
+| 11 | 2026-04-27 | warm-modern-facelift | spec-created | 011 |
 
 ## Open Threads
 
@@ -74,6 +75,29 @@ Last updated: 2026-04-26
 - Whether the absence of a read-only Auditor sub-role is acceptable for v1 — future spec can add Auditor without breaking 010 (from #10)
 - ISO 4217 enforcement of currency codes — deferred; future spec (from #10)
 - Historical snapshotting of supplier display names / applicant identities on report rows — deferred; reports always render current relational state (from #10)
+- Display brand name selection — Forge / Ascent / keep FundingPlatform — user sign-off gate (from #11)
+- Exact hex values for the warm forest green primary + warm amber accent + warm neutrals + warm-retuned status palette — pinned during planning by designer pass (from #11)
+- 8 px spacing scale ratios and full type-scale ramp — pinned during planning after density audit on densest surfaces (from #11)
+- Tabler `--tblr-*` CSS-variable bridge aggressiveness — inventory pinned during planning (from #11)
+- canvas-confetti (or equivalent ≤ 5 KB gz) exact dependency pin — pinned during planning (from #11)
+- Visual-regression tooling adoption — recurring open question from #08; defer or now is reviewer feedback (from #11)
+- Selector strategy precedence (role/aria vs. data-testid) — pin during planning so all POM rewrites are uniform (from #11)
+- Designer source for the 9 illustration SVGs (in-team / commission / adapted-from-open) — affects timeline (from #11)
+- Empty-state surface audit — verify the 9-scene set covers all current empty-state usages (from #11)
+- Unified event source service vs. query-time stitching for the activity feeds and journey tooltips (from #11)
+- Canonical journey-stage mapping owner — extend IStatusDisplayResolver vs. sibling IJourneyStageResolver (from #11)
+- Multi-branch journey rendering (Send-back loop AND active Appeal in one application) — visual contract pinned during planning (from #11)
+- Reviewer queue activity-feed positioning at ≥ 1440 px (above table vs. right rail) — defaults to "above" (from #11)
+- Confirm removing the status-pill column from reviewer queue rows in favor of inline micro journey timeline loses no information (from #11)
+- Signing ceremony view-vs-partial choice (FR-044) — pin during planning (from #11)
+- Signing ceremony fresh-vs-bookmark mechanism (TempData / query / one-shot session token, FR-047) — pin during planning (from #11)
+- Login/Register tone — clean single-CTA vs. light marketing hero — defaults to "clean" (from #11)
+- Schema-unchanged constraint escape-hatch protocol via speckit-spex-evolve — protocol established; specific trigger not anticipated (from #11)
+- Performance baseline (LCP / TBT) capture timing — must run as planning day-1 task before any code lands (from #11)
+- Future spec 012 (notifications & inbox / SignalR) needs its own brainstorm — spec 011 deliberately excludes real-time push (from #11)
+- Future spec 013 (communication surface — unified messaging panel) still pending its own brainstorm (from #11; carries forward from #08)
+- Future spec 014 (localization layer) — voice-guide rewrites in spec 011 must keep copy out of partials' code paths (from #11; carries forward from #08)
+- Future spec 015 (public marketing surface) — distinct workstream; this brainstorm explicitly chose authenticated-only for spec 011 (from #11)
 
 ## Closed Threads
 
