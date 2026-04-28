@@ -1,0 +1,108 @@
+@model FundingPlatform.Web.ViewModels.Admin.Reports.AgingApplicationsViewModel
+@using FundingPlatform.Domain.Enums
+@{
+    ViewData["Title"] = "Aging applications report";
+    var req = Model.Result.AppliedFilter;
+    var totalPages = Model.TotalPages;
+    var page = Model.CurrentPage;
+    var filterError = ViewData["ReportFilterError"] as string;
+}
+
+<div data-testid="admin-area">
+    @await Html.PartialAsync("Components/_PageHeader",
+        new PageHeaderViewModel(
+            Title: "Aging applications",
+            Subtitle: $"{Model.Result.TotalCount} application(s) older than {req.Threshold} days."))
+
+    @await Html.PartialAsync("Components/_ReportSubTabs", "Aging")
+
+    @if (!string.IsNullOrWhiteSpace(filterError))
+    {
+        <div class="alert alert-warning mt-3" data-testid="aging-filter-error">@filterError</div>
+    }
+
+    <form method="get" class="card mt-3" data-testid="aging-filter">
+        <div class="card-body">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label" for="threshold">Threshold (days)</label>
+                    <input type="number" id="threshold" name="threshold" class="form-control"
+                           value="@req.Threshold" min="1" max="365"
+                           data-testid="aging-filter-threshold" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="search">Search</label>
+                    <input type="text" id="search" name="search" class="form-control" value="@req.Search" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">States</label>
+                    <select name="states" class="form-select" multiple size="3" data-testid="aging-filter-states">
+                        @foreach (var s in Enum.GetValues<ApplicationState>())
+                        {
+                            var sel = req.States.Contains(s);
+                            <option value="@s" selected="@sel">@s</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary" data-testid="aging-filter-apply">Apply</button>
+                    <a class="btn btn-outline-secondary"
+                       href="@Url.Action("ExportAging", new { threshold = req.Threshold, search = req.Search, sort = req.Sort, states = req.States.Select(s => s.ToString()).ToArray() })"
+                       data-testid="aging-export-csv">Download CSV</a>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    @if (Model.Result.Rows.Count == 0)
+    {
+        <div class="mt-3">
+            @await Html.PartialAsync("Components/_EmptyState",
+                new EmptyStateViewModel(
+                    Headline: "No aging applications match",
+                    Body: "Adjust the threshold or filter and try again.",
+                    Icon: "ti ti-mood-empty"))
+        </div>
+    }
+    else
+    {
+        <div class="card mt-3" data-testid="aging-table">
+            <div class="table-responsive">
+                <table class="table card-table table-vcenter">
+                    <thead>
+                        <tr>
+                            <th>App Id</th>
+                            <th>Applicant</th>
+                            <th>Email</th>
+                            <th>Legal Id</th>
+                            <th>State</th>
+                            <th>Days</th>
+                            <th>Last Transition</th>
+                            <th>Items</th>
+                            <th>Approved</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.Result.Rows)
+                        {
+                            <tr data-testid="aging-row" data-app-id="@row.AppId">
+                                <td>@row.AppId</td>
+                                <td>@row.ApplicantFullName</td>
+                                <td>@row.ApplicantEmail</td>
+                                <td>@row.ApplicantLegalId</td>
+                                <td>@row.State</td>
+                                <td>@row.DaysInCurrentState</td>
+                                <td>@(row.LastTransitionAt?.ToString("yyyy-MM-dd") ?? "—")</td>
+                                <td>@row.ItemCount</td>
+                                <td>
+                                    @if (row.TotalApproved.Count == 0) { <span class="text-secondary">—</span> }
+                                    else { foreach (var ca in row.TotalApproved) { <div data-currency="@ca.Currency"><span class="fw-semibold">@ca.Currency</span> @ca.Amount.ToString("N2")</div> } }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

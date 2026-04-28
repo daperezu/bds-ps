@@ -6,6 +6,7 @@ CREATE TABLE [dbo].[Quotations]
     [Price]      DECIMAL(18,2) NOT NULL,
     [ValidUntil] DATE          NOT NULL,
     [DocumentId] INT           NOT NULL,
+    [Currency]   NVARCHAR(3)   NULL,
     [CreatedAt]  DATETIME2     NOT NULL CONSTRAINT [DF_Quotations_CreatedAt] DEFAULT (GETUTCDATE()),
 
     CONSTRAINT [PK_Quotations] PRIMARY KEY CLUSTERED ([Id]),

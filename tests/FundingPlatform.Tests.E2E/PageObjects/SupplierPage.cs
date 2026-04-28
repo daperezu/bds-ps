@@ -21,6 +21,7 @@ public class SupplierPage : BasePage
     public ILocator IsCompliantHaciendaCheckbox => Page.Locator("input[type=checkbox][name=IsCompliantHacienda]");
     public ILocator IsCompliantSICOPCheckbox => Page.Locator("input[type=checkbox][name=IsCompliantSICOP]");
     public ILocator PriceInput => Page.Locator("[name=Price]");
+    public ILocator CurrencyInput => Page.Locator("[name=Currency]");
     public ILocator ValidUntilInput => Page.Locator("[name=ValidUntil]");
     public ILocator QuotationFileInput => Page.Locator("[name=QuotationFile]");
     public ILocator SubmitButton => Page.Locator("main button[type=submit]");
@@ -43,7 +44,8 @@ public class SupplierPage : BasePage
         string? location = null,
         bool isCompliantCCSS = false,
         bool isCompliantHacienda = false,
-        bool isCompliantSICOP = false)
+        bool isCompliantSICOP = false,
+        string? currency = null)
     {
         await SupplierLegalIdInput.FillAsync(legalId);
         await SupplierNameInput.FillAsync(name);
@@ -58,6 +60,7 @@ public class SupplierPage : BasePage
         if (isCompliantSICOP) await IsCompliantSICOPCheckbox.CheckAsync();
 
         await PriceInput.FillAsync(price.ToString());
+        if (currency is not null) await CurrencyInput.FillAsync(currency);
         await ValidUntilInput.FillAsync(validUntil);
         await QuotationFileInput.SetInputFilesAsync(filePath);
     }

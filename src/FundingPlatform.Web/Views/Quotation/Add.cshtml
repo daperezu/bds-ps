@@ -37,6 +37,13 @@
                 <span asp-validation-for="Price" class="invalid-feedback d-block"></span>
             </div>
 
+            <div class="mb-3" data-testid="form-section" data-field="Currency">
+                <label asp-for="Currency" class="form-label"></label>
+                <input asp-for="Currency" class="form-control" maxlength="3" />
+                <small class="form-hint">ISO 4217 (e.g., COP, USD)</small>
+                <span asp-validation-for="Currency" class="invalid-feedback d-block"></span>
+            </div>
+
             <div class="mb-3" data-testid="form-section" data-field="ValidUntil">
                 <label asp-for="ValidUntil" class="form-label"></label>
                 <input asp-for="ValidUntil" class="form-control" type="date" />

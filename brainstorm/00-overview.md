@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-04-25
+Last updated: 2026-04-26
 
 ## Sessions
 
@@ -15,6 +15,7 @@ Last updated: 2026-04-25
 | 07 | 2026-04-23 | signing-wayfinding | spec-created | 007 |
 | 08 | 2026-04-25 | tabler-ui-strategy | spec-created | 008 |
 | 09 | 2026-04-25 | admin-area | spec-created | 009 |
+| 10 | 2026-04-26 | admin-reports | spec-created | 010 |
 
 ## Open Threads
 
@@ -27,7 +28,6 @@ Last updated: 2026-04-25
 - Does full item-status reset on send-back create unnecessary re-work for reviewers? (from #02)
 - Persistence model for `ApplicantResponse`: durable snapshot vs. reconstructed from item-level state (from #04)
 - Representation of `AppealMessage`: child entity with identity vs. value object in a collection on `Appeal` (from #04)
-- Operational visibility for stuck applications with no deadlines — likely future reporting spec (from #04)
 - Whether `ApplicantResponse` decisions should be visible to reviewers in read-only form before an appeal is opened (from #04)
 - Terms & Conditions copy ownership and delivery path for the Funding Agreement template (from #05)
 - Funder identity shape: single configuration block vs. richer `Funder` aggregate for multi-funder scenarios (from #05)
@@ -62,11 +62,24 @@ Last updated: 2026-04-25
 - Whether the expanded admin-edited-profile scope (first/last/phone for all roles, legal id for Applicants) is right v1 surface or should narrow back to identity-level only (from #09)
 - Whether single-role-by-contract is the right call vs single-role-by-UX with a multi-role-capable data model (from #09)
 - Future audit log of admin actions — deferred to a future compliance/reporting spec; needs to land when external audit pressure surfaces (from #09)
+- Page-size convention reuse from the review queue — pin during planning (from #10)
+- CSV export upper-bound numeric value (cited as `e.g., 50,000`) — pin during planning (from #10)
+- `DefaultCurrency` configuration key shape and per-environment conventions (mirrors spec 009's `ADMIN_DEFAULT_PASSWORD` decision) — pin during planning (from #10)
+- Spec 005 Funding Agreement PDF visual integrity after the one-token currency-code render change — verify with a PDF-snapshot regression or manual visual comparison during planning (from #10)
+- `VersionHistory` adequacy for "approved-at" (US5) and "last actor" / "days in current state" (US6) — verify during planning; spec already specifies em-dash fallback if any field is absent (from #10)
+- dacpac deployment-step ordering for the `Currency` column add → backfill → NOT NULL tightening — confirm during planning (from #10)
+- Whether the per-currency-stack visual density on the dashboard is acceptable across 1–2 currencies, or if a default-currency headline + hover-collapse is preferable when the platform later supports ≥ 3 currencies (from #10)
+- Whether the bundled `010 = currency + reports` framing is right, or if reviewers would prefer `010A = currency / 010B = reports` — outcome of formal stakeholder review on `review_brief.md` (from #10)
+- Whether v1's four-report bundle (Applications / Applicants / Funded Items / Aging) is the right cut, or if Activity / Status-Transitions or Appeals should swap in for one of the four (from #10)
+- Whether the absence of a read-only Auditor sub-role is acceptable for v1 — future spec can add Auditor without breaking 010 (from #10)
+- ISO 4217 enforcement of currency codes — deferred; future spec (from #10)
+- Historical snapshotting of supplier display names / applicant identities on report rows — deferred; reports always render current relational state (from #10)
 
 ## Closed Threads
 
 - Will version history be sufficient for audit needs, or will the Appeal spec need a Resolution entity? (from #02) — **Closed by #04**: no `Resolution` entity needed; appeal resolution is a state transition + audit entry.
 - Post-signature regeneration lockout on the Funding Agreement (from #05) — **Closed by #06**: resolved as "regeneration permitted until first signed upload; locked thereafter; administrative back-out explicitly out of scope for this feature."
+- Operational visibility for stuck applications with no deadlines — likely future reporting spec (from #04) — **Closed by #10**: Aging Applications report (US6) ships in spec 010, with configurable threshold (default 14 days, range 1–365) and per-row drill-in including "days in current state" and "last actor".
 
 ## Parked Ideas
 

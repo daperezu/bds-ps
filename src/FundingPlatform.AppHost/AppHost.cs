@@ -30,6 +30,8 @@ var funderAddress = builder.Configuration["FundingAgreement:Funder:Address"] ?? 
 var funderContactEmail = builder.Configuration["FundingAgreement:Funder:ContactEmail"] ?? "";
 var funderContactPhone = builder.Configuration["FundingAgreement:Funder:ContactPhone"] ?? "";
 var signedUploadMaxSizeBytes = builder.Configuration["SignedUpload:MaxSizeBytes"] ?? "20971520";
+var adminReportsDefaultCurrency = builder.Configuration["AdminReports:DefaultCurrency"] ?? "COP";
+var adminReportsCsvRowLimit = builder.Configuration["AdminReports:CsvRowLimit"] ?? "50000";
 
 // E2E fixture runs with EphemeralStorage=true and a fresh DB per fixture run, so
 // the sentinel admin (admin@FundingPlatform.com) is seeded on every startup. Setting
@@ -50,7 +52,9 @@ var webApp = builder.AddProject<Projects.FundingPlatform_Web>("webapp")
     .WithEnvironment("FundingAgreement__Funder__Address", funderAddress)
     .WithEnvironment("FundingAgreement__Funder__ContactEmail", funderContactEmail)
     .WithEnvironment("FundingAgreement__Funder__ContactPhone", funderContactPhone)
-    .WithEnvironment("SignedUpload__MaxSizeBytes", signedUploadMaxSizeBytes);
+    .WithEnvironment("SignedUpload__MaxSizeBytes", signedUploadMaxSizeBytes)
+    .WithEnvironment("AdminReports__DefaultCurrency", adminReportsDefaultCurrency)
+    .WithEnvironment("AdminReports__CsvRowLimit", adminReportsCsvRowLimit);
 
 if (!string.IsNullOrEmpty(adminDefaultPassword))
 {

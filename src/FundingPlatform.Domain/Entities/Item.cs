@@ -50,7 +50,7 @@ public class Item
     /// Adds a quotation for the specified supplier. Prevents duplicate suppliers on the same item.
     /// </summary>
     /// <exception cref="InvalidOperationException">Thrown when the supplier already has a quotation on this item.</exception>
-    public void AddQuotation(Supplier supplier, Document document, decimal price, DateOnly validUntil)
+    public void AddQuotation(Supplier supplier, Document document, decimal price, DateOnly validUntil, string currency)
     {
         if (_quotations.Any(q => q.SupplierId == supplier.Id))
         {
@@ -58,7 +58,7 @@ public class Item
                 $"Supplier '{supplier.Name}' already has a quotation on this item.");
         }
 
-        var quotation = new Quotation(supplier.Id, document.Id, price, validUntil);
+        var quotation = new Quotation(supplier.Id, document.Id, price, validUntil, currency);
         _quotations.Add(quotation);
         UpdatedAt = DateTime.UtcNow;
     }

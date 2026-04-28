@@ -29,7 +29,9 @@ public class AdminReportsStubTests : AuthenticatedTestBase
         Assert.That(response, Is.Not.Null);
         Assert.That(response!.Status, Is.EqualTo(200));
         await Expect(reports.AdminAreaWrapper).ToBeVisibleAsync();
-        await Expect(Page.GetByText("Reports coming soon")).ToBeVisibleAsync();
+        // Spec 010 replaced the stub "Reports coming soon" body with the live dashboard;
+        // the report sub-tab strip is a stable marker that the dashboard view rendered.
+        await Expect(Page.Locator("[data-testid=report-subtabs]")).ToBeVisibleAsync();
     }
 
     [Test]

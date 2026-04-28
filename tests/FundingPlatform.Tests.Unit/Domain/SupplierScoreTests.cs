@@ -188,7 +188,7 @@ public class SupplierScoreTests
 
     private static Quotation CreateQuotation(int id, int supplierId, decimal price)
     {
-        var quotation = new Quotation(supplierId, documentId: 1, price, DateOnly.FromDateTime(DateTime.Today.AddMonths(3)));
+        var quotation = new Quotation(supplierId, documentId: 1, price, DateOnly.FromDateTime(DateTime.Today.AddMonths(3)), currency: "USD");
 
         // Use reflection to set the Id since it's private set
         typeof(Quotation).GetProperty("Id")!.SetValue(quotation, id);

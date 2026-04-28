@@ -541,10 +541,17 @@ public class FundingAgreementController : Controller
                 CategoryName: item.Category?.Name ?? string.Empty,
                 SupplierName: supplierName,
                 UnitPrice: price,
-                LineTotal: price));
+                LineTotal: price,
+                Currency: quotation.Currency));
 
             total += price;
         }
+
+        var totalsByCurrency = rows
+            .GroupBy(r => r.Currency)
+            .Select(g => new CurrencyTotal(g.Key, g.Sum(r => r.LineTotal)))
+            .OrderBy(t => t.Currency)
+            .ToList();
 
         var applicantFullName = applicant is null
             ? string.Empty
@@ -562,7 +569,8 @@ public class FundingAgreementController : Controller
             LocaleCode = string.IsNullOrWhiteSpace(options.LocaleCode) ? "es-CO" : options.LocaleCode,
             CurrencyIsoCode = string.IsNullOrWhiteSpace(options.CurrencyIsoCode) ? "COP" : options.CurrencyIsoCode,
             Items = rows,
-            TotalAmount = total
+            TotalAmount = total,
+            TotalsByCurrency = totalsByCurrency
         };
     }
 

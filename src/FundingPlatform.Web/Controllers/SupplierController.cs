@@ -1,11 +1,13 @@
 using System.Security.Claims;
 using FundingPlatform.Application.Applications.Commands;
+using FundingPlatform.Application.Options;
 using FundingPlatform.Application.Services;
 using FundingPlatform.Infrastructure.Persistence;
 using FundingPlatform.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace FundingPlatform.Web.Controllers;
 
@@ -15,13 +17,16 @@ public class SupplierController : Controller
 {
     private readonly ApplicationService _applicationService;
     private readonly AppDbContext _dbContext;
+    private readonly IOptions<AdminReportsOptions> _adminReportsOptions;
 
     public SupplierController(
         ApplicationService applicationService,
-        AppDbContext dbContext)
+        AppDbContext dbContext,
+        IOptions<AdminReportsOptions> adminReportsOptions)
     {
         _applicationService = applicationService;
         _dbContext = dbContext;
+        _adminReportsOptions = adminReportsOptions;
     }
 
     [HttpGet("Add")]
@@ -33,6 +38,7 @@ public class SupplierController : Controller
         {
             ApplicationId = appId,
             ItemId = itemId,
+            Currency = (_adminReportsOptions.Value.DefaultCurrency ?? string.Empty).ToUpperInvariant(),
             ValidUntil = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(3))
         };
 
@@ -79,6 +85,7 @@ public class SupplierController : Controller
                 IsCompliantHacienda = model.IsCompliantHacienda,
                 IsCompliantSICOP = model.IsCompliantSICOP,
                 Price = model.Price,
+                Currency = model.Currency,
                 ValidUntil = model.ValidUntil,
                 FileName = model.QuotationFile.FileName,
                 FileContentType = model.QuotationFile.ContentType,

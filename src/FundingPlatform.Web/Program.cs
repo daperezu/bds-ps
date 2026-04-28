@@ -1,5 +1,6 @@
 using FundingPlatform.Application;
 using FundingPlatform.Application.Interfaces;
+using FundingPlatform.Application.Options;
 using FundingPlatform.Domain.Entities;
 using FundingPlatform.Infrastructure;
 using FundingPlatform.Infrastructure.DocumentGeneration;
@@ -19,6 +20,17 @@ builder.AddSqlServerDbContext<AppDbContext>("fundingdb");
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<IFundingAgreementHtmlRenderer, RazorFundingAgreementHtmlRenderer>();
+
+// Admin Reports configuration (FR-007: fail fast when DefaultCurrency is missing).
+builder.Services.Configure<AdminReportsOptions>(
+    builder.Configuration.GetSection(AdminReportsOptions.SectionName));
+
+var adminReportsDefaultCurrency = builder.Configuration[$"{AdminReportsOptions.SectionName}:DefaultCurrency"];
+if (string.IsNullOrWhiteSpace(adminReportsDefaultCurrency) || adminReportsDefaultCurrency.Trim().Length != 3)
+{
+    throw new InvalidOperationException(
+        "AdminReports:DefaultCurrency is required and must be a 3-character currency code (e.g., 'COP', 'USD'). Set the configuration value before starting the host.");
+}
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     {

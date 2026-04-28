@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using FundingPlatform.Application.Applications.Commands;
+using FundingPlatform.Application.Options;
 using FundingPlatform.Application.Services;
 using FundingPlatform.Domain.Interfaces;
 using FundingPlatform.Infrastructure.Persistence;
@@ -7,6 +8,7 @@ using FundingPlatform.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace FundingPlatform.Web.Controllers;
 
@@ -17,15 +19,18 @@ public class QuotationController : Controller
     private readonly ApplicationService _applicationService;
     private readonly ISystemConfigurationRepository _systemConfigurationRepository;
     private readonly AppDbContext _dbContext;
+    private readonly IOptions<AdminReportsOptions> _adminReportsOptions;
 
     public QuotationController(
         ApplicationService applicationService,
         ISystemConfigurationRepository systemConfigurationRepository,
-        AppDbContext dbContext)
+        AppDbContext dbContext,
+        IOptions<AdminReportsOptions> adminReportsOptions)
     {
         _applicationService = applicationService;
         _systemConfigurationRepository = systemConfigurationRepository;
         _dbContext = dbContext;
+        _adminReportsOptions = adminReportsOptions;
     }
 
     [HttpGet("Add")]
@@ -39,6 +44,7 @@ public class QuotationController : Controller
             ItemId = itemId,
             SupplierId = supplierId,
             SupplierName = supplierName,
+            Currency = (_adminReportsOptions.Value.DefaultCurrency ?? string.Empty).ToUpperInvariant(),
             ValidUntil = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(3))
         };
 
@@ -84,6 +90,7 @@ public class QuotationController : Controller
                 SupplierLegalId = string.Empty, // Existing supplier
                 SupplierName = model.SupplierName,
                 Price = model.Price,
+                Currency = model.Currency,
                 ValidUntil = model.ValidUntil,
                 FileName = model.QuotationFile.FileName,
                 FileContentType = model.QuotationFile.ContentType,

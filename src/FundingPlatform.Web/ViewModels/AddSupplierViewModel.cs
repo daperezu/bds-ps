@@ -48,6 +48,10 @@ public class AddSupplierViewModel
     [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than zero.")]
     public decimal Price { get; set; }
 
+    [Required, Display(Name = "Currency")]
+    [StringLength(3, MinimumLength = 3, ErrorMessage = "Currency must be a 3-character code.")]
+    public string Currency { get; set; } = string.Empty;
+
     [Required, Display(Name = "Valid Until")]
     public DateOnly ValidUntil { get; set; }
 

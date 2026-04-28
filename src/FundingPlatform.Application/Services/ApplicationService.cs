@@ -208,7 +208,7 @@ public class ApplicationService
         await _applicationRepository.SaveChangesAsync();
 
         // Add quotation to item (this validates duplicate suppliers)
-        item.AddQuotation(supplier, document, cmd.Price, cmd.ValidUntil);
+        item.AddQuotation(supplier, document, cmd.Price, cmd.ValidUntil, cmd.Currency);
 
         await _applicationRepository.UpdateAsync(application);
         await _applicationRepository.SaveChangesAsync();
@@ -327,6 +327,7 @@ public class ApplicationService
                 q.Supplier?.Name ?? string.Empty,
                 q.Supplier?.LegalId ?? string.Empty,
                 q.Price,
+                q.Currency,
                 q.ValidUntil,
                 q.DocumentId,
                 q.Document?.OriginalFileName ?? string.Empty)).ToList(),

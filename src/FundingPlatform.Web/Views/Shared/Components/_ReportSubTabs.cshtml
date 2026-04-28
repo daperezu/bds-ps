@@ -1,0 +1,23 @@
+@model string
+@{
+    var activeTab = Model;
+    var tabs = new (string Key, string Label, string Action)[]
+    {
+        ("Applications", "Applications", "Applications"),
+        ("Applicants",   "Applicants",   "Applicants"),
+        ("FundedItems",  "Funded Items", "FundedItems"),
+        ("Aging",        "Aging",        "Aging"),
+    };
+}
+<ul class="nav nav-tabs" data-testid="report-subtabs">
+    @foreach (var t in tabs)
+    {
+        var active = string.Equals(activeTab, t.Key, StringComparison.OrdinalIgnoreCase);
+        <li class="nav-item">
+            <a class="nav-link @(active ? "active" : null)"
+               data-testid="report-subtab"
+               data-tab="@t.Key"
+               href="@Url.Action(t.Action, "AdminReports")">@t.Label</a>
+        </li>
+    }
+</ul>

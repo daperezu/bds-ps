@@ -82,7 +82,12 @@ public class AspireFixture : IAsyncDisposable
                 $"/SourceFile:\"{dacpacPath}\"",
                 $"/TargetConnectionString:\"{connectionString}\"",
                 "/p:VerifyDeployment=false",
-                "/p:BlockOnPossibleDataLoss=false"),
+                "/p:BlockOnPossibleDataLoss=false",
+                // The DefaultCurrency SqlCmdVariable is referenced by SeedData.sql to seed the
+                // SystemConfigurations row; the dacpac embeds an empty value when the build-time
+                // MSBuild property is unset, so the test fixture must override it explicitly to
+                // avoid a blank Value that fails Required validation on admin Configuration save.
+                "/v:DefaultCurrency=COP"),
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true

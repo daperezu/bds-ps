@@ -34,6 +34,13 @@ hooks:
     prompt: Commit outstanding changes before planning?
     description: Auto-commit before implementation planning
     condition: null
+  - extension: spex-teams
+    command: speckit.spex-teams.research
+    enabled: true
+    optional: true
+    prompt: Run parallel codebase research?
+    description: Parallel codebase research during planning via Agent Teams
+    condition: null
   before_tasks:
   - extension: git
     command: speckit.git.commit
@@ -90,6 +97,27 @@ hooks:
     prompt: Commit specification changes?
     description: Auto-commit after specification
     condition: null
+  - extension: spex
+    command: speckit.spex.flow-state
+    enabled: true
+    optional: false
+    prompt: Execute speckit.spex.flow-state?
+    description: Initialize flow state tracking after specification
+    condition: null
+  - extension: spex-gates
+    command: speckit.spex-gates.review-spec
+    enabled: true
+    optional: false
+    prompt: Execute speckit.spex-gates.review-spec?
+    description: Review spec soundness after specification
+    condition: null
+  - extension: spex-worktrees
+    command: speckit.spex-worktrees.manage
+    enabled: true
+    optional: true
+    prompt: Create a worktree for this feature?
+    description: Create git worktree after specification
+    condition: null
   after_clarify:
   - extension: git
     command: speckit.git.commit
@@ -114,6 +142,13 @@ hooks:
     prompt: Commit task changes?
     description: Auto-commit after task generation
     condition: null
+  - extension: spex-gates
+    command: speckit.spex-gates.review-plan
+    enabled: true
+    optional: false
+    prompt: Execute speckit.spex-gates.review-plan?
+    description: Review plan and task quality after task generation
+    condition: null
   after_implement:
   - extension: git
     command: speckit.git.commit
@@ -121,6 +156,20 @@ hooks:
     optional: true
     prompt: Commit implementation changes?
     description: Auto-commit after implementation
+    condition: null
+  - extension: spex-gates
+    command: speckit.spex-gates.review-code
+    enabled: true
+    optional: false
+    prompt: Execute speckit.spex-gates.review-code?
+    description: Review code compliance after implementation
+    condition: null
+  - extension: spex-deep-review
+    command: speckit.spex-deep-review.review
+    enabled: true
+    optional: true
+    prompt: Run deep multi-perspective review?
+    description: Multi-agent code review after implementation
     condition: null
   after_checklist:
   - extension: git
