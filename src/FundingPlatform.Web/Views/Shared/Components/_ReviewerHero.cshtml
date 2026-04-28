@@ -3,7 +3,7 @@
 @inject IReviewerCopyProvider Copy
 @model ReviewerQueueDto
 @{
-    int agingDays = 7;
+    int agingDays = Model.AgingThresholdDays;
     var filters = new[] {
         ReviewerFilter.All, ReviewerFilter.AwaitingMe, ReviewerFilter.Aging,
         ReviewerFilter.SentBack, ReviewerFilter.Appealing,
@@ -43,7 +43,7 @@
     <div class="fl-chip-strip mt-4"
          data-testid="filter-chip-strip"
          data-chip-strip
-         data-chip-endpoint="/Review/QueueRows"
+         data-chip-endpoint="@(Url.Action("QueueRows", "Review") ?? "/Review/QueueRows")"
          data-chip-target="[data-testid='reviewer-queue-tbody']"
          role="tablist">
         @foreach (var f in filters)

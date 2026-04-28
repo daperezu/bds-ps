@@ -22,9 +22,10 @@ CARVEOUT_LAYOUT="$WEB_ROOT/Views/FundingAgreement/_FundingAgreementLayout.cshtml
 violations=0
 
 echo "[1/4] Raw-hex outside tokens.css and PDF carve-outs..."
-# Scan only source-controlled css + cshtml; allow PDF carve-outs, tokens.css,
-# vendored libs, and exclude build artifacts under obj/ and bin/.
-hex_hits=$(grep -RIn --include='*.css' --include='*.cshtml' \
+# Scan source-controlled css + cshtml + js; allow PDF carve-outs, tokens.css,
+# vendored libs, and exclude build artifacts under obj/ and bin/. The .js scan
+# catches color tokens that JS produces at runtime (FR-009 spirit).
+hex_hits=$(grep -RIn --include='*.css' --include='*.cshtml' --include='*.js' \
   --exclude-dir=obj --exclude-dir=bin --exclude-dir=lib \
   -E '#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?\b' "$WEB_ROOT" 2>/dev/null \
   | grep -v "$TOKENS_CSS" \

@@ -45,6 +45,12 @@ public sealed class ReviewerQueueProjection : IReviewerQueueProjection
         ReviewerFilter filter,
         CancellationToken ct)
     {
+        // Spec 011 v1 NOTE: per FR-069, no reviewer-assignment surface ships in v1
+        // (no schema change FR-067, no per-reviewer ownership column on Application).
+        // The platform's pre-existing model is "every Reviewer can view every
+        // UnderReview item"; this projection inherits that contract. The
+        // <c>reviewerId</c> parameter is wired through for a future-spec evolution
+        // that introduces explicit assignment.
         var threshold = await GetAgingThresholdAsync();
         var underReview = await _applications.GetByStatePagedAsync(ApplicationState.UnderReview, 1, 200);
         var resolved    = await _applications.GetByStatePagedAsync(ApplicationState.Resolved, 1, 200);
@@ -76,7 +82,8 @@ public sealed class ReviewerQueueProjection : IReviewerQueueProjection
             ActiveFilter: filter,
             RecentActivity: recent,
             HasMoreActivity: false,
-            Rows: rows);
+            Rows: rows,
+            AgingThresholdDays: threshold);
     }
 
     public async Task<IReadOnlyList<ReviewerQueueRowDto>> GetRowsAsync(string reviewerId, ReviewerFilter filter, CancellationToken ct)

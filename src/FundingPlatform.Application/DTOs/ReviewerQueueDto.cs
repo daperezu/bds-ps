@@ -7,7 +7,8 @@ public sealed record ReviewerQueueDto(
     ReviewerFilter ActiveFilter,
     IReadOnlyList<ReviewerActivityEvent> RecentActivity,
     bool HasMoreActivity,
-    IReadOnlyList<ReviewerQueueRowDto> Rows);
+    IReadOnlyList<ReviewerQueueRowDto> Rows,
+    int AgingThresholdDays);
 
 public sealed record ReviewerKpiSnapshot(
     int AwaitingYourReview,

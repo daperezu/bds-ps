@@ -2,6 +2,18 @@
 @model ApplicationCardDto
 @{
     var primaryClass = Model.PrimaryAction.Style == ContextualActionStyle.Primary ? "btn btn-primary" : "btn btn-outline-secondary";
+    // Derive the pill tone from the current journey node's color token so the
+    // card mirrors the canonical stage-mapping (FR-036), not a hard-coded value.
+    var currentNode = Model.JourneyMini?.Mainline?.FirstOrDefault(n => n.State == JourneyNodeState.Current);
+    string stageTone = currentNode?.ColorToken switch
+    {
+        "--color-success" => "success",
+        "--color-warning" => "warning",
+        "--color-danger"  => "danger",
+        "--color-info"    => "info",
+        "--color-text-secondary" => "muted",
+        _                 => "primary",
+    };
 }
 <article class="fl-app-card" data-testid="application-card" data-application-number="@Model.ApplicationNumber">
     <header class="d-flex justify-content-between align-items-start mb-3 flex-wrap fl-gap-2">
@@ -9,7 +21,7 @@
             <div class="fl-app-card-mono fl-type-meta" data-testid="application-number">@Model.ApplicationNumber</div>
             <h3 class="fl-app-card-title" data-testid="application-card-title">@Model.ProjectName</h3>
         </div>
-        <span class="fl-status-pill" data-tone="primary" data-testid="application-card-stage">@Model.CurrentStageLabel</span>
+        <span class="fl-status-pill" data-tone="@stageTone" data-testid="application-card-stage">@Model.CurrentStageLabel</span>
     </header>
 
     <div class="mb-3">

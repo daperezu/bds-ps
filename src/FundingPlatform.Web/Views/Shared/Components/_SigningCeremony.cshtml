@@ -1,3 +1,4 @@
+@using System.Globalization
 @using FundingPlatform.Application.DTOs
 @using FundingPlatform.Application.Services
 @inject ICeremonyCopyProvider Copy
@@ -14,6 +15,9 @@
     });
     var sealState = Model.IsFresh ? "animate" : "static";
     var ariaAnnouncement = Copy.AriaLiveAnnouncement(Model.Variant);
+    // Invariant culture for data-ticker-target so motion.js parseFloat works
+    // regardless of the request's culture (FR-026 number ticker).
+    var tickerTarget = Model.FundedAmount.ToString("0.##", CultureInfo.InvariantCulture);
 }
 <div class="fl-ceremony"
      data-testid="signing-ceremony"
@@ -29,7 +33,7 @@
 
     <section class="fl-ceremony-summary" data-testid="ceremony-summary">
         <div class="fl-text-secondary fl-type-meta text-uppercase">Funded amount</div>
-        <div class="fl-ceremony-amount fl-font-mono" data-testid="ceremony-amount" data-ticker-target="@Model.FundedAmount">@($"{Model.CurrencyCode} {Model.FundedAmount:N2}")</div>
+        <div class="fl-ceremony-amount fl-font-mono" data-testid="ceremony-amount" data-ticker-target="@tickerTarget">@($"{Model.CurrencyCode} {Model.FundedAmount:N2}")</div>
         <div class="fl-text-secondary fl-type-meta">Project</div>
         <div class="fl-type-body fw-semibold">@Model.ProjectName</div>
     </section>

@@ -18,6 +18,12 @@
     return parseFloat(v) || 0;
   }
 
+  // Read a CSS custom property as a string (used for color tokens; FR-009 keeps
+  // raw hex literals out of JS as well as out of cshtml/css).
+  function readToken(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
   // Number ticker — element should carry data-ticker-target="<finalValue>" on the value node.
   // Honors --motion-slow with --ease-decelerate; under reduced-motion, sets final value immediately.
   function tickerStart(node) {
@@ -58,6 +64,7 @@
       const nodes = journey.querySelectorAll('.fl-journey-node[data-state="completed"], .fl-journey-node[data-state="current"]');
       const cap = readMotionToken('--motion-slow') || 400;
       const stride = Math.min(60, Math.floor(cap / Math.max(1, nodes.length)));
+      const transitionMs = readMotionToken('--motion-base') || 250;
       nodes.forEach((node, i) => {
         node.style.opacity = '0';
         node.style.transform = node.dataset.state === 'current' ? 'scale(0.9)' : 'translateY(4px)';
@@ -65,6 +72,11 @@
           node.style.transition = `opacity var(--motion-base) var(--ease-spring), transform var(--motion-base) var(--ease-spring)`;
           node.style.opacity = '';
           node.style.transform = '';
+          // Clear inline transition once the animation finishes so we don't
+          // leave inline style attributes on the DOM (FR-010 spirit).
+          setTimeout(() => {
+            node.style.transition = '';
+          }, transitionMs + 50);
         }, i * stride);
       });
     });
@@ -103,11 +115,17 @@
     }
     if (opts.confettiOn && typeof root.confetti === 'function') {
       try {
+        // Pull confetti colors from design tokens (FR-009 — no raw hex in JS).
+        const colors = [
+          readToken('--color-primary'),
+          readToken('--color-accent'),
+          readToken('--color-bg-surface-raised'),
+        ].filter(Boolean);
         root.confetti({
           particleCount: 80,
           spread: 70,
           origin: { y: 0.4 },
-          colors: ['#2E5E4E', '#D98A1B', '#F4EFE6'],
+          colors: colors.length > 0 ? colors : undefined,
         });
       } catch (e) { /* shim no-op safe */ }
     }

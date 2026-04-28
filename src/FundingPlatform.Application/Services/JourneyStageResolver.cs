@@ -91,12 +91,14 @@ public sealed class JourneyStageResolver : IJourneyStageResolver
     {
         var branches = new List<JourneyBranch>();
 
-        // Sent-back loops (one entry per occurrence; render most recent in the partial).
-        var sendBacks = application.VersionHistory
+        // Sent-back loops — render the MOST RECENT only (FR-035 edge case
+        // "an application that was sent back ... and is now in Submitted again":
+        // a single warning indicator at the Decision node, not one per occurrence).
+        var latestSendBack = application.VersionHistory
             .Where(v => string.Equals(v.Action, "SendBack", StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(v => v.Timestamp)
-            .ToList();
-        foreach (var sb in sendBacks)
+            .FirstOrDefault();
+        if (latestSendBack is not null)
         {
             var mapping = _stageMappings.GetBranches()[JourneyBranchKind.SentBack];
             branches.Add(new JourneyBranch(
@@ -105,9 +107,9 @@ public sealed class JourneyStageResolver : IJourneyStageResolver
                 JourneyBranchState.Resolved,
                 mapping.Label,
                 mapping.ColorToken,
-                new DateTimeOffset(sb.Timestamp, TimeSpan.Zero),
-                sb.UserId,
-                $"event-sentback-{sb.Id}"));
+                new DateTimeOffset(latestSendBack.Timestamp, TimeSpan.Zero),
+                latestSendBack.UserId,
+                $"event-sentback-{latestSendBack.Id}"));
         }
 
         // Appeals — based on Application.Appeals aggregate.
