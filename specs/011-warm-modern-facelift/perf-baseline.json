@@ -1,0 +1,13 @@
+{
+  "$schema": "perf-baseline schema v1",
+  "captured_at": "2026-04-28T00:00:00Z",
+  "method": "deferred-no-instrumented-runtime",
+  "note": "T001 SKIPPED: Capturing real LCP/TBT requires a running Aspire-orchestrated environment with Lighthouse-CI or Playwright tracing, which is not available in this offline implementation context. The baseline structure below serves as a placeholder; the comparison gate (T129) MUST acknowledge missing instrumentation. See implementation-notes.md.",
+  "surfaces": {
+    "applicant_dashboard": { "lcp_ms": null, "tbt_ms": null },
+    "application_journey": { "lcp_ms": null, "tbt_ms": null },
+    "signing_ceremony": { "lcp_ms": null, "tbt_ms": null },
+    "reviewer_queue": { "lcp_ms": null, "tbt_ms": null },
+    "layout_shell": { "lcp_ms": null, "tbt_ms": null }
+  }
+}

@@ -1,0 +1,14 @@
+SIL Open Font License, Version 1.1.
+
+Inter is licensed under the SIL OFL 1.1 (https://openfontlicense.org/).
+
+Copyright (c) 2016-2024 The Inter Project Authors (https://github.com/rsms/inter)
+
+Vendored for spec 011 (Warm-Modern Facelift) per FR-003.
+
+NOTE: This directory ships the LICENSE marker. The actual subsetted WOFF2 file
+(Latin-1 + numerals subset, variable weight 400-700) MUST be placed at
+inter-variable.woff2 by an operator with network access. Until then, the
+@font-face declaration in tokens.css will fail to fetch and the browser will
+fall back to system-ui sans. This is documented as a deferred-asset condition
+in specs/011-warm-modern-facelift/implementation-notes.md.

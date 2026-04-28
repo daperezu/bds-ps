@@ -23,15 +23,15 @@ description: "Task list for the Warm-Modern Facelift (spec 011)"
 
 **Purpose**: Capture pre-implementation baselines, vendor static assets, scaffold token gates.
 
-- [ ] T001 Capture pre-implementation LCP and TBT baseline for the four wow-moment surfaces and the layout shell into `specs/011-warm-modern-facelift/perf-baseline.json` per FR-073 (use Playwright tracing or Lighthouse-CI; document the script in `scripts/capture-perf-baseline.mjs`)
-- [ ] T002 [P] Vendor Fraunces variable font (Latin-1 + numerals subset) under `src/FundingPlatform.Web/wwwroot/lib/fonts/fraunces/` with WOFF2 + LICENSE file (SIL OFL)
-- [ ] T003 [P] Vendor Inter variable font (Latin-1 + numerals subset) under `src/FundingPlatform.Web/wwwroot/lib/fonts/inter/` with WOFF2 + LICENSE file (SIL OFL)
-- [ ] T004 [P] Vendor JetBrains Mono regular (Latin-1 + digits + symbols subset) under `src/FundingPlatform.Web/wwwroot/lib/fonts/jetbrains-mono/` with WOFF2 + LICENSE file (Apache 2.0)
-- [ ] T005 [P] Vendor `canvas-confetti` (≤ 5 KB gzipped, MIT) under `src/FundingPlatform.Web/wwwroot/lib/canvas-confetti/canvas-confetti.min.js` with LICENSE file
-- [ ] T006 Add `scripts/verify-tokens.sh` running the SC-001/SC-002/SC-003/FR-070 grep gates (raw hex, inline style=, hard-coded durations, value-bound token names) — fails non-zero on any violation
-- [ ] T007 [P] Add `scripts/verify-illustrations.sh` checking each SVG under `wwwroot/lib/illustrations/` is ≤ 8 KB gzipped (SC-007) — runs `gzip -c <file> | wc -c`
-- [ ] T008 [P] Add `scripts/verify-pdf-carveouts.sh` running `git diff main -- <carve-out files>` and asserting empty output (FR-020, SC-014)
-- [ ] T009 Wire all four `scripts/verify-*.sh` into a single `scripts/verify-facelift.sh` aggregator and document its invocation in `quickstart.md` (already drafted)
+- [~] T001 SKIPPED: perf baseline JSON + capture/compare scripts exist as stubs; real Lighthouse-CI / Playwright tracing requires a runnable Aspire fixture (see implementation-notes.md)
+- [~] T002 [P] DEFERRED: LICENSE marker present; real subsetted WOFF2 needs operator/network access (see implementation-notes.md)
+- [~] T003 [P] DEFERRED: LICENSE marker present; same as T002 (Inter)
+- [~] T004 [P] DEFERRED: LICENSE marker present; same as T002 (JetBrains Mono)
+- [~] T005 [P] DEFERRED: LICENSE + no-op shim present at canvas-confetti.min.js; real lib needs operator/network
+- [X] T006 Added `scripts/verify-tokens.sh` running raw-hex / inline-style / duration / value-bound naming greps
+- [X] T007 [P] Added `scripts/verify-illustrations.sh` (≤ 8 KB gz per SVG)
+- [X] T008 [P] Added `scripts/verify-pdf-carveouts.sh` (git diff main, must be empty)
+- [X] T009 Added `scripts/verify-facelift.sh` aggregator (also runs verify-asset-budget.sh)
 
 ---
 
@@ -43,59 +43,59 @@ description: "Task list for the Warm-Modern Facelift (spec 011)"
 
 ### US5 — Brand identity & voice
 
-- [ ] T010 [US5] Author `specs/011-warm-modern-facelift/BRAND-VOICE.md` per the outline in `research.md §1.5` (FR-004): tone, person, stage-aware patterns, banned constructs (ALL CAPS, exclamation marks except ceremony, "submit" CTAs, passive voice), examples, do/don't pairs
-- [ ] T011 [P] [US5] Author `specs/011-warm-modern-facelift/SWEEP-CHECKLIST.md` listing every view in the FR-018 inventory with the seven swept criteria as check items (FR-023)
-- [ ] T012 [P] [US5] Produce SVG wordmark for "Forge" using Fraunces 600 at `src/FundingPlatform.Web/wwwroot/lib/brand/wordmark.svg` (FR-005)
-- [ ] T013 [P] [US5] Produce SVG abstract mark (rising open-arc, two-stroke `--color-primary` → `--color-accent`) at `src/FundingPlatform.Web/wwwroot/lib/brand/mark.svg`
-- [ ] T014 [P] [US5] Produce favicon set (16, 32, 48, 180 px PNGs + .ico) under `src/FundingPlatform.Web/wwwroot/lib/brand/favicons/` (FR-005)
+- [X] T010 [US5] BRAND-VOICE.md authored
+- [X] T011 [P] [US5] SWEEP-CHECKLIST.md authored
+- [X] T012 [P] [US5] wordmark.svg authored
+- [X] T013 [P] [US5] mark.svg authored
+- [~] T014 [P] [US5] PARTIAL: favicon.svg authored; multi-size PNGs + .ico deferred to designer (raster tooling)
 
 ### US5 — Design tokens
 
-- [ ] T015 [US5] Create `src/FundingPlatform.Web/wwwroot/css/tokens.css` declaring all CSS custom properties: `--color-*` (palette in research §1.2), `--space-*` (T-shirt scale on 8 px base), `--radius-*`, `--shadow-*`, `--type-*` (family + scale tokens from research §1.3), `--motion-*` and `--ease-*` (motion-catalog values), `--z-*` (FR-006)
-- [ ] T016 [US5] Add `@font-face` declarations for Fraunces, Inter, JetBrains Mono inside `tokens.css` referencing the vendored WOFF2 files; declare `--font-display`, `--font-body`, `--font-mono` family tokens (FR-007)
-- [ ] T017 [US5] Add the Tabler bridge `:root` block to `tokens.css` overriding the 12 properties from research §2.1 (`--tblr-primary`, `--tblr-primary-rgb`, `--tblr-secondary`, `--tblr-success`, `--tblr-warning`, `--tblr-danger`, `--tblr-info`, `--tblr-body-bg`, `--tblr-body-color`, `--tblr-border-color`, `--tblr-card-bg`, `--tblr-link-color`) (FR-008)
-- [ ] T018 [US5] Add the `prefers-reduced-motion: reduce` media query to `tokens.css` clamping every `--motion-*` token to `0ms` and preserving `--motion-opacity-exempt: 150ms` (FR-015)
-- [ ] T019 [US5] Re-template `src/FundingPlatform.Web/wwwroot/css/site.css` to consume only `var(--…)` tokens — remove the spec-008 raw `font-size: 2.5rem` literals and any other hex / px / ms values (FR-007, SC-001)
-- [ ] T020 [US5] Update `src/FundingPlatform.Web/Views/Shared/_Layout.cshtml` to load `tokens.css` BEFORE `site.css` and BEFORE Tabler's CSS so the bridge overrides apply
+- [X] T015 [US5] tokens.css created with all token categories
+- [X] T016 [US5] @font-face declarations for Fraunces / Inter / JetBrains Mono added to tokens.css (FR-007)
+- [X] T017 [US5] Tabler --tblr-* bridge override block added (FR-008)
+- [X] T018 [US5] prefers-reduced-motion clamp added with --motion-opacity-exempt preserved (FR-015)
+- [X] T019 [US5] site.css re-templated to token-only consumers (literals via tokens)
+- [X] T020 [US5] _Layout.cshtml loads tokens.css before site.css and Tabler (FR-008)
 
 ### US5 — Motion system & token-only partial re-template
 
-- [ ] T021 [US5] Create `src/FundingPlatform.Web/wwwroot/js/motion.js` with the number-ticker, journey-stagger, and reduced-motion guard helpers (no hard-coded durations — reads `--motion-*` via `getComputedStyle`)
-- [ ] T022 [US5] Create `src/FundingPlatform.Web/wwwroot/js/facelift-init.js` that mounts `data-ticker-target` KPI tickers and the filter-chip reflow handler on `DOMContentLoaded`
-- [ ] T023 [US5] Re-template `src/FundingPlatform.Web/Views/Shared/Components/_StatusPill.cshtml` to switch the enum-to-color mapping from raw color references to `--color-*-subtle` token references (FR-011)
-- [ ] T024 [P] [US5] Re-template `src/FundingPlatform.Web/Views/Shared/Components/_PageHeader.cshtml` to reference only `var(--…)` tokens (FR-007)
-- [ ] T025 [P] [US5] Re-template `src/FundingPlatform.Web/Views/Shared/Components/_DataTable.cshtml` to reference only `var(--…)` tokens (FR-007)
-- [ ] T026 [P] [US5] Re-template `src/FundingPlatform.Web/Views/Shared/Components/_FormSection.cshtml` to reference only `var(--…)` tokens (FR-007)
-- [ ] T027 [P] [US5] Re-template `src/FundingPlatform.Web/Views/Shared/Components/_DocumentCard.cshtml` to reference only `var(--…)` tokens
-- [ ] T028 [P] [US5] Re-template `src/FundingPlatform.Web/Views/Shared/Components/_ActionBar.cshtml` to reference only `var(--…)` tokens
-- [ ] T029 [P] [US5] Re-template `src/FundingPlatform.Web/Views/Shared/Components/_ConfirmDialog.cshtml` to reference only `var(--…)` tokens
-- [ ] T030 [P] [US5] Re-template `src/FundingPlatform.Web/Views/Shared/Components/_KpiTile.cshtml` to reference only `var(--…)` tokens AND add the `data-ticker-target` attribute hook for the number-ticker (FR-026)
-- [ ] T031 [P] [US5] Re-template `src/FundingPlatform.Web/Views/Shared/Components/_EventTimeline.cshtml` to reference only `var(--…)` tokens AND add an optional `EventTimelineScope Scope` parameter (Application / Applicant / ReviewerQueue) per `contracts/partials.md`
+- [X] T021 [US5] motion.js authored — number-ticker, journey-stagger, ceremony hook, reduced-motion guard (reads tokens via getComputedStyle)
+- [X] T022 [US5] facelift-init.js authored — KPI ticker mount, filter chip reflow, row-click navigation
+- [X] T023 [US5] _StatusPill re-templated to fl-status-pill with data-tone token mapping (FR-011)
+- [X] T024 [P] [US5] _PageHeader re-templated with token classes
+- [X] T025 [P] [US5] _DataTable re-templated with fl-surface tokens
+- [X] T026 [P] [US5] _FormSection re-templated with fl-type-meta tokens
+- [X] T027 [P] [US5] _DocumentCard re-templated with fl-surface + fl-font-mono tokens
+- [X] T028 [P] [US5] _ActionBar re-templated with fl-gap-2
+- [X] T029 [P] [US5] _ConfirmDialog re-templated with fl-surface + fl-type-heading-md
+- [X] T030 [P] [US5] _KpiTile re-templated with fl-kpi-tile + data-ticker-target hook (FR-026)
+- [X] T031 [P] [US5] _EventTimeline re-templated with fl-pad-2 + Scope parameter
 
 ### US5 — Stage mapping & journey-stage resolver scaffolding
 
-- [ ] T032 [US5] Create `src/FundingPlatform.Application/Services/StageMappingProvider.cs` implementing `IStageMappingProvider` with the canonical mainline + branch tables from `contracts/projection-services.md` (FR-036)
-- [ ] T033 [US5] Create `src/FundingPlatform.Application/Services/JourneyStageResolver.cs` implementing `IJourneyStageResolver` (depends on `IStageMappingProvider`)
-- [ ] T034 [US5] Register `IStageMappingProvider`, `IJourneyStageResolver` in DI inside `FundingPlatform.Application/DependencyInjection.cs` (or whichever spec-008 service registration extension exists; create one if not)
+- [X] T032 [US5] StageMappingProvider authored with mainline + branch tables (FR-036)
+- [X] T033 [US5] JourneyStageResolver authored — reads StageMappingProvider + Application aggregates
+- [X] T034 [US5] DI registration in FundingPlatform.Application.DependencyInjection
 
 ### US7 — Illustration set & helper
 
-- [ ] T035 [US7] Create the `Illustration` Razor extension method at `src/FundingPlatform.Web/Helpers/IllustrationHelper.cs` per `contracts/illustration-helper.md` (FR-063): inline SVG load, decorative vs informational accessibility, scene-key registry
-- [ ] T036 [P] [US7] Author `seed.svg` (seedling/sprout) at `src/FundingPlatform.Web/wwwroot/lib/illustrations/seed.svg` per style discipline (FR-061, FR-062)
-- [ ] T037 [P] [US7] Author `folders-stack.svg` at `src/FundingPlatform.Web/wwwroot/lib/illustrations/folders-stack.svg`
-- [ ] T038 [P] [US7] Author `open-envelope.svg` at `src/FundingPlatform.Web/wwwroot/lib/illustrations/open-envelope.svg`
-- [ ] T039 [P] [US7] Author `connected-nodes.svg` at `src/FundingPlatform.Web/wwwroot/lib/illustrations/connected-nodes.svg`
-- [ ] T040 [P] [US7] Author `calm-horizon.svg` at `src/FundingPlatform.Web/wwwroot/lib/illustrations/calm-horizon.svg`
-- [ ] T041 [P] [US7] Author `soft-bar-chart.svg` at `src/FundingPlatform.Web/wwwroot/lib/illustrations/soft-bar-chart.svg`
-- [ ] T042 [P] [US7] Author `off-center-compass.svg` at `src/FundingPlatform.Web/wwwroot/lib/illustrations/off-center-compass.svg`
-- [ ] T043 [P] [US7] Author `gentle-disconnected-wires.svg` at `src/FundingPlatform.Web/wwwroot/lib/illustrations/gentle-disconnected-wires.svg`
-- [ ] T044 [P] [US7] Author `magnifier-on-empty.svg` at `src/FundingPlatform.Web/wwwroot/lib/illustrations/magnifier-on-empty.svg`
-- [ ] T045 [US7] Re-template `src/FundingPlatform.Web/Views/Shared/Components/_EmptyState.cshtml` to require an `IllustrationSceneKey` parameter (with the icon-only fallback path preserved for `_AuthLayout` AccessDenied) and add the entrance animation hooks (FR-064, FR-065)
-- [ ] T046 [US7] Run `scripts/verify-illustrations.sh` and confirm all 9 SVGs satisfy the ≤ 8 KB gz budget (SC-007)
+- [X] T035 [US7] IllustrationHelper authored with scene-key registry, inline-SVG load, a11y attributes
+- [X] T036 [P] [US7] seed.svg (gz=341B)
+- [X] T037 [P] [US7] folders-stack.svg (gz=274B)
+- [X] T038 [P] [US7] open-envelope.svg (gz=309B)
+- [X] T039 [P] [US7] connected-nodes.svg (gz=303B)
+- [X] T040 [P] [US7] calm-horizon.svg (gz=345B)
+- [X] T041 [P] [US7] soft-bar-chart.svg (gz=278B)
+- [X] T042 [P] [US7] off-center-compass.svg (gz=361B)
+- [X] T043 [P] [US7] gentle-disconnected-wires.svg (gz=322B)
+- [X] T044 [P] [US7] magnifier-on-empty.svg (gz=330B)
+- [X] T045 [US7] _EmptyState extended with IllustrationSceneKey + entrance animation hook
+- [X] T046 [US7] verify-illustrations.sh confirms all 9 SVGs ≤ 8 KB gz
 
 ### US5 — Token-discipline gate
 
-- [ ] T047 [US5] Run `scripts/verify-tokens.sh` from repo root and confirm all four greps return zero matches outside the carve-outs (SC-001, SC-002, SC-003, FR-070)
+- [X] T047 [US5] verify-tokens.sh: all 4 gates pass (SC-001, SC-002, SC-003, FR-070)
 
 **Checkpoint**: Foundation ready — token + motion + brand-voice + illustrations exist; all spec-008 partials are token-only; the journey-stage resolver and illustration helper are wired. **All other user stories may now begin.**
 

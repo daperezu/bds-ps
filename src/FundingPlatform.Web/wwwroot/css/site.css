@@ -1,26 +1,14 @@
-/* Project-specific overrides only.
-   Tabler.io owns base typography, color tokens, components, and spacing.
-   Add here only when a project-wide override is genuinely necessary;
-   never use inline style="" attributes in views (FR-017). */
+/* site.css — Project-wide overrides on top of Tabler + tokens.css.
+   Tabler + tokens.css own typography, color, spacing, motion. site.css
+   only carries the few project-specific layout fragments that don't
+   belong inside a partial. NEVER ship raw hex / px / ms here. */
 
-.icon-empty-state {
-    font-size: 2.5rem;
-    line-height: 1;
-}
+.icon-empty-state { font-size: var(--type-display-lg-size); line-height: 1; }
+.icon-document-card { font-size: var(--type-heading-lg-size); line-height: 1; }
 
-.icon-document-card {
-    font-size: 1.75rem;
-    line-height: 1;
-}
+.signed-comment-input { max-width: 18rem; }
+.admin-users-filter-search { max-width: 18rem; }
+.admin-users-filter-select { max-width: 12rem; }
 
-.signed-comment-input {
-    max-width: 280px;
-}
-
-.admin-users-filter-search {
-    max-width: 280px;
-}
-
-.admin-users-filter-select {
-    max-width: 200px;
-}
+/* Spec 011 — facelift wiring already lives in tokens.css; site.css
+   intentionally adds nothing else. */

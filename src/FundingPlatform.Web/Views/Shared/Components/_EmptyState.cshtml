@@ -1,13 +1,28 @@
+@using FundingPlatform.Web.Helpers
 @model EmptyStateViewModel
-<div class="empty" data-testid="empty-state">
-    <div class="empty-icon">
-        <i class="@Model.Icon icon-empty-state"></i>
-    </div>
-    <p class="empty-title" data-testid="empty-state-headline">@Model.Headline</p>
-    <p class="empty-subtitle text-secondary" data-testid="empty-state-body">@Model.Body</p>
+@{
+    var hasIllustration = !string.IsNullOrWhiteSpace(Model.IllustrationSceneKey);
+}
+<div class="empty fl-empty" data-testid="empty-state">
+    @if (hasIllustration)
+    {
+        <div class="empty-illustration" data-testid="empty-state-illustration" data-scene="@Model.IllustrationSceneKey">
+            @(string.IsNullOrWhiteSpace(Model.IllustrationAltText)
+                ? Html.Illustration(Model.IllustrationSceneKey!)
+                : Html.Illustration(Model.IllustrationSceneKey!, Model.IllustrationAltText!))
+        </div>
+    }
+    else
+    {
+        <div class="empty-icon">
+            <i class="@Model.Icon icon-empty-state fl-text-muted"></i>
+        </div>
+    }
+    <p class="empty-title fl-font-display fl-type-heading-md" data-testid="empty-state-headline">@Model.Headline</p>
+    <p class="empty-subtitle fl-text-secondary fl-type-body" data-testid="empty-state-body">@Model.Body</p>
     @if (Model.PrimaryAction is not null)
     {
-        <div class="empty-action">
+        <div class="empty-action mt-3">
             @await Html.PartialAsync("Components/_ActionBar", new ActionBarViewModel(new[] { Model.PrimaryAction }))
         </div>
     }

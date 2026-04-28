@@ -1,0 +1,18 @@
+The ISC License (canvas-confetti uses ISC, MIT-compatible).
+
+Copyright (c) 2020, Kiril Vatev
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+Source: https://github.com/catdad/canvas-confetti
+
+Vendored for spec 011 (Warm-Modern Facelift) per FR-016 / FR-050 — single
+celebratory-motion-library carve-out, ≤ 5 KB gzipped.
+
+NOTE: The actual canvas-confetti.min.js binary MUST be placed in this directory
+by an operator with network access. The _SigningCeremony partial calls into
+window.confetti only inside an IsFresh check, so absence of the script means
+no confetti fires (graceful degradation). Documented in
+specs/011-warm-modern-facelift/implementation-notes.md.

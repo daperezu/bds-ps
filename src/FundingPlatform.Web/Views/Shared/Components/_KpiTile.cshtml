@@ -1,15 +1,17 @@
 @model FundingPlatform.Web.ViewModels.Admin.Reports.KpiTileViewModel
 
-<div class="card" data-testid="kpi-tile" data-kpi-label="@Model.Label">
+<div class="card fl-kpi-tile" data-testid="kpi-tile" data-kpi-label="@Model.Label">
     <div class="card-body">
-        <div class="text-secondary text-uppercase small mb-2" data-testid="kpi-tile-label">@Model.Label</div>
+        <div class="fl-kpi-label" data-testid="kpi-tile-label">@Model.Label</div>
         @if (Model.NumericValue.HasValue && (Model.Stack is null || Model.Stack.Count == 0))
         {
-            <div class="h2 mb-0" data-testid="kpi-tile-numeric">@Model.NumericValue.Value.ToString("N0")</div>
+            <div class="fl-kpi-value mb-0"
+                 data-testid="kpi-tile-numeric"
+                 data-ticker-target="@Model.NumericValue.Value">@Model.NumericValue.Value.ToString("N0")</div>
         }
         else if (Model.Stack is { Count: > 0 } stack)
         {
-            <ul class="list-unstyled mb-0" data-testid="kpi-tile-stack">
+            <ul class="list-unstyled mb-0 mt-2 fl-font-mono" data-testid="kpi-tile-stack">
                 @foreach (var entry in stack)
                 {
                     <li data-currency="@entry.Currency">
@@ -21,7 +23,7 @@
         }
         else
         {
-            <div class="h2 mb-0 text-secondary" data-testid="kpi-tile-empty">—</div>
+            <div class="fl-kpi-value fl-text-muted mb-0" data-testid="kpi-tile-empty">&mdash;</div>
         }
     </div>
 </div>

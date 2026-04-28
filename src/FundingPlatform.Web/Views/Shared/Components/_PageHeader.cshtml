@@ -2,14 +2,14 @@
 <div class="page-header" data-testid="page-header">
     <div class="row g-2 align-items-center">
         <div class="col">
-            <h2 class="page-title text-truncate" data-testid="page-title">@Model.Title</h2>
+            <h2 class="page-title text-truncate fl-font-display fl-type-heading-lg" data-testid="page-title">@Model.Title</h2>
             @if (!string.IsNullOrWhiteSpace(Model.Subtitle))
             {
-                <div class="page-subtitle text-secondary mt-1" data-testid="page-subtitle">@Model.Subtitle</div>
+                <div class="page-subtitle fl-text-secondary fl-type-body mt-1" data-testid="page-subtitle">@Model.Subtitle</div>
             }
             @if (Model.Breadcrumbs is { Count: > 0 } crumbs)
             {
-                <ol class="breadcrumb mt-2 mb-0" data-testid="breadcrumbs">
+                <ol class="breadcrumb mt-2 mb-0 fl-type-meta" data-testid="breadcrumbs">
                     @for (var i = 0; i < crumbs.Count; i++)
                     {
                         var crumb = crumbs[i];
