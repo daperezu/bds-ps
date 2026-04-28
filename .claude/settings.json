@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash",
+      "Read",
+      "Edit",
+      "Write",
+      "Bash(specify *)",
+      "Bash(/home/dannyp/.claude/plugins/cache/cc-rhuss-marketplace/spex/**)",
+      "mcp__*"
+    ]
+  }
+}
