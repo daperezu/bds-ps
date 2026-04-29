@@ -53,8 +53,8 @@ public class SigningWayfindingTests : AuthenticatedTestBase
 
         await Page.GotoAsync($"{BaseUrl}/");
 
-        // Click 1: the main-navigation "Review" link.
-        await Page.Locator("a.nav-link[href*='/Review']:has-text('Review')").First.ClickAsync();
+        // Click 1: the main-navigation review link (sidebar entry, slug-based for stability).
+        await Page.Locator("[data-testid=\"sidebar-entry-review-queue\"]").First.ClickAsync();
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Review/?(\?|$)"));
 
         var reviewQueue = new ReviewQueuePage(Page);
@@ -94,7 +94,7 @@ public class SigningWayfindingTests : AuthenticatedTestBase
 
         await Expect(responsePage.ReadyToSignBanner).ToBeVisibleAsync();
         Assert.That(await responsePage.ReadyToSignBanner.TextContentAsync(),
-            Does.Contain("ready to sign below"));
+            Does.Contain("listo para firmar"));
         Assert.That(await responsePage.AgreementExecutedBanner.CountAsync(), Is.EqualTo(0),
             "Executed banner must not render at ResponseFinalized");
 
@@ -116,7 +116,7 @@ public class SigningWayfindingTests : AuthenticatedTestBase
 
         await Expect(responsePage.AgreementExecutedBanner).ToBeVisibleAsync();
         Assert.That(await responsePage.AgreementExecutedBanner.TextContentAsync(),
-            Does.Contain("has been executed"));
+            Does.Contain("ha sido ejecutado"));
         Assert.That(await responsePage.ReadyToSignBanner.CountAsync(), Is.EqualTo(0),
             "Ready-to-sign banner must not render at AgreementExecuted");
 

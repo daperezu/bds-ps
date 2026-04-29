@@ -86,8 +86,8 @@ public class AdminImpactTemplateTests : AuthenticatedTestBase
         var paramCountCell = templateRow.Locator("td:nth-child(3)");
         await Expect(paramCountCell).ToHaveTextAsync("2");
 
-        // Verify status is Active
-        var activeBadge = templateRow.Locator(".status:has-text('Activo')");
+        // Verify status is Active (feminine "Activa" — concords with "plantilla")
+        var activeBadge = templateRow.Locator(".status:has-text('Activa')");
         await Expect(activeBadge).ToBeVisibleAsync();
     }
 

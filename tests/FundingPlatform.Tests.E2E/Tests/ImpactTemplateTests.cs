@@ -94,9 +94,9 @@ public class ImpactTemplateTests : AuthenticatedTestBase
         // Should redirect back to application details
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
-        // Verify impact badge now shows "Complete"
+        // Verify impact badge now shows "Completo"
         var updatedItemRow = Page.Locator("table tbody tr:has-text('Impact Test Laptop')");
-        var completeBadge = updatedItemRow.Locator(".status:has-text('Complete')");
+        var completeBadge = updatedItemRow.Locator(".status:has-text('Completo')");
         await Expect(completeBadge).ToBeVisibleAsync();
     }
 

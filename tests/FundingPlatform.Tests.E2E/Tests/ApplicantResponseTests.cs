@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using FundingPlatform.Tests.E2E.Constants;
 using FundingPlatform.Tests.E2E.Fixtures;
 using FundingPlatform.Tests.E2E.PageObjects;
 using Microsoft.Playwright;
@@ -221,7 +222,7 @@ public class ApplicantResponseTests : AuthenticatedTestBase
 
         await reviewPage.FinalizeButton.ClickAsync();
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Review"));
-        await Expect(Page.Locator(".alert-success:has-text('finalized')")).ToBeVisibleAsync();
+        await Expect(Page.Locator($".alert-success:has-text('{UiCopy.ReviewFinalized}')")).ToBeVisibleAsync();
 
         await Page.Locator("form[action*='Account/Logout'] button[type=submit]").ClickAsync();
 

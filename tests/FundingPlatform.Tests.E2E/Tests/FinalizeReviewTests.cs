@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using FundingPlatform.Tests.E2E.Constants;
 using FundingPlatform.Tests.E2E.Fixtures;
 using FundingPlatform.Tests.E2E.PageObjects;
 using Microsoft.Playwright;
@@ -53,7 +54,7 @@ public class FinalizeReviewTests : AuthenticatedTestBase
 
         // Should redirect to queue with success
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Review"));
-        await Expect(Page.Locator(".alert-success:has-text('finalized')")).ToBeVisibleAsync();
+        await Expect(Page.Locator($".alert-success:has-text('{UiCopy.ReviewFinalized}')")).ToBeVisibleAsync();
     }
 
     [Test]
@@ -81,7 +82,7 @@ public class FinalizeReviewTests : AuthenticatedTestBase
 
         // Should redirect to queue with success
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Review"));
-        await Expect(Page.Locator(".alert-success:has-text('finalized')")).ToBeVisibleAsync();
+        await Expect(Page.Locator($".alert-success:has-text('{UiCopy.ReviewFinalized}')")).ToBeVisibleAsync();
     }
 
     [Test]

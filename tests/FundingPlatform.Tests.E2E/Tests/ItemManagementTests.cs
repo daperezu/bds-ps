@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using FundingPlatform.Tests.E2E.Constants;
 using FundingPlatform.Tests.E2E.Fixtures;
 using FundingPlatform.Tests.E2E.PageObjects;
 using Microsoft.Playwright;
@@ -125,7 +126,7 @@ public class ItemManagementTests : AuthenticatedTestBase
 
         // Click delete button and handle confirmation dialog
         Page.Dialog += (_, dialog) => dialog.AcceptAsync();
-        var deleteButton = Page.Locator("button:has-text('Delete')").First;
+        var deleteButton = Page.Locator($"button:has-text('{UiCopy.Delete}')").First;
         await deleteButton.ClickAsync();
 
         // Should redirect back to application details

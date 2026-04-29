@@ -48,7 +48,7 @@ public class TechnicalEquivalenceTests : AuthenticatedTestBase
         await Expect(reviewPage.ItemReviewStatusBadge(itemId)).ToContainTextAsync("Rechazado");
 
         // Verify item is flagged (the flag warning should be visible)
-        var flagWarning = Page.Locator($".review-item[data-item-id='{itemId}'] .alert-warning:has-text('not technically equivalent')");
+        var flagWarning = Page.Locator($".review-item[data-item-id='{itemId}'] .alert-warning:has-text('no son técnicamente equivalentes')");
         await Expect(flagWarning).ToBeVisibleAsync();
 
         // Clear the flag

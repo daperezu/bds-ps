@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using FundingPlatform.Tests.E2E.Constants;
 using FundingPlatform.Tests.E2E.Fixtures;
 using FundingPlatform.Tests.E2E.PageObjects;
 using Microsoft.Playwright;
@@ -132,7 +133,7 @@ public class ApplicationSubmissionTests : AuthenticatedTestBase
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
         // Verify item has complete impact
-        var completeBadge = Page.Locator("table tbody tr:has-text('Submission Test Laptop') .status:has-text('Complete')");
+        var completeBadge = Page.Locator("table tbody tr:has-text('Submission Test Laptop') .status:has-text('Completo')");
         await Expect(completeBadge).ToBeVisibleAsync();
 
         // Submit the application
@@ -142,7 +143,7 @@ public class ApplicationSubmissionTests : AuthenticatedTestBase
 
         // Verify redirect to details with success message
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
-        var successAlert = Page.Locator(".alert-success:has-text('submitted successfully')").First;
+        var successAlert = Page.Locator($".alert-success:has-text('{UiCopy.ApplicationSubmittedSuccess}')").First;
         await Expect(successAlert).ToBeVisibleAsync();
 
         // Verify state changed to Submitted

@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using FundingPlatform.Tests.E2E.Constants;
 using FundingPlatform.Tests.E2E.Fixtures;
 using FundingPlatform.Tests.E2E.PageObjects;
 using Microsoft.Playwright;
@@ -53,7 +54,7 @@ public class SendBackApplicationTests : AuthenticatedTestBase
 
         // Should redirect to queue with success message
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Review"));
-        await Expect(Page.Locator(".alert-success:has-text('sent back')")).ToBeVisibleAsync();
+        await Expect(Page.Locator($".alert-success:has-text('{UiCopy.ApplicationSentBack}')")).ToBeVisibleAsync();
 
         // Logout and login as applicant
         await Page.Locator("form[action*='Account/Logout'] button[type=submit]").ClickAsync();

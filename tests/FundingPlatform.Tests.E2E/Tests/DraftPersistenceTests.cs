@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using FundingPlatform.Tests.E2E.Constants;
 using FundingPlatform.Tests.E2E.Fixtures;
 using FundingPlatform.Tests.E2E.PageObjects;
 using Microsoft.Playwright;
@@ -42,7 +43,7 @@ public class DraftPersistenceTests : AuthenticatedTestBase
         await Expect(itemRow).ToBeVisibleAsync();
 
         // Log out by clicking the logout button in the navigation
-        var logoutButton = Page.Locator("button:has-text('Logout')");
+        var logoutButton = Page.Locator($"button:has-text('{UiCopy.Logout}')");
         await logoutButton.ClickAsync();
         // Wait for redirect to home
         await Expect(Page).ToHaveURLAsync(new Regex(@"/$|/Home"));

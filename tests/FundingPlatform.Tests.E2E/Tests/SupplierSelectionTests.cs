@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using FundingPlatform.Tests.E2E.Constants;
 using FundingPlatform.Tests.E2E.Fixtures;
 using FundingPlatform.Tests.E2E.PageObjects;
 using Microsoft.Playwright;
@@ -42,7 +43,7 @@ public class SupplierSelectionTests : AuthenticatedTestBase
 
         // Verify recommended badge is shown on lowest-price supplier
         var recommendedText = await firstItem.Locator(".quotation-row.table-success").TextContentAsync();
-        Assert.That(recommendedText, Does.Contain("Recommended"));
+        Assert.That(recommendedText, Does.Contain(UiCopy.Recommended));
 
         // Approve without selecting supplier — should show error
         await reviewPage.ItemDecisionRadio(itemId, "Approve").CheckAsync();

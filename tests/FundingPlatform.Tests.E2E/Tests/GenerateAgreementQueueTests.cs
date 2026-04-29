@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using FundingPlatform.Tests.E2E.Constants;
 using FundingPlatform.Tests.E2E.Fixtures;
 using FundingPlatform.Tests.E2E.PageObjects;
 using Microsoft.Playwright;
@@ -62,7 +63,7 @@ public class GenerateAgreementQueueTests : AuthenticatedTestBase
 
         await Expect(queuePage.GenerateAgreementEmpty).ToBeVisibleAsync();
         await Expect(queuePage.GenerateAgreementEmpty)
-            .ToContainTextAsync("No applications");
+            .ToContainTextAsync("No hay solicitudes pendientes de convenio");
         Assert.That(await queuePage.IsGenerateAgreementTabActive(), Is.True,
             "Generate Agreement tab should be marked active on its own route.");
     }
@@ -144,7 +145,7 @@ public class GenerateAgreementQueueTests : AuthenticatedTestBase
         await Expect(Page.Locator(
             $"[data-testid=generate-agreement-row][data-application-id='{applicationId}']")).ToBeVisibleAsync();
         await Page.Locator(
-            $"[data-testid=generate-agreement-row][data-application-id='{applicationId}'] a:has-text('Abierta')")
+            $"[data-testid=generate-agreement-row][data-application-id='{applicationId}'] a:has-text('{UiCopy.Open}')")
             .ClickAsync();
 
         Assert.That(Regex.IsMatch(Page.Url, $@"/Applications/{applicationId}/FundingAgreement"), Is.True,
