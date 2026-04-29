@@ -619,7 +619,7 @@ public class FundingAgreementController : Controller
             ApplicantLegalId = applicant?.LegalId ?? string.Empty,
             ApplicantEmail = applicant?.Email ?? string.Empty,
             ApplicantPhone = applicant?.Phone,
-            LocaleCode = string.IsNullOrWhiteSpace(options.LocaleCode) ? "es-CO" : options.LocaleCode,
+            LocaleCode = string.IsNullOrWhiteSpace(options.LocaleCode) ? "es-CR" : options.LocaleCode,
             CurrencyIsoCode = string.IsNullOrWhiteSpace(options.CurrencyIsoCode) ? "COP" : options.CurrencyIsoCode,
             Items = rows,
             TotalAmount = total,
