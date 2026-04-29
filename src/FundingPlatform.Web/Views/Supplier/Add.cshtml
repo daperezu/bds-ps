@@ -1,10 +1,10 @@
 @model FundingPlatform.Web.ViewModels.AddSupplierViewModel
 
 @{
-    ViewData["Title"] = "Add Supplier with Quotation";
+    ViewData["Title"] = "Agregar proveedor con cotización";
 }
 
-<h2>Add Supplier with Quotation</h2>
+<h2>Agregar proveedor con cotización</h2>
 
 <div class="row">
     <div class="col-md-8">
@@ -15,7 +15,7 @@
             <input type="hidden" asp-for="ApplicationId" />
             <input type="hidden" asp-for="ItemId" />
 
-            <h4>Supplier Information</h4>
+            <h4>Información del proveedor</h4>
             <hr />
 
             <div class="row">
@@ -89,7 +89,7 @@
                 <label asp-for="IsCompliantSICOP" class="form-check-label"></label>
             </div>
 
-            <h4 class="mt-4">Quotation Details</h4>
+            <h4 class="mt-4">Detalles de la cotización</h4>
             <hr />
 
             <div class="row">
@@ -101,7 +101,7 @@
                 <div class="col-md-4 mb-3">
                     <label asp-for="Currency" class="form-label"></label>
                     <input asp-for="Currency" class="form-control" maxlength="3" />
-                    <small class="form-hint">ISO 4217 (e.g., COP, USD)</small>
+                    <small class="form-hint">ISO 4217 (p. ej., CRC, USD)</small>
                     <span asp-validation-for="Currency" class="text-danger"></span>
                 </div>
                 <div class="col-md-4 mb-3">
@@ -117,8 +117,8 @@
                 <span asp-validation-for="QuotationFile" class="text-danger"></span>
             </div>
 
-            <button type="submit" class="btn btn-primary">Add Supplier and Quotation</button>
-            <a asp-controller="Application" asp-action="Details" asp-route-id="@Model.ApplicationId" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Agregar proveedor y cotización</button>
+            <a asp-controller="Application" asp-action="Details" asp-route-id="@Model.ApplicationId" class="btn btn-secondary">Cancelar</a>
         </form>
     </div>
 </div>

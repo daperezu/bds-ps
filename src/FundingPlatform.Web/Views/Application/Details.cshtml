@@ -2,12 +2,12 @@
 @model FundingPlatform.Web.ViewModels.ApplicationViewModel
 
 @{
-    ViewData["Title"] = $"Application #{Model.Id}";
+    ViewData["Title"] = $"Solicitud N.º {Model.Id}";
     var state = Enum.Parse<ApplicationState>(Model.State);
     var headerActions = new List<ActionItem>();
     if (Model.State == nameof(ApplicationState.Draft))
     {
-        headerActions.Add(new ActionItem("Add Item", ActionClass.Primary,
+        headerActions.Add(new ActionItem("Agregar ítem", ActionClass.Primary,
             Url: Url.Action("Add", "Item", new { appId = Model.Id }),
             Icon: "ti ti-plus"));
     }
@@ -16,7 +16,7 @@
         || Model.State == nameof(ApplicationState.AppealOpen))
     {
         headerActions.Add(new ActionItem(
-            Model.State == nameof(ApplicationState.Resolved) ? "Respond to Review" : "View Response",
+            Model.State == nameof(ApplicationState.Resolved) ? "Responder a la revisión" : "Ver respuesta",
             ActionClass.Primary,
             Url: Url.Action("Index", "ApplicantResponse", new { id = Model.Id }),
             Icon: "ti ti-message"));
@@ -25,7 +25,7 @@
 
 @await Html.PartialAsync("Components/_PageHeader",
     new PageHeaderViewModel(
-        Title: $"Application #{Model.Id}",
+        Title: $"Solicitud N.º {Model.Id}",
         PrimaryActions: headerActions))
 
 @if (TempData["ValidationErrors"] is string validationErrorsJson)
@@ -34,7 +34,7 @@
     if (errors is not null && errors.Count > 0)
     {
         <div class="alert alert-danger" role="alert">
-            <strong>Cannot submit application:</strong>
+            <strong>No se puede enviar la solicitud:</strong>
             <ul class="mb-0 mt-1">
                 @foreach (var error in errors)
                 {
@@ -49,19 +49,19 @@
     <div class="card-body">
         <div class="row g-2">
             <div class="col-md-3">
-                <strong>Status:</strong>
+                <strong>Estado:</strong>
                 @await Html.PartialAsync("Components/_StatusPill", new StatusPillViewModel(state))
             </div>
             <div class="col-md-3">
-                <strong>Created:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+                <strong>Creada:</strong> @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")
             </div>
             <div class="col-md-3">
-                <strong>Updated:</strong> @Model.UpdatedAt.ToString("yyyy-MM-dd HH:mm")
+                <strong>Actualizada:</strong> @Model.UpdatedAt.ToString("dd/MM/yyyy HH:mm")
             </div>
             @if (Model.SubmittedAt.HasValue)
             {
                 <div class="col-md-3">
-                    <strong>Submitted:</strong> @Model.SubmittedAt.Value.ToString("yyyy-MM-dd HH:mm")
+                    <strong>Enviada:</strong> @Model.SubmittedAt.Value.ToString("dd/MM/yyyy HH:mm")
                 </div>
             }
         </div>
@@ -69,20 +69,20 @@
 </div>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">Items</h4>
+    <h4 class="mb-0">Ítems</h4>
 </div>
 
 @if (Model.Items.Count == 0)
 {
     @await Html.PartialAsync("Components/_EmptyState",
         new EmptyStateViewModel(
-            Headline: "No items added yet",
+            Headline: "Aún no se han agregado ítems",
             Body: Model.State == nameof(ApplicationState.Draft)
-                ? "Add at least one item to submit your application."
-                : "This application has no items.",
+                ? "Agregue al menos un ítem para enviar su solicitud."
+                : "Esta solicitud no tiene ítems.",
             Icon: "ti ti-package",
             PrimaryAction: Model.State == nameof(ApplicationState.Draft)
-                ? new ActionItem("Add Item", ActionClass.Primary,
+                ? new ActionItem("Agregar ítem", ActionClass.Primary,
                     Url: Url.Action("Add", "Item", new { appId = Model.Id }),
                     Icon: "ti ti-plus")
                 : null))
@@ -94,11 +94,11 @@ else
             <table class="table card-table table-vcenter">
                 <thead>
                     <tr>
-                        <th>Product Name</th>
-                        <th>Category</th>
-                        <th>Quotations</th>
-                        <th>Impact</th>
-                        <th>Actions</th>
+                        <th>Nombre del producto</th>
+                        <th>Categoría</th>
+                        <th>Cotizaciones</th>
+                        <th>Impacto</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -111,22 +111,22 @@ else
                             <td>
                                 @if (item.HasImpact)
                                 {
-                                    <span class="status status-green"><i class="ti ti-check"></i> Complete</span>
+                                    <span class="status status-green"><i class="ti ti-check"></i> Completo</span>
                                 }
                                 else
                                 {
-                                    <span class="status status-yellow"><i class="ti ti-clock"></i> Pending</span>
+                                    <span class="status status-yellow"><i class="ti ti-clock"></i> Pendiente</span>
                                 }
                             </td>
                             <td>
                                 @if (Model.State == nameof(ApplicationState.Draft))
                                 {
-                                    <a asp-controller="Supplier" asp-action="Add" asp-route-appId="@Model.Id" asp-route-itemId="@item.Id" class="btn btn-sm btn-outline-primary">Add Supplier</a>
-                                    <a asp-controller="Item" asp-action="Edit" asp-route-appId="@Model.Id" asp-route-itemId="@item.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
-                                    <a asp-controller="Item" asp-action="Impact" asp-route-appId="@Model.Id" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">Impact</a>
+                                    <a asp-controller="Supplier" asp-action="Add" asp-route-appId="@Model.Id" asp-route-itemId="@item.Id" class="btn btn-sm btn-outline-primary">Agregar proveedor</a>
+                                    <a asp-controller="Item" asp-action="Edit" asp-route-appId="@Model.Id" asp-route-itemId="@item.Id" class="btn btn-sm btn-outline-secondary">Editar</a>
+                                    <a asp-controller="Item" asp-action="Impact" asp-route-appId="@Model.Id" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">Impacto</a>
                                     <form asp-controller="Item" asp-action="Delete" asp-route-appId="@Model.Id" asp-route-itemId="@item.Id" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to remove this item?')">Delete</button>
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Está seguro de que desea eliminar este ítem?')">Eliminar</button>
                                     </form>
                                 }
                             </td>
@@ -136,7 +136,7 @@ else
                             <tr>
                                 <td colspan="5">
                                     <div class="text-secondary small ps-2 border-start border-3 border-info py-1">
-                                        <strong>Reviewer Comment:</strong> @item.ReviewComment
+                                        <strong>Comentario del revisor:</strong> @item.ReviewComment
                                     </div>
                                 </td>
                             </tr>
@@ -154,7 +154,7 @@ else
         <form asp-controller="Application" asp-action="Submit" asp-route-id="@Model.Id" method="post">
             @Html.AntiForgeryToken()
             <button type="submit" class="btn btn-success">
-                <i class="ti ti-send me-1"></i>Submit Application
+                <i class="ti ti-send me-1"></i>Enviar solicitud
             </button>
         </form>
     </div>
@@ -162,7 +162,7 @@ else
 
 <div class="mt-3" id="funding-agreement-panel-container">
     <div data-async-panel-url="@Url.RouteUrl(new { controller = "FundingAgreement", action = "Panel", applicationId = Model.Id })">
-        Loading funding agreement panel...
+        Cargando panel del convenio de financiamiento...
     </div>
 </div>
 
@@ -182,5 +182,5 @@ else
 </script>
 
 <div class="mt-3">
-    <a asp-action="Index" asp-controller="Application" class="btn btn-link">&larr; Back to Applications</a>
+    <a asp-action="Index" asp-controller="Application" class="btn btn-link">&larr; Volver a solicitudes</a>
 </div>

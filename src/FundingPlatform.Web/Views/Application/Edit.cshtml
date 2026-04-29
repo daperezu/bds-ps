@@ -2,37 +2,37 @@
 @model FundingPlatform.Web.ViewModels.ApplicationViewModel
 
 @{
-    ViewData["Title"] = $"Edit Application #{Model.Id}";
+    ViewData["Title"] = $"Editar solicitud N.º {Model.Id}";
     var state = Enum.Parse<ApplicationState>(Model.State);
 }
 
 @await Html.PartialAsync("Components/_PageHeader",
     new PageHeaderViewModel(
-        Title: $"Edit Application #{Model.Id}",
+        Title: $"Editar solicitud N.º {Model.Id}",
         Breadcrumbs: new[]
         {
-            new BreadcrumbItem("My Applications", Url.Action("Index", "Application")),
-            new BreadcrumbItem($"Application #{Model.Id}", Url.Action("Details", "Application", new { id = Model.Id })),
-            new BreadcrumbItem("Edit"),
+            new BreadcrumbItem("Mis solicitudes", Url.Action("Index", "Application")),
+            new BreadcrumbItem($"Solicitud N.º {Model.Id}", Url.Action("Details", "Application", new { id = Model.Id })),
+            new BreadcrumbItem("Editar"),
         }))
 
 <div class="card mb-4">
     <div class="card-body">
         <div class="row g-2">
             <div class="col-md-3">
-                <strong>Status:</strong>
+                <strong>Estado:</strong>
                 @await Html.PartialAsync("Components/_StatusPill", new StatusPillViewModel(state))
             </div>
             <div class="col-md-3">
-                <strong>Created:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+                <strong>Creada:</strong> @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")
             </div>
             <div class="col-md-3">
-                <strong>Updated:</strong> @Model.UpdatedAt.ToString("yyyy-MM-dd HH:mm")
+                <strong>Actualizada:</strong> @Model.UpdatedAt.ToString("dd/MM/yyyy HH:mm")
             </div>
             @if (Model.SubmittedAt.HasValue)
             {
                 <div class="col-md-3">
-                    <strong>Submitted:</strong> @Model.SubmittedAt.Value.ToString("yyyy-MM-dd HH:mm")
+                    <strong>Enviada:</strong> @Model.SubmittedAt.Value.ToString("dd/MM/yyyy HH:mm")
                 </div>
             }
         </div>
@@ -40,9 +40,9 @@
 </div>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">Items</h4>
+    <h4 class="mb-0">Ítems</h4>
     <a asp-controller="Item" asp-action="Add" asp-route-appId="@Model.Id" class="btn btn-primary">
-        <i class="ti ti-plus me-1"></i>Add Item
+        <i class="ti ti-plus me-1"></i>Agregar ítem
     </a>
 </div>
 
@@ -50,10 +50,10 @@
 {
     @await Html.PartialAsync("Components/_EmptyState",
         new EmptyStateViewModel(
-            Headline: "No items added yet",
-            Body: "Add at least one item to submit your application.",
+            Headline: "Aún no se han agregado ítems",
+            Body: "Agregue al menos un ítem para enviar su solicitud.",
             Icon: "ti ti-package",
-            PrimaryAction: new ActionItem("Add Item", ActionClass.Primary,
+            PrimaryAction: new ActionItem("Agregar ítem", ActionClass.Primary,
                 Url: Url.Action("Add", "Item", new { appId = Model.Id }),
                 Icon: "ti ti-plus")))
 }
@@ -64,11 +64,11 @@ else
             <table class="table card-table table-vcenter">
                 <thead>
                     <tr>
-                        <th>Product Name</th>
-                        <th>Category</th>
-                        <th>Quotations</th>
-                        <th>Impact</th>
-                        <th>Actions</th>
+                        <th>Nombre del producto</th>
+                        <th>Categoría</th>
+                        <th>Cotizaciones</th>
+                        <th>Impacto</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -81,18 +81,18 @@ else
                             <td>
                                 @if (item.HasImpact)
                                 {
-                                    <span class="status status-green"><i class="ti ti-check"></i> Complete</span>
+                                    <span class="status status-green"><i class="ti ti-check"></i> Completo</span>
                                 }
                                 else
                                 {
-                                    <span class="status status-yellow"><i class="ti ti-clock"></i> Pending</span>
+                                    <span class="status status-yellow"><i class="ti ti-clock"></i> Pendiente</span>
                                 }
                             </td>
                             <td>
-                                <a asp-controller="Item" asp-action="Edit" asp-route-appId="@Model.Id" asp-route-itemId="@item.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                <a asp-controller="Item" asp-action="Edit" asp-route-appId="@Model.Id" asp-route-itemId="@item.Id" class="btn btn-sm btn-outline-secondary">Editar</a>
                                 <form asp-controller="Item" asp-action="Delete" asp-route-appId="@Model.Id" asp-route-itemId="@item.Id" method="post" class="d-inline">
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to remove this item?')">Delete</button>
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Está seguro de que desea eliminar este ítem?')">Eliminar</button>
                                 </form>
                             </td>
                         </tr>
@@ -101,7 +101,7 @@ else
                             <tr>
                                 <td colspan="5">
                                     <div class="text-secondary small ps-2 border-start border-3 border-info py-1">
-                                        <strong>Reviewer Comment:</strong> @item.ReviewComment
+                                        <strong>Comentario del revisor:</strong> @item.ReviewComment
                                     </div>
                                 </td>
                             </tr>
@@ -119,12 +119,12 @@ else
         <form asp-controller="Application" asp-action="Submit" asp-route-id="@Model.Id" method="post">
             @Html.AntiForgeryToken()
             <button type="submit" class="btn btn-success">
-                <i class="ti ti-send me-1"></i>Submit Application
+                <i class="ti ti-send me-1"></i>Enviar solicitud
             </button>
         </form>
     </div>
 }
 
 <div class="mt-3">
-    <a asp-action="Index" asp-controller="Application" class="btn btn-link">&larr; Back to Applications</a>
+    <a asp-action="Index" asp-controller="Application" class="btn btn-link">&larr; Volver a solicitudes</a>
 </div>

@@ -3,12 +3,12 @@
 @{
     var cards = new[]
     {
-        new { Title = Copy.ResourcesHowFundingWorks(), Body = "How we evaluate applications, what gets funded, and what doesn't.", Cta = "Read the guide", Href = "/help/how-it-works" },
-        new { Title = Copy.ResourcesSubmissionTips(),  Body = "Make your application stronger with a focused project description and accurate quotations.", Cta = "See the checklist", Href = "/help/submission-tips" },
-        new { Title = Copy.ResourcesGetHelp(),         Body = "Stuck somewhere? We can help.", Cta = "Contact us", Href = "/help/contact" },
+        new { Title = Copy.ResourcesHowFundingWorks(), Body = "Cómo evaluamos las solicitudes, qué se financia y qué no.", Cta = "Leer la guía", Href = "/help/how-it-works" },
+        new { Title = Copy.ResourcesSubmissionTips(),  Body = "Refuerce su solicitud con una descripción enfocada y cotizaciones precisas.", Cta = "Ver la lista de verificación", Href = "/help/submission-tips" },
+        new { Title = Copy.ResourcesGetHelp(),         Body = "¿Atascado en algún paso? Le podemos ayudar.", Cta = "Contáctenos", Href = "/help/contact" },
     };
 }
-<section class="fl-strip mt-4" data-testid="resources-strip" aria-label="Helpful resources">
+<section class="fl-strip mt-4" data-testid="resources-strip" aria-label="Recursos útiles">
     @foreach (var card in cards)
     {
         <article class="fl-strip-card">

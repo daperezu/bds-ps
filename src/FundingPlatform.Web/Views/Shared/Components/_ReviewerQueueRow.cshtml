@@ -20,7 +20,7 @@
         @await Html.PartialAsync("Components/_ApplicationJourney", Model.JourneyMicro)
     </td>
     <td class="fl-pad-2 fl-type-meta" data-testid="row-days-in-state">@Model.DaysInCurrentState d</td>
-    <td class="fl-pad-2 fl-type-meta fl-text-secondary" data-testid="row-last-activity">@Model.LastActivity.LocalDateTime.ToString("MMM d")</td>
+    <td class="fl-pad-2 fl-type-meta fl-text-secondary" data-testid="row-last-activity">@Model.LastActivity.LocalDateTime.ToString("dd/MM")</td>
     <td class="fl-pad-2" data-no-row-nav>
         <a class="btn btn-sm btn-outline-primary" href="@Model.PrimaryAction.Href" data-testid="row-action">@Model.PrimaryAction.Label</a>
     </td>

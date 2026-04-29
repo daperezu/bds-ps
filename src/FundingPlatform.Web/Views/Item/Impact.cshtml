@@ -1,18 +1,18 @@
 @model FundingPlatform.Web.ViewModels.ImpactViewModel
 
 @{
-    ViewData["Title"] = $"Impact Assessment - {Model.ItemProductName}";
+    ViewData["Title"] = $"Evaluación de impacto - {Model.ItemProductName}";
 }
 
 @await Html.PartialAsync("Components/_PageHeader",
     new PageHeaderViewModel(
-        Title: "Impact Assessment",
-        Subtitle: $"Item: {Model.ItemProductName}",
+        Title: "Evaluación de impacto",
+        Subtitle: $"Ítem: {Model.ItemProductName}",
         Breadcrumbs: new[]
         {
-            new BreadcrumbItem("My Applications", Url.Action("Index", "Application")),
-            new BreadcrumbItem($"Application #{Model.ApplicationId}", Url.Action("Details", "Application", new { id = Model.ApplicationId })),
-            new BreadcrumbItem("Impact"),
+            new BreadcrumbItem("Mis solicitudes", Url.Action("Index", "Application")),
+            new BreadcrumbItem($"Solicitud N.º {Model.ApplicationId}", Url.Action("Details", "Application", new { id = Model.ApplicationId })),
+            new BreadcrumbItem("Impacto"),
         }))
 
 <div class="row">
@@ -24,9 +24,9 @@
             <input type="hidden" asp-for="ItemId" />
 
             <div class="mb-3">
-                <label asp-for="SelectedTemplateId" class="form-label">Impact Template</label>
+                <label asp-for="SelectedTemplateId" class="form-label">Plantilla de impacto</label>
                 <select asp-for="SelectedTemplateId" class="form-select" id="templateSelector">
-                    <option value="">-- Select Impact Template --</option>
+                    <option value="">-- Seleccione una plantilla de impacto --</option>
                     @foreach (var template in Model.Templates)
                     {
                         <option value="@template.Id"
@@ -44,7 +44,7 @@
             <div id="parametersContainer">
                 @if (Model.Parameters.Count > 0)
                 {
-                    <h5>Parameters</h5>
+                    <h5>Parámetros</h5>
                     @for (int i = 0; i < Model.Parameters.Count; i++)
                     {
                         var param = Model.Parameters[i];
@@ -86,9 +86,9 @@
             </div>
 
             <div id="submitArea" class="@(Model.Parameters.Count > 0 ? "" : "d-none")">
-                <button type="submit" class="btn btn-primary">Save Impact</button>
+                <button type="submit" class="btn btn-primary">Guardar impacto</button>
             </div>
-            <a asp-controller="Application" asp-action="Details" asp-route-id="@Model.ApplicationId" class="btn btn-secondary">Cancel</a>
+            <a asp-controller="Application" asp-action="Details" asp-route-id="@Model.ApplicationId" class="btn btn-secondary">Cancelar</a>
         </form>
     </div>
 </div>
@@ -127,7 +127,7 @@
 
                     const parameters = await response.json();
 
-                    let html = '<h5>Parameters</h5>';
+                    let html = '<h5>Parámetros</h5>';
                     parameters.forEach(function (param, index) {
                         let inputHtml;
                         const requiredAttr = param.isRequired ? 'required' : '';
@@ -163,7 +163,7 @@
                     parametersContainer.innerHTML = html;
                     submitArea.classList.toggle('d-none', parameters.length === 0);
                 } catch (error) {
-                    parametersContainer.innerHTML = '<div class="alert alert-danger">Failed to load template parameters.</div>';
+                    parametersContainer.innerHTML = '<div class="alert alert-danger">No se pudieron cargar los parámetros de la plantilla.</div>';
                     submitArea.classList.add('d-none');
                 }
             });

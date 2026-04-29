@@ -1,30 +1,30 @@
 @model FundingPlatform.Web.ViewModels.CreateApplicationViewModel
 
 @{
-    ViewData["Title"] = "Create Application";
+    ViewData["Title"] = "Crear solicitud";
 }
 
 @await Html.PartialAsync("Components/_PageHeader",
     new PageHeaderViewModel(
-        Title: "Create New Application",
-        Subtitle: "Start a draft application — you can add items and submit it when ready.",
+        Title: "Crear nueva solicitud",
+        Subtitle: "Inicie un borrador de solicitud — puede agregar ítems y enviarla cuando esté lista.",
         Breadcrumbs: new[]
         {
-            new BreadcrumbItem("My Applications", Url.Action("Index", "Application")),
-            new BreadcrumbItem("Create New"),
+            new BreadcrumbItem("Mis solicitudes", Url.Action("Index", "Application")),
+            new BreadcrumbItem("Crear nueva"),
         }))
 
 <div class="card">
     <div class="card-body">
-        <p class="text-secondary">Click the button below to create a new draft application. You can then add items and submit it when ready.</p>
+        <p class="text-secondary">Presione el botón a continuación para crear un nuevo borrador de solicitud. Después podrá agregar ítems y enviarla cuando esté lista.</p>
         <form asp-action="Create" asp-controller="Application" method="post">
             @Html.AntiForgeryToken()
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary">
-                    <i class="ti ti-plus me-1"></i>Create Draft Application
+                    <i class="ti ti-plus me-1"></i>Crear borrador de solicitud
                 </button>
                 <a asp-action="Index" asp-controller="Application" class="btn btn-outline-secondary">
-                    <i class="ti ti-arrow-left me-1"></i>Back
+                    <i class="ti ti-arrow-left me-1"></i>Atrás
                 </a>
             </div>
         </form>

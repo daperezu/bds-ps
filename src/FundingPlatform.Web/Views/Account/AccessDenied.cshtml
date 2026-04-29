@@ -1,20 +1,20 @@
 @{
-    ViewData["Title"] = "Access Denied";
+    ViewData["Title"] = "Acceso denegado";
 }
 
 @await Html.PartialAsync("Components/_PageHeader",
     new PageHeaderViewModel(
-        Title: "Access Denied",
-        Subtitle: "You do not have permission to view this resource."))
+        Title: "Acceso denegado",
+        Subtitle: "No tiene permiso para ver este recurso."))
 
 <div data-testid="access-denied">
     @await Html.PartialAsync("Components/_EmptyState",
         new EmptyStateViewModel(
-            Headline: "403 Forbidden",
-            Body: "Your session is valid, but this resource is restricted to other roles. If you believe this is a mistake, contact a system administrator.",
+            Headline: "403 Prohibido",
+            Body: "Su sesión es válida, pero este recurso está restringido a otros roles. Si cree que es un error, contacte a un administrador del sistema.",
             Icon: "ti ti-lock-access",
             PrimaryAction: new ActionItem(
-                Label: "Return to home",
+                Label: "Volver al inicio",
                 Class: ActionClass.Primary,
                 Url: Url.Action("Index", "Home") ?? "/")))
 </div>

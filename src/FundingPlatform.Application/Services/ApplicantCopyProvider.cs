@@ -3,7 +3,8 @@ namespace FundingPlatform.Application.Services;
 /// <summary>
 /// Spec 011 — applicant-facing voice-guide-compliant copy strings.
 /// Centralized so a single voice-guide pass lints them in one place.
-/// See specs/011-warm-modern-facelift/BRAND-VOICE.md.
+/// Spec 012 — translated to formal Costa Rican Spanish (formal usted).
+/// See specs/012-es-cr-localization/voice-guide.md.
 /// </summary>
 public interface IApplicantCopyProvider
 {
@@ -29,32 +30,32 @@ public interface IApplicantCopyProvider
 public sealed class ApplicantCopyProvider : IApplicantCopyProvider
 {
     public string WelcomeHeadline(string firstName)
-        => $"Welcome back, {firstName} — here's where you are today.";
+        => $"Bienvenido de vuelta, {firstName} — esto es lo que tenemos hoy.";
 
     public string WelcomeSubhead()
-        => "We've kept track of everything since your last visit.";
+        => "Hemos llevado el registro de todo desde su última visita.";
 
     public string AwaitingActionDraft(string projectName)
-        => $"Your draft for {projectName} is ready to send.";
+        => $"Su borrador para {projectName} está listo para enviar.";
 
     public string AwaitingActionSentBack(string projectName)
-        => $"We need a few more details on {projectName} before we can decide.";
+        => $"Necesitamos algunos detalles más sobre {projectName} antes de decidir.";
 
     public string AwaitingActionAgreement(string projectName)
-        => $"Your funding agreement for {projectName} is ready to sign.";
+        => $"Su convenio de financiamiento para {projectName} está listo para firmar.";
 
-    public string EmptyHeroHeadline() => "Ready to apply for funding?";
-    public string EmptyHeroSubhead() => "Tell us about your project — we'll guide you the rest of the way.";
-    public string EmptyCtaLabel() => "Start a new application";
+    public string EmptyHeroHeadline() => "¿Listo para solicitar financiamiento?";
+    public string EmptyHeroSubhead() => "Cuéntenos sobre su proyecto — le acompañamos en el resto del camino.";
+    public string EmptyCtaLabel() => "Iniciar una nueva solicitud";
 
-    public string ResourcesHowFundingWorks() => "How funding works";
-    public string ResourcesSubmissionTips()  => "Submission tips";
-    public string ResourcesGetHelp()         => "Get help";
+    public string ResourcesHowFundingWorks() => "Cómo funciona el financiamiento";
+    public string ResourcesSubmissionTips()  => "Consejos para enviar su solicitud";
+    public string ResourcesGetHelp()         => "Obtener ayuda";
 
-    public string TrustHowLongTitle() => "How long it takes";
-    public string TrustHowLongBody()  => "Most applications get a decision within 3 weeks of being sent.";
-    public string TrustWhatYouNeedTitle() => "What you'll need";
-    public string TrustWhatYouNeedBody()  => "A short project description, item list, and one quotation per item.";
-    public string TrustHowDecisionsTitle() => "How decisions are made";
-    public string TrustHowDecisionsBody()  => "Reviewers check completeness, fit, and quotations — we'll tell you the reasoning either way.";
+    public string TrustHowLongTitle() => "Cuánto tarda";
+    public string TrustHowLongBody()  => "La mayoría de las solicitudes recibe una decisión en 3 semanas desde su envío.";
+    public string TrustWhatYouNeedTitle() => "Lo que necesitará";
+    public string TrustWhatYouNeedBody()  => "Una breve descripción del proyecto, la lista de ítems y una cotización por ítem.";
+    public string TrustHowDecisionsTitle() => "Cómo se toman las decisiones";
+    public string TrustHowDecisionsBody()  => "Los revisores verifican que la solicitud esté completa, su pertinencia y las cotizaciones — le explicamos la decisión sea cual sea.";
 }
