@@ -31,15 +31,15 @@
                 <div class="document-card-meta fl-text-secondary fl-type-meta mt-1" data-testid="document-card-meta">
                     @if (!string.IsNullOrWhiteSpace(Model.Signer) && Model.SignedAt.HasValue)
                     {
-                        <span>Signed by @Model.Signer on @Model.SignedAt.Value.LocalDateTime.ToString("yyyy-MM-dd HH:mm")</span>
+                        <span>Firmado por @Model.Signer el @Model.SignedAt.Value.LocalDateTime.ToString("dd/MM/yyyy HH:mm")</span>
                     }
                     else if (Model.SignedAt.HasValue)
                     {
-                        <span>Signed @Model.SignedAt.Value.LocalDateTime.ToString("yyyy-MM-dd HH:mm")</span>
+                        <span>Firmado el @Model.SignedAt.Value.LocalDateTime.ToString("dd/MM/yyyy HH:mm")</span>
                     }
                     else if (Model.GeneratedAt.HasValue)
                     {
-                        <span>Generated @Model.GeneratedAt.Value.LocalDateTime.ToString("yyyy-MM-dd HH:mm")</span>
+                        <span>Generado el @Model.GeneratedAt.Value.LocalDateTime.ToString("dd/MM/yyyy HH:mm")</span>
                     }
                 </div>
             }
@@ -47,7 +47,7 @@
         <a href="@Model.DownloadUrl"
            class="btn btn-sm btn-outline-secondary"
            data-testid="document-card-download">
-            <i class="ti ti-download me-1"></i>Download
+            <i class="ti ti-download me-1"></i>Descargar
         </a>
     </div>
 </div>

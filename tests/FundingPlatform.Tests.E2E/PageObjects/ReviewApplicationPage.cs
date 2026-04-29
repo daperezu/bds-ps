@@ -1,3 +1,4 @@
+using FundingPlatform.Tests.E2E.Constants;
 using Microsoft.Playwright;
 
 namespace FundingPlatform.Tests.E2E.PageObjects;
@@ -12,8 +13,8 @@ public class ReviewApplicationPage : BasePage
     public ILocator PerformanceScore => Page.Locator(".performance-score");
     public ILocator ApplicationState => Page.Locator(".application-state [data-testid=status-pill]");
     public ILocator ItemCards => Page.Locator(".review-item");
-    public ILocator SendBackButton => Page.Locator("button:has-text('Send Back')");
-    public ILocator FinalizeButton => Page.Locator("button:has-text('Finalize Review')");
+    public ILocator SendBackButton => Page.Locator($"button:has-text('{UiCopy.SendBack}')");
+    public ILocator FinalizeButton => Page.Locator($"button:has-text('{UiCopy.FinalizeReview}')");
     public ILocator ForceFinalizationConfirm => Page.Locator("#forceFinalizationConfirm");
     public ILocator UnresolvedWarning => Page.Locator(".unresolved-warning");
     public ILocator SuccessMessage => Page.Locator(".alert-success");
