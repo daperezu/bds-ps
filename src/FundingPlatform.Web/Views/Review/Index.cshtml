@@ -2,7 +2,7 @@
 @model FundingPlatform.Web.ViewModels.ReviewQueueViewModel
 
 @{
-    ViewData["Title"] = "Review Queue";
+    ViewData["Title"] = "Cola de revisión";
     ViewData["ActiveTab"] = "Initial";
 }
 
@@ -10,15 +10,15 @@
 
 @await Html.PartialAsync("Components/_PageHeader",
     new PageHeaderViewModel(
-        Title: "Review Queue",
-        Subtitle: $"{Model.TotalCount} submitted application(s)"))
+        Title: "Cola de revisión",
+        Subtitle: $"{Model.TotalCount} solicitud(es) enviada(s)"))
 
 @if (Model.Applications.Count == 0)
 {
     @await Html.PartialAsync("Components/_EmptyState",
         new EmptyStateViewModel(
-            Headline: "No applications awaiting review",
-            Body: "Submitted applications will appear here when applicants finish their drafts.",
+            Headline: "No hay solicitudes pendientes de revisión",
+            Body: "Las solicitudes enviadas aparecerán aquí cuando los solicitantes terminen sus borradores.",
             Icon: "ti ti-clipboard-check"))
 }
 else
@@ -28,11 +28,11 @@ else
             <table class="table card-table table-vcenter table-sm review-queue">
                 <thead>
                     <tr>
-                        <th>Application</th>
-                        <th>Applicant</th>
-                        <th>Performance Score</th>
-                        <th>Submitted</th>
-                        <th>Items</th>
+                        <th>Solicitud</th>
+                        <th>Solicitante</th>
+                        <th>Puntaje de desempeño</th>
+                        <th>Enviada</th>
+                        <th>Ítems</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -40,7 +40,7 @@ else
                     @foreach (var app in Model.Applications)
                     {
                         <tr>
-                            <td>#@app.ApplicationId</td>
+                            <td>N.º @app.ApplicationId</td>
                             <td>@app.ApplicantName</td>
                             <td>
                                 @if (app.ApplicantPerformanceScore.HasValue)
@@ -49,13 +49,13 @@ else
                                 }
                                 else
                                 {
-                                    <span class="text-secondary">N/A</span>
+                                    <span class="text-secondary">N/D</span>
                                 }
                             </td>
-                            <td>@app.SubmittedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@app.SubmittedAt.ToString("dd/MM/yyyy HH:mm")</td>
                             <td>@app.ItemCount</td>
                             <td>
-                                <a asp-action="Review" asp-route-id="@app.ApplicationId" class="btn btn-sm btn-primary">Review</a>
+                                <a asp-action="Review" asp-route-id="@app.ApplicationId" class="btn btn-sm btn-primary">Revisar</a>
                             </td>
                         </tr>
                     }
@@ -66,12 +66,12 @@ else
 
     @if (Model.TotalPages > 1)
     {
-        <nav class="pagination mt-3" aria-label="Review queue pagination">
+        <nav class="pagination mt-3" aria-label="Paginación de la cola de revisión">
             <ul class="pagination">
                 @if (Model.CurrentPage > 1)
                 {
                     <li class="page-item">
-                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage - 1)">Previous</a>
+                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage - 1)">Anterior</a>
                     </li>
                 }
                 @for (var i = 1; i <= Model.TotalPages; i++)
@@ -83,7 +83,7 @@ else
                 @if (Model.CurrentPage < Model.TotalPages)
                 {
                     <li class="page-item">
-                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage + 1)">Next</a>
+                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage + 1)">Siguiente</a>
                     </li>
                 }
             </ul>

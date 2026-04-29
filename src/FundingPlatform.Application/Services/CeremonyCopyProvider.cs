@@ -16,19 +16,19 @@ public sealed class CeremonyCopyProvider : ICeremonyCopyProvider
 {
     public string Headline(SigningCeremonyVariant variant) => variant switch
     {
-        SigningCeremonyVariant.ApplicantOnlySigned       => "You're signed.",
-        SigningCeremonyVariant.FunderOnlySigned          => "Funder signature recorded.",
-        SigningCeremonyVariant.BothCompleteApplicantLast => "Your funding is locked in.",
-        SigningCeremonyVariant.BothCompleteFunderLast    => "Your funding is locked in.",
-        _                                                => "You're signed.",
+        SigningCeremonyVariant.ApplicantOnlySigned       => "Su firma quedó registrada.",
+        SigningCeremonyVariant.FunderOnlySigned          => "Firma del aportante registrada.",
+        SigningCeremonyVariant.BothCompleteApplicantLast => "Su financiamiento está confirmado.",
+        SigningCeremonyVariant.BothCompleteFunderLast    => "Su financiamiento está confirmado.",
+        _                                                => "Su firma quedó registrada.",
     };
 
     public string Subhead(SigningCeremonyVariant variant, DateOnly date) => variant switch
     {
-        SigningCeremonyVariant.ApplicantOnlySigned => "We're waiting on the funder. We'll email you when it's complete.",
-        SigningCeremonyVariant.FunderOnlySigned    => "The applicant has been notified.",
-        SigningCeremonyVariant.BothCompleteApplicantLast => $"Funds will be transferred by {date:MMM d, yyyy}.",
-        SigningCeremonyVariant.BothCompleteFunderLast    => $"Funds will be transferred by {date:MMM d, yyyy}.",
+        SigningCeremonyVariant.ApplicantOnlySigned => "Estamos a la espera del aportante. Le avisaremos por correo cuando esté completo.",
+        SigningCeremonyVariant.FunderOnlySigned    => "Se ha notificado al solicitante.",
+        SigningCeremonyVariant.BothCompleteApplicantLast => $"Los fondos se transferirán antes del {date:dd/MM/yyyy}.",
+        SigningCeremonyVariant.BothCompleteFunderLast    => $"Los fondos se transferirán antes del {date:dd/MM/yyyy}.",
         _ => string.Empty,
     };
 
@@ -38,13 +38,13 @@ public sealed class CeremonyCopyProvider : ICeremonyCopyProvider
 
     public string AriaLiveAnnouncement(SigningCeremonyVariant variant) => variant switch
     {
-        SigningCeremonyVariant.BothCompleteApplicantLast => "Your funding agreement is signed.",
-        SigningCeremonyVariant.BothCompleteFunderLast    => "Your funding agreement is signed.",
-        SigningCeremonyVariant.ApplicantOnlySigned       => "Your signature was recorded.",
-        SigningCeremonyVariant.FunderOnlySigned          => "Funder signature was recorded.",
-        _                                                => "Signing event recorded.",
+        SigningCeremonyVariant.BothCompleteApplicantLast => "Su convenio de financiamiento está firmado.",
+        SigningCeremonyVariant.BothCompleteFunderLast    => "Su convenio de financiamiento está firmado.",
+        SigningCeremonyVariant.ApplicantOnlySigned       => "Su firma fue registrada.",
+        SigningCeremonyVariant.FunderOnlySigned          => "La firma del aportante fue registrada.",
+        _                                                => "Evento de firma registrado.",
     };
 
-    public string PrimaryCtaLabel(SigningCeremonyVariant variant) => "View funding details";
-    public string SecondaryCtaLabel() => "Back to dashboard";
+    public string PrimaryCtaLabel(SigningCeremonyVariant variant) => "Ver detalles del financiamiento";
+    public string SecondaryCtaLabel() => "Volver al panel";
 }

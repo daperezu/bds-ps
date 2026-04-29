@@ -1,14 +1,14 @@
 @model FundingPlatform.Web.ViewModels.Admin.Reports.DashboardViewModel
 @{
-    ViewData["Title"] = "Reports";
+    ViewData["Title"] = "Reportes";
     var range = Model.AppliedRange;
 }
 
 <div data-testid="admin-area">
     @await Html.PartialAsync("Components/_PageHeader",
         new PageHeaderViewModel(
-            Title: "Reports",
-            Subtitle: $"{range.From:yyyy-MM-dd} → {range.To:yyyy-MM-dd}"))
+            Title: "Reportes",
+            Subtitle: $"{range.From:dd/MM/yyyy} → {range.To:dd/MM/yyyy}"))
 
     @await Html.PartialAsync("Components/_ReportSubTabs", "Dashboard")
 
@@ -16,19 +16,19 @@
         <div class="card-body">
             <div class="row g-2 align-items-end">
                 <div class="col-auto">
-                    <label for="from" class="form-label">From</label>
+                    <label for="from" class="form-label">Desde</label>
                     <input type="date" id="from" name="from" class="form-control"
                            value="@range.From.ToString("yyyy-MM-dd")"
                            data-testid="dashboard-range-from" />
                 </div>
                 <div class="col-auto">
-                    <label for="to" class="form-label">To</label>
+                    <label for="to" class="form-label">Hasta</label>
                     <input type="date" id="to" name="to" class="form-control"
                            value="@range.To.ToString("yyyy-MM-dd")"
                            data-testid="dashboard-range-to" />
                 </div>
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-primary" data-testid="dashboard-range-apply">Apply</button>
+                    <button type="submit" class="btn btn-primary" data-testid="dashboard-range-apply">Aplicar</button>
                 </div>
             </div>
         </div>
@@ -44,7 +44,7 @@
         }
     </div>
 
-    <h3 class="mt-4 mb-2">Financial</h3>
+    <h3 class="mt-4 mb-2">Financiero</h3>
     <div class="row row-cards" data-testid="dashboard-row-financial">
         @foreach (var tile in Model.FinancialTiles)
         {
@@ -54,7 +54,7 @@
         }
     </div>
 
-    <h3 class="mt-4 mb-2">Applicants</h3>
+    <h3 class="mt-4 mb-2">Solicitantes</h3>
     <div class="row row-cards" data-testid="dashboard-row-applicants">
         @foreach (var tile in Model.ApplicantTiles)
         {

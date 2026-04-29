@@ -4,7 +4,7 @@
 @inject IReviewerCopyProvider Copy
 @model ReviewerQueueDto
 @{
-    ViewData["Title"] = "Review Queue";
+    ViewData["Title"] = "Cola de revisión";
     // Spec 007 SC-007 wayfinding: Initial / Generate Agreement / Signing Inbox tabs must
     // remain reachable from /Review. The new spec-011 dashboard layered the hero on top
     // of (not in place of) the queue surface, so the tabs render above the hero.
@@ -33,7 +33,7 @@
             ShowEmptyMessage: false,
             Scope: EventTimelineScope.ReviewerQueue);
         <section class="mt-4" data-testid="reviewer-recent-activity">
-            <h2 class="fl-font-display fl-type-heading-md mb-3">Recent activity</h2>
+            <h2 class="fl-font-display fl-type-heading-md mb-3">Actividad reciente</h2>
             @await Html.PartialAsync("../Shared/Components/_EventTimeline", activityVm)
         </section>
     }
@@ -45,7 +45,7 @@
                 Copy.EmptyHeadline(),
                 Copy.EmptyBody(),
                 IllustrationSceneKey: "calm-horizon",
-                IllustrationAltText: "All clear — nothing's awaiting your review.");
+                IllustrationAltText: "Todo en orden — no tiene revisiones pendientes.");
             @await Html.PartialAsync("../Shared/Components/_EmptyState", emptyVm)
         }
         else
@@ -55,12 +55,12 @@
                     <table class="table table-vcenter">
                         <thead>
                             <tr>
-                                <th class="fl-type-meta fl-text-secondary text-uppercase">Application</th>
-                                <th class="fl-type-meta fl-text-secondary text-uppercase">Applicant</th>
-                                <th class="fl-type-meta fl-text-secondary text-uppercase">Journey</th>
-                                <th class="fl-type-meta fl-text-secondary text-uppercase">Days</th>
-                                <th class="fl-type-meta fl-text-secondary text-uppercase">Last activity</th>
-                                <th class="fl-type-meta fl-text-secondary text-uppercase">Action</th>
+                                <th class="fl-type-meta fl-text-secondary text-uppercase">Solicitud</th>
+                                <th class="fl-type-meta fl-text-secondary text-uppercase">Solicitante</th>
+                                <th class="fl-type-meta fl-text-secondary text-uppercase">Trayecto</th>
+                                <th class="fl-type-meta fl-text-secondary text-uppercase">Días</th>
+                                <th class="fl-type-meta fl-text-secondary text-uppercase">Última actividad</th>
+                                <th class="fl-type-meta fl-text-secondary text-uppercase">Acción</th>
                             </tr>
                         </thead>
                         <tbody data-testid="reviewer-queue-tbody">

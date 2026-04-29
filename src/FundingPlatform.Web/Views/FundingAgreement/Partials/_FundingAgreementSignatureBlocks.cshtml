@@ -1,19 +1,19 @@
 @model FundingPlatform.Web.ViewModels.FundingAgreementDocumentViewModel
 
-<h2>Signatures</h2>
+<h2>Firmas</h2>
 <div class="signature-blocks">
     <div class="signature">
         <div class="signature-line">
-            <strong>For the Funder</strong>
+            <strong>Por el Aportante</strong>
         </div>
         <div>@Model.Funder.LegalName</div>
-        <div>Tax ID: @Model.Funder.TaxId</div>
+        <div>Cédula jurídica: @Model.Funder.TaxId</div>
     </div>
     <div class="signature">
         <div class="signature-line">
-            <strong>Applicant</strong>
+            <strong>Solicitante</strong>
         </div>
         <div>@Model.ApplicantLegalName</div>
-        <div>Legal ID: @Model.ApplicantLegalId</div>
+        <div>Cédula: @Model.ApplicantLegalId</div>
     </div>
 </div>

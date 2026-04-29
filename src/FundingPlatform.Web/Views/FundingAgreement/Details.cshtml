@@ -1,20 +1,20 @@
 @model FundingPlatform.Web.ViewModels.SigningStagePanelViewModel
 
 @{
-    ViewData["Title"] = $"Funding Agreement — Application #{Model.ApplicationId}";
+    ViewData["Title"] = $"Convenio de financiamiento — Solicitud N.º {Model.ApplicationId}";
 }
 
 @await Html.PartialAsync("Components/_PageHeader",
     new PageHeaderViewModel(
-        Title: $"Application #{Model.ApplicationId} — Funding Agreement",
+        Title: $"Solicitud N.º {Model.ApplicationId} — Convenio de financiamiento",
         Breadcrumbs: new[]
         {
-            new BreadcrumbItem("Home", Url.Action("Index", "Home")),
-            new BreadcrumbItem("Funding Agreement"),
+            new BreadcrumbItem("Inicio", Url.Action("Index", "Home")),
+            new BreadcrumbItem("Convenio de financiamiento"),
         }))
 
 @await Html.PartialAsync("~/Views/Applications/_FundingAgreementPanel.cshtml", Model)
 
 <div class="mt-3">
-    <a class="btn btn-link" asp-controller="Home" asp-action="Index">&larr; Back</a>
+    <a class="btn btn-link" asp-controller="Home" asp-action="Index">&larr; Atrás</a>
 </div>

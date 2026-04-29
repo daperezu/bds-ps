@@ -2,32 +2,32 @@
 @model FundingPlatform.Web.ViewModels.ReviewApplicationViewModel
 
 @{
-    ViewData["Title"] = $"Review Application #{Model.ApplicationId}";
+    ViewData["Title"] = $"Revisar solicitud N.º {Model.ApplicationId}";
     var appState = Enum.Parse<ApplicationState>(Model.State);
 }
 
 @await Html.PartialAsync("Components/_PageHeader",
     new PageHeaderViewModel(
-        Title: $"Review Application #{Model.ApplicationId}",
+        Title: $"Revisar solicitud N.º {Model.ApplicationId}",
         Subtitle: Model.ApplicantName))
 
 @if (Model.UnresolvedItemWarnings is not null)
 {
     <div class="alert alert-warning unresolved-warning" role="alert">
-        <strong>Warning:</strong> The following items are unresolved:
+        <strong>Advertencia:</strong> Los siguientes ítems están sin resolver:
         <ul class="mb-2">
             @foreach (var item in Model.UnresolvedItemWarnings)
             {
                 <li>@item</li>
             }
         </ul>
-        <p class="mb-2">Confirming will implicitly reject all unresolved items.</p>
+        <p class="mb-2">Confirmar rechazará implícitamente todos los ítems sin resolver.</p>
         <form asp-action="Finalize" asp-route-id="@Model.ApplicationId" method="post" class="d-inline">
             @Html.AntiForgeryToken()
             <input type="hidden" name="force" value="true" />
-            <button type="submit" id="forceFinalizationConfirm" class="btn btn-danger btn-sm me-2">Confirm Finalization</button>
+            <button type="submit" id="forceFinalizationConfirm" class="btn btn-danger btn-sm me-2">Confirmar finalización</button>
         </form>
-        <a asp-action="Review" asp-route-id="@Model.ApplicationId" class="btn btn-secondary btn-sm">Cancel</a>
+        <a asp-action="Review" asp-route-id="@Model.ApplicationId" class="btn btn-secondary btn-sm">Cancelar</a>
     </div>
 }
 
@@ -35,11 +35,11 @@
     <div class="card-body">
         <div class="row g-2">
             <div class="col-md-3">
-                <strong>Applicant:</strong>
+                <strong>Solicitante:</strong>
                 <span class="applicant-name">@Model.ApplicantName</span>
             </div>
             <div class="col-md-3">
-                <strong>Performance Score:</strong>
+                <strong>Puntaje de desempeño:</strong>
                 <span class="performance-score">
                     @if (Model.ApplicantPerformanceScore.HasValue)
                     {
@@ -47,12 +47,12 @@
                     }
                     else
                     {
-                        <span class="text-secondary">N/A</span>
+                        <span class="text-secondary">N/D</span>
                     }
                 </span>
             </div>
             <div class="col-md-3">
-                <strong>Status:</strong>
+                <strong>Estado:</strong>
                 <span class="application-state">
                     @await Html.PartialAsync("Components/_StatusPill", new StatusPillViewModel(appState))
                 </span>
@@ -60,14 +60,14 @@
             @if (Model.SubmittedAt.HasValue)
             {
                 <div class="col-md-3">
-                    <strong>Submitted:</strong> @Model.SubmittedAt.Value.ToString("yyyy-MM-dd HH:mm")
+                    <strong>Enviada:</strong> @Model.SubmittedAt.Value.ToString("dd/MM/yyyy HH:mm")
                 </div>
             }
         </div>
     </div>
 </div>
 
-<h4>Items (@Model.Items.Count)</h4>
+<h4>Ítems (@Model.Items.Count)</h4>
 
 @foreach (var item in Model.Items)
 {
@@ -84,18 +84,18 @@
         </div>
         <div class="card-body">
             <div class="mb-3">
-                <strong>Technical Specifications:</strong>
+                <strong>Especificaciones técnicas:</strong>
                 <p class="mb-0">@item.TechnicalSpecifications</p>
             </div>
 
             @if (item.ImpactTemplateName is not null)
             {
                 <div class="mb-3">
-                    <strong>Impact Assessment:</strong> @item.ImpactTemplateName
+                    <strong>Evaluación de impacto:</strong> @item.ImpactTemplateName
                     @if (item.ImpactParameters.Count > 0)
                     {
                         <table class="table table-sm mt-1">
-                            <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+                            <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
                             <tbody>
                                 @foreach (var param in item.ImpactParameters)
                                 {
@@ -108,17 +108,17 @@
             }
 
             <div class="mb-3">
-                <strong>Quotations:</strong>
+                <strong>Cotizaciones:</strong>
                 <table class="table table-sm mt-1">
                     <thead>
                         <tr>
-                            <th>Supplier</th>
-                            <th>Legal ID</th>
-                            <th>Score</th>
-                            <th>Breakdown</th>
-                            <th>Price</th>
-                            <th>Valid Until</th>
-                            <th>Document</th>
+                            <th>Proveedor</th>
+                            <th>Cédula jurídica</th>
+                            <th>Puntaje</th>
+                            <th>Desglose</th>
+                            <th>Precio</th>
+                            <th>Vigente hasta</th>
+                            <th>Documento</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -134,17 +134,17 @@
                                         @if (q.ScoreCCSS) { <span class="status status-blue" title="CCSS">CCSS</span> }
                                         @if (q.ScoreHacienda) { <span class="status status-blue" title="Hacienda">Hac</span> }
                                         @if (q.ScoreSICOP) { <span class="status status-blue" title="SICOP">SICOP</span> }
-                                        @if (q.ScoreElectronicInvoice) { <span class="status status-blue" title="E-Invoice">E-Inv</span> }
-                                        @if (q.ScoreLowestPrice) { <span class="status status-blue" title="Lowest Price">Price</span> }
+                                        @if (q.ScoreElectronicInvoice) { <span class="status status-blue" title="Factura electrónica">Fact-E</span> }
+                                        @if (q.ScoreLowestPrice) { <span class="status status-blue" title="Menor precio">Precio</span> }
                                     </span>
                                 </td>
                                 <td>@q.Price.ToString("C")</td>
-                                <td>@q.ValidUntil.ToString("yyyy-MM-dd")</td>
+                                <td>@q.ValidUntil.ToString("dd/MM/yyyy")</td>
                                 <td>@q.DocumentFileName</td>
                                 <td>
                                     @if (q.IsRecommended)
                                     {
-                                        <span class="recommended-badge status status-green"><i class="ti ti-star"></i> Recommended</span>
+                                        <span class="recommended-badge status status-green"><i class="ti ti-star"></i> Recomendada</span>
                                     }
                                 </td>
                             </tr>
@@ -156,7 +156,7 @@
             @if (item.ReviewComment is not null)
             {
                 <div class="mb-3">
-                    <strong>Review Comment:</strong>
+                    <strong>Comentario de revisión:</strong>
                     <p class="mb-0 fst-italic">@item.ReviewComment</p>
                 </div>
             }
@@ -164,7 +164,7 @@
             @if (item.IsNotTechnicallyEquivalent)
             {
                 <div class="alert alert-warning py-1 mb-3">
-                    <strong>Flagged:</strong> Quotations are not technically equivalent.
+                    <strong>Marcado:</strong> Las cotizaciones no son técnicamente equivalentes.
                 </div>
             }
 
@@ -173,7 +173,7 @@
                 <hr />
                 <div class="row">
                     <div class="col-md-6">
-                        <h6>Technical Equivalence</h6>
+                        <h6>Equivalencia técnica</h6>
                         <form asp-action="FlagEquivalence" asp-route-id="@Model.ApplicationId" method="post" class="d-inline">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="ItemId" value="@item.ItemId" />
@@ -181,14 +181,14 @@
                             {
                                 <input type="hidden" name="IsNotEquivalent" value="false" />
                                 <button type="submit" data-item-id="@item.ItemId" class="btn btn-sm btn-outline-success submit-equivalence">
-                                    Clear Not-Equivalent Flag
+                                    Eliminar marca de no equivalencia
                                 </button>
                             }
                             else
                             {
                                 <input type="hidden" name="IsNotEquivalent" value="true" />
                                 <button type="submit" data-item-id="@item.ItemId" class="btn btn-sm btn-outline-warning submit-equivalence">
-                                    Flag as Not Technically Equivalent
+                                    Marcar como no técnicamente equivalente
                                 </button>
                             }
                         </form>
@@ -197,7 +197,7 @@
                     @if (!item.IsNotTechnicallyEquivalent)
                     {
                         <div class="col-md-6">
-                            <h6>Item Decision</h6>
+                            <h6>Decisión del ítem</h6>
                             <form asp-action="ReviewItem" asp-route-id="@Model.ApplicationId" method="post">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="ItemId" value="@item.ItemId" />
@@ -207,26 +207,26 @@
                                         <input class="form-check-input decision-radio" type="radio" name="Decision" value="Approve"
                                                id="approve_@item.ItemId" data-item-id="@item.ItemId"
                                                @(item.ReviewStatus == "Approved" ? "checked" : "")>
-                                        <label class="form-check-label" for="approve_@item.ItemId">Approve</label>
+                                        <label class="form-check-label" for="approve_@item.ItemId">Aprobar</label>
                                     </div>
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input decision-radio" type="radio" name="Decision" value="Reject"
                                                id="reject_@item.ItemId" data-item-id="@item.ItemId"
                                                @(item.ReviewStatus == "Rejected" ? "checked" : "")>
-                                        <label class="form-check-label" for="reject_@item.ItemId">Reject</label>
+                                        <label class="form-check-label" for="reject_@item.ItemId">Rechazar</label>
                                     </div>
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input decision-radio" type="radio" name="Decision" value="RequestMoreInfo"
                                                id="moreinfo_@item.ItemId" data-item-id="@item.ItemId"
                                                @(item.ReviewStatus == "NeedsInfo" ? "checked" : "")>
-                                        <label class="form-check-label" for="moreinfo_@item.ItemId">Request More Info</label>
+                                        <label class="form-check-label" for="moreinfo_@item.ItemId">Solicitar más información</label>
                                     </div>
                                 </div>
 
                                 <div class="mb-2 supplier-select-wrapper @(item.ReviewStatus == "Approved" ? "" : "d-none")" id="supplierSelect_@item.ItemId">
-                                    <label class="form-label">Select Supplier:</label>
+                                    <label class="form-label">Seleccionar proveedor:</label>
                                     <select name="SelectedSupplierId" class="form-select form-select-sm">
-                                        <option value="">-- Select Supplier --</option>
+                                        <option value="">-- Seleccione un proveedor --</option>
                                         @foreach (var q in item.Quotations)
                                         {
                                             var isSelected = item.SelectedSupplierId.HasValue
@@ -235,7 +235,7 @@
                                             var label = $"{q.SupplierName} - {q.Price:C} ({q.Score}/5)";
                                             if (q.IsRecommended)
                                             {
-                                                label += " (Recommended)";
+                                                label += " (Recomendada)";
                                             }
                                             if (isSelected)
                                             {
@@ -250,13 +250,13 @@
                                 </div>
 
                                 <div class="mb-2">
-                                    <label class="form-label">Comment (optional):</label>
+                                    <label class="form-label">Comentario (opcional):</label>
                                     <textarea name="Comment" class="form-control form-control-sm" rows="2"
                                               maxlength="2000">@item.ReviewComment</textarea>
                                 </div>
 
                                 <button type="submit" data-item-id="@item.ItemId" class="btn btn-sm btn-primary submit-decision">
-                                    Save Decision
+                                    Guardar decisión
                                 </button>
                             </form>
                         </div>
@@ -272,22 +272,22 @@
     <div class="mt-4 d-flex gap-2">
         <form asp-action="SendBack" asp-route-id="@Model.ApplicationId" method="post">
             @Html.AntiForgeryToken()
-            <button type="submit" class="btn btn-warning" onclick="return confirm('Send this application back to the applicant?')">
-                <i class="ti ti-arrow-back-up me-1"></i>Send Back
+            <button type="submit" class="btn btn-warning" onclick="return confirm('¿Devolver esta solicitud al solicitante?')">
+                <i class="ti ti-arrow-back-up me-1"></i>Devolver
             </button>
         </form>
 
         <form asp-action="Finalize" asp-route-id="@Model.ApplicationId" method="post">
             @Html.AntiForgeryToken()
             <button type="submit" class="btn btn-success">
-                <i class="ti ti-check me-1"></i>Finalize Review
+                <i class="ti ti-check me-1"></i>Finalizar revisión
             </button>
         </form>
     </div>
 }
 
 <div class="mt-3">
-    <a asp-action="Index" class="btn btn-link">&larr; Back to Review Queue</a>
+    <a asp-action="Index" class="btn btn-link">&larr; Volver a la cola de revisión</a>
 </div>
 
 @section Scripts {

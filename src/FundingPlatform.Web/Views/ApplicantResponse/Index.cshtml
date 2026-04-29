@@ -2,30 +2,30 @@
 @model FundingPlatform.Web.ViewModels.ApplicantResponseViewModel
 
 @{
-    ViewData["Title"] = $"Application #{Model.ApplicationId} — Applicant Response";
+    ViewData["Title"] = $"Solicitud N.º {Model.ApplicationId} — Respuesta del solicitante";
 }
 
 <div class="applicant-response-header">
     @await Html.PartialAsync("Components/_PageHeader",
         new PageHeaderViewModel(
-            Title: $"Application #{Model.ApplicationId} — Applicant Response",
+            Title: $"Solicitud N.º {Model.ApplicationId} — Respuesta del solicitante",
             Breadcrumbs: new[]
             {
-                new BreadcrumbItem("My Applications", Url.Action("Index", "Application")),
-                new BreadcrumbItem($"Application #{Model.ApplicationId}", Url.Action("Details", "Application", new { id = Model.ApplicationId })),
-                new BreadcrumbItem("Response"),
+                new BreadcrumbItem("Mis solicitudes", Url.Action("Index", "Application")),
+                new BreadcrumbItem($"Solicitud N.º {Model.ApplicationId}", Url.Action("Details", "Application", new { id = Model.ApplicationId })),
+                new BreadcrumbItem("Respuesta"),
             }))
 </div>
 
 <div class="card mb-3">
     <div class="card-body">
-        <strong>State:</strong>
+        <strong>Estado:</strong>
         <span class="application-state">
             @await Html.PartialAsync("Components/_StatusPill", new StatusPillViewModel(Model.State))
         </span>
         @if (Model.SubmittedAt is not null)
         {
-            <span class="ms-3 submitted-at"><strong>Response submitted:</strong> @Model.SubmittedAt.Value.ToString("yyyy-MM-dd HH:mm")</span>
+            <span class="ms-3 submitted-at"><strong>Respuesta enviada:</strong> @Model.SubmittedAt.Value.ToString("dd/MM/yyyy HH:mm")</span>
         }
     </div>
 </div>
@@ -37,13 +37,13 @@
 @if (Model.State == ApplicationState.AgreementExecuted)
 {
     <div class="alert alert-success" data-testid="signing-banner-executed">
-        Your funding agreement has been executed.
+        Su convenio de financiamiento ha sido ejecutado.
     </div>
 }
 else if (Model.State == ApplicationState.ResponseFinalized && Model.HasFundingAgreement)
 {
     <div class="alert alert-primary" data-testid="signing-banner-ready">
-        Your funding agreement is ready to sign below.
+        Su convenio de financiamiento está listo para firmar a continuación.
     </div>
 }
 
@@ -54,12 +54,12 @@ else if (Model.State == ApplicationState.ResponseFinalized && Model.HasFundingAg
             <table class="table card-table table-vcenter response-items">
                 <thead>
                     <tr>
-                        <th>Item</th>
-                        <th>Reviewer Decision</th>
-                        <th>Supplier</th>
-                        <th>Amount</th>
-                        <th>Comment</th>
-                        <th>Your Decision</th>
+                        <th>Ítem</th>
+                        <th>Decisión del revisor</th>
+                        <th>Proveedor</th>
+                        <th>Monto</th>
+                        <th>Comentario</th>
+                        <th>Su decisión</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -99,7 +99,7 @@ else if (Model.State == ApplicationState.ResponseFinalized && Model.HasFundingAg
                                                id="accept-@item.ItemId"
                                                @(item.Decision == ItemResponseDecision.Accept ? "checked" : "")
                                                required>
-                                        <label class="form-check-label" for="accept-@item.ItemId">Accept</label>
+                                        <label class="form-check-label" for="accept-@item.ItemId">Aceptar</label>
                                     </div>
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input decision-reject"
@@ -109,7 +109,7 @@ else if (Model.State == ApplicationState.ResponseFinalized && Model.HasFundingAg
                                                id="reject-@item.ItemId"
                                                @(item.Decision == ItemResponseDecision.Reject ? "checked" : "")
                                                required>
-                                        <label class="form-check-label" for="reject-@item.ItemId">Reject</label>
+                                        <label class="form-check-label" for="reject-@item.ItemId">Rechazar</label>
                                     </div>
                                 }
                             </td>
@@ -124,7 +124,7 @@ else if (Model.State == ApplicationState.ResponseFinalized && Model.HasFundingAg
     {
         <div class="mt-3 d-flex justify-content-end">
             <button type="submit" class="btn btn-primary submit-response" id="submitResponseButton" disabled>
-                <i class="ti ti-send me-1"></i>Submit Response
+                <i class="ti ti-send me-1"></i>Enviar respuesta
             </button>
         </div>
     }
@@ -136,7 +136,7 @@ else if (Model.State == ApplicationState.ResponseFinalized && Model.HasFundingAg
         <form method="post" asp-action="OpenAppeal" asp-route-id="@Model.ApplicationId">
             @Html.AntiForgeryToken()
             <button type="submit" class="btn btn-warning open-appeal-button">
-                <i class="ti ti-alert-triangle me-1"></i>Open Appeal
+                <i class="ti ti-alert-triangle me-1"></i>Abrir apelación
             </button>
         </form>
     </div>
@@ -145,14 +145,14 @@ else if (Model.State == ApplicationState.ResponseFinalized && Model.HasFundingAg
 @if (Model.HasOpenAppeal)
 {
     <div class="alert alert-warning mt-3 appeal-frozen-banner">
-        An appeal is currently open. The application is frozen until the appeal is resolved.
-        <a asp-action="Appeal" asp-route-id="@Model.ApplicationId" class="alert-link">View dispute thread</a>
+        Hay una apelación abierta actualmente. La solicitud está bloqueada hasta que se resuelva la apelación.
+        <a asp-action="Appeal" asp-route-id="@Model.ApplicationId" class="alert-link">Ver hilo de la disputa</a>
     </div>
 }
 
 <div class="mt-3" id="funding-agreement-panel-container">
     <div data-async-panel-url="@Url.RouteUrl(new { controller = "FundingAgreement", action = "Panel", applicationId = Model.ApplicationId })">
-        Loading funding agreement panel...
+        Cargando panel del convenio de financiamiento...
     </div>
 </div>
 

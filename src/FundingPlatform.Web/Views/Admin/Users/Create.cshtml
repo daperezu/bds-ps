@@ -1,18 +1,25 @@
 @using FundingPlatform.Web.ViewModels.Admin
 @model AdminUserCreateViewModel
 @{
-    ViewData["Title"] = "Create user";
+    ViewData["Title"] = "Crear usuario";
     var roles = new[] { "Applicant", "Reviewer", "Admin" };
+    string RoleLabel(string r) => r switch
+    {
+        "Applicant" => "Solicitante",
+        "Reviewer" => "Revisor",
+        "Admin" => "Administrador",
+        _ => r,
+    };
 }
 
 <div data-testid="admin-area">
     @await Html.PartialAsync("Components/_PageHeader",
         new PageHeaderViewModel(
-            Title: "Create user",
+            Title: "Crear usuario",
             Breadcrumbs: new[]
             {
-                new BreadcrumbItem("Users", Url.Action("Index", "AdminUsers")),
-                new BreadcrumbItem("Create user"),
+                new BreadcrumbItem("Usuarios", Url.Action("Index", "AdminUsers")),
+                new BreadcrumbItem("Crear usuario"),
             }))
 
     <form method="post" asp-action="Create" class="row" data-testid="admin-user-create-form">
@@ -20,49 +27,49 @@
         <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
         <div class="col-md-6 mb-3">
-            <label class="form-label" asp-for="FirstName">First name</label>
+            <label class="form-label" asp-for="FirstName">Nombre</label>
             <input asp-for="FirstName" class="form-control" />
             <span asp-validation-for="FirstName" class="text-danger"></span>
         </div>
         <div class="col-md-6 mb-3">
-            <label class="form-label" asp-for="LastName">Last name</label>
+            <label class="form-label" asp-for="LastName">Apellidos</label>
             <input asp-for="LastName" class="form-control" />
             <span asp-validation-for="LastName" class="text-danger"></span>
         </div>
         <div class="col-md-6 mb-3">
-            <label class="form-label" asp-for="Email">Email</label>
+            <label class="form-label" asp-for="Email">Correo electrónico</label>
             <input asp-for="Email" class="form-control" type="email" />
             <span asp-validation-for="Email" class="text-danger"></span>
         </div>
         <div class="col-md-6 mb-3">
-            <label class="form-label" asp-for="Phone">Phone (optional)</label>
+            <label class="form-label" asp-for="Phone">Teléfono (opcional)</label>
             <input asp-for="Phone" class="form-control" type="tel" />
             <span asp-validation-for="Phone" class="text-danger"></span>
         </div>
         <div class="col-md-6 mb-3">
-            <label class="form-label" asp-for="Role">Role</label>
+            <label class="form-label" asp-for="Role">Rol</label>
             <select asp-for="Role" class="form-select" id="roleSelect" data-testid="admin-user-role">
                 @foreach (var r in roles)
                 {
-                    <option value="@r" selected="@(Model.Role == r)">@r</option>
+                    <option value="@r" selected="@(Model.Role == r)">@RoleLabel(r)</option>
                 }
             </select>
             <span asp-validation-for="Role" class="text-danger"></span>
         </div>
         <div class="col-md-6 mb-3" data-testid="legalid-field" id="legalIdField">
-            <label class="form-label" asp-for="LegalId">Legal ID (required for Applicant)</label>
+            <label class="form-label" asp-for="LegalId">Cédula (obligatoria para solicitantes)</label>
             <input asp-for="LegalId" class="form-control" />
             <span asp-validation-for="LegalId" class="text-danger"></span>
         </div>
         <div class="col-md-6 mb-3">
-            <label class="form-label" asp-for="InitialPassword">Initial password</label>
+            <label class="form-label" asp-for="InitialPassword">Contraseña inicial</label>
             <input asp-for="InitialPassword" class="form-control" type="password" />
             <span asp-validation-for="InitialPassword" class="text-danger"></span>
         </div>
 
         <div class="d-flex justify-content-end gap-2 mt-2">
-            <a class="btn btn-secondary" href="@Url.Action("Index", "AdminUsers")">Cancel</a>
-            <button type="submit" class="btn btn-primary" data-testid="admin-user-create-submit">Create user</button>
+            <a class="btn btn-secondary" href="@Url.Action("Index", "AdminUsers")">Cancelar</a>
+            <button type="submit" class="btn btn-primary" data-testid="admin-user-create-submit">Crear usuario</button>
         </div>
     </form>
 </div>
