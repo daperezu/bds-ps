@@ -1,6 +1,9 @@
 @model FundingPlatform.Web.ViewModels.FundingAgreementDocumentViewModel
 @{
-    var culture = System.Globalization.CultureInfo.GetCultureInfo(Model.LocaleCode);
+    // Spec 012 / FR-017 / FR-018 / SC-005: PDF must render 1,234.56 and dd/MM/yyyy.
+    // Raw es-CR CultureInfo defaults to '1 234 567,89' and 'd/M/yyyy'; we use the
+    // format-overridden factory so the PDF and the UI share one rendering contract.
+    var culture = FundingPlatform.Web.Localization.EsCrCultureFactory.Build();
 }
 
 <h1>Convenio de Financiamiento</h1>

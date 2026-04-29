@@ -56,7 +56,7 @@ public class ApplicantResponseController : Controller
         }
         else
         {
-            TempData["SuccessMessage"] = "Response submitted.";
+            TempData["SuccessMessage"] = "Respuesta enviada.";
         }
 
         return RedirectToAction(nameof(Index), new { id });
@@ -78,7 +78,7 @@ public class ApplicantResponseController : Controller
             return RedirectToAction(nameof(Index), new { id });
         }
 
-        TempData["SuccessMessage"] = "Appeal opened.";
+        TempData["SuccessMessage"] = "Apelación abierta.";
         return RedirectToAction(nameof(Appeal), new { id });
     }
 
@@ -117,7 +117,7 @@ public class ApplicantResponseController : Controller
         }
         else
         {
-            TempData["SuccessMessage"] = "Message posted.";
+            TempData["SuccessMessage"] = "Mensaje publicado.";
         }
 
         return RedirectToAction(nameof(Appeal), new { id });
@@ -138,7 +138,16 @@ public class ApplicantResponseController : Controller
             return RedirectToAction(nameof(Appeal), new { id });
         }
 
-        TempData["SuccessMessage"] = $"Apelación resuelta como {resolution}.";
+        // Spec 012 / FR-010 / FR-014: route the enum through a Spanish display
+        // string instead of letting AppealResolution.ToString() reach the UI.
+        var resolutionLabel = resolution switch
+        {
+            AppealResolution.Uphold => "Confirmada",
+            AppealResolution.GrantReopenToDraft => "Concedida (reabrir como borrador)",
+            AppealResolution.GrantReopenToReview => "Concedida (reabrir en revisión)",
+            _ => resolution.ToString(),
+        };
+        TempData["SuccessMessage"] = $"Apelación resuelta como {resolutionLabel}.";
 
         return resolution switch
         {

@@ -140,7 +140,7 @@
     }
   }
 
-  root.ForgeMotion = {
+  root.PlatformMotion = {
     prefersReducedMotion,
     readMotionToken,
     mountTickers,
