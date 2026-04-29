@@ -162,7 +162,7 @@ public class AdminReportsController : Controller
         }
         catch (ArgumentOutOfRangeException)
         {
-            ViewData["ReportFilterError"] = "Threshold (days) must be between 1 and 365 inclusive.";
+            ViewData["ReportFilterError"] = "El umbral (días) debe estar entre 1 y 365 inclusive.";
             req.Threshold = 14;
             var result = await _reportsService.ListAgingApplicationsAsync(req, ct);
             var totalPages = (int)Math.Ceiling((double)result.TotalCount / AdminReportsService.PageSize);

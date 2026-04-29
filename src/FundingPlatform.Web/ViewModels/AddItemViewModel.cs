@@ -7,13 +7,17 @@ public class AddItemViewModel
 {
     public int ApplicationId { get; set; }
 
-    [Required, Display(Name = "Product Name"), MaxLength(500)]
+    [Required(ErrorMessage = "El nombre del producto es obligatorio.")]
+    [Display(Name = "Nombre del producto")]
+    [MaxLength(500, ErrorMessage = "El nombre del producto debe tener máximo {1} caracteres.")]
     public string ProductName { get; set; } = string.Empty;
 
-    [Required, Display(Name = "Category")]
+    [Required(ErrorMessage = "La categoría es obligatoria.")]
+    [Display(Name = "Categoría")]
     public int CategoryId { get; set; }
 
-    [Required, Display(Name = "Technical Specifications")]
+    [Required(ErrorMessage = "Las especificaciones técnicas son obligatorias.")]
+    [Display(Name = "Especificaciones técnicas")]
     public string TechnicalSpecifications { get; set; } = string.Empty;
 
     public List<SelectListItem> Categories { get; set; } = new();

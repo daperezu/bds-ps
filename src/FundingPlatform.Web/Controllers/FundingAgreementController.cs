@@ -34,6 +34,8 @@ public class FundingAgreementController : Controller
     private readonly IOptions<FundingAgreementOptions> _agreementOptions;
     private readonly ILogger<FundingAgreementController> _logger;
 
+    private const string SignedPdfRequiredMessage = "Se requiere un archivo PDF firmado.";
+
     public FundingAgreementController(
         FundingAgreementService service,
         SignedUploadService signedUploadService,
@@ -133,7 +135,7 @@ public class FundingAgreementController : Controller
         else if (!application.CanGenerateFundingAgreement(out var precondErrors))
         {
             TempData["FundingAgreementError"] = precondErrors.FirstOrDefault()
-                ?? "Funding agreement preconditions are not met.";
+                ?? "No se cumplen las precondiciones del convenio de financiamiento.";
             return RedirectToRoute(new { controller = "FundingAgreement", action = "Details", applicationId });
         }
 
@@ -152,7 +154,7 @@ public class FundingAgreementController : Controller
             _logger.LogError(ex,
                 "Funding agreement PDF rendering failed. applicationId={ApplicationId}", applicationId);
             TempData["FundingAgreementError"] =
-                "The agreement could not be generated. Please try again or contact support.";
+                "No se pudo generar el convenio. Inténtelo nuevamente o contacte al soporte.";
             return RedirectToRoute(new { controller = "FundingAgreement", action = "Details", applicationId });
         }
 
@@ -185,7 +187,7 @@ public class FundingAgreementController : Controller
             }
 
             TempData["FundingAgreementError"] = persist.Errors.FirstOrDefault()
-                ?? "Funding agreement generation failed.";
+                ?? "Falló la generación del convenio de financiamiento.";
             return RedirectToRoute(new { controller = "FundingAgreement", action = "Details", applicationId });
         }
 
@@ -200,7 +202,7 @@ public class FundingAgreementController : Controller
             }
         }
 
-        TempData["FundingAgreementSuccess"] = "Funding agreement generated.";
+        TempData["FundingAgreementSuccess"] = "Convenio de financiamiento generado.";
         return RedirectToRoute(new { controller = "FundingAgreement", action = "Details", applicationId });
     }
 
@@ -258,7 +260,7 @@ public class FundingAgreementController : Controller
     {
         if (!ModelState.IsValid || model.File is null || model.File.Length == 0)
         {
-            TempData["FundingAgreementError"] = "A signed PDF file is required.";
+            TempData["FundingAgreementError"] = SignedPdfRequiredMessage;
             return RedirectToRoute(new { controller = "FundingAgreement", action = "Details", applicationId });
         }
 
@@ -277,7 +279,7 @@ public class FundingAgreementController : Controller
         var result = await _signedUploadService.UploadAsync(command);
 
         return RenderSignedUploadRedirect(applicationId, result,
-            successMessage: "Signed agreement uploaded. Awaiting reviewer decision.");
+            successMessage: "Convenio firmado cargado. A la espera de la decisión del revisor.");
     }
 
     [HttpPost("ReplaceUpload")]
@@ -288,7 +290,7 @@ public class FundingAgreementController : Controller
     {
         if (!ModelState.IsValid || model.File is null || model.File.Length == 0)
         {
-            TempData["FundingAgreementError"] = "A signed PDF file is required.";
+            TempData["FundingAgreementError"] = SignedPdfRequiredMessage;
             return RedirectToRoute(new { controller = "FundingAgreement", action = "Details", applicationId });
         }
 
@@ -307,7 +309,7 @@ public class FundingAgreementController : Controller
 
         var result = await _signedUploadService.ReplaceAsync(command);
         return RenderSignedUploadRedirect(applicationId, result,
-            successMessage: "Signed agreement replaced.");
+            successMessage: "Convenio firmado reemplazado.");
     }
 
     [HttpPost("WithdrawUpload")]
@@ -320,7 +322,7 @@ public class FundingAgreementController : Controller
         var result = await _signedUploadService.WithdrawAsync(command);
 
         return RenderSignedUploadRedirect(applicationId, result,
-            successMessage: "Signed upload withdrawn.");
+            successMessage: "Carga firmada retirada.");
     }
 
     [HttpPost("Approve")]
@@ -347,7 +349,7 @@ public class FundingAgreementController : Controller
 
         var result = await _signedUploadService.ApproveAsync(command);
         return RenderSignedUploadRedirect(applicationId, result,
-            successMessage: "Agreement executed.");
+            successMessage: "Convenio ejecutado.");
     }
 
     [HttpPost("Reject")]
@@ -374,7 +376,7 @@ public class FundingAgreementController : Controller
 
         var result = await _signedUploadService.RejectAsync(command);
         return RenderSignedUploadRedirect(applicationId, result,
-            successMessage: "Upload rejected; the applicant can submit a new one.");
+            successMessage: "Carga rechazada; el solicitante puede enviar una nueva.");
     }
 
     [HttpGet("DownloadSigned/{signedUploadId:int}")]
@@ -483,7 +485,7 @@ public class FundingAgreementController : Controller
             return StatusCode(409);
         }
 
-        TempData["FundingAgreementError"] = result.Error ?? "Signed upload failed.";
+        TempData["FundingAgreementError"] = result.Error ?? "La carga firmada falló.";
         if (result.Error == "Not found." || result.Error is null)
         {
             return NotFound();

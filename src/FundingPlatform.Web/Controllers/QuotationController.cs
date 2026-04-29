@@ -21,6 +21,8 @@ public class QuotationController : Controller
     private readonly AppDbContext _dbContext;
     private readonly IOptions<AdminReportsOptions> _adminReportsOptions;
 
+    private const string QuotationFileRequiredMessage = "Se requiere el archivo de la cotización.";
+
     public QuotationController(
         ApplicationService applicationService,
         ISystemConfigurationRepository systemConfigurationRepository,
@@ -66,7 +68,7 @@ public class QuotationController : Controller
 
         if (model.QuotationFile is null || model.QuotationFile.Length == 0)
         {
-            ModelState.AddModelError(nameof(model.QuotationFile), "A quotation file is required.");
+            ModelState.AddModelError(nameof(model.QuotationFile), QuotationFileRequiredMessage);
             model.ApplicationId = appId;
             model.ItemId = itemId;
             return View(model);
@@ -100,7 +102,7 @@ public class QuotationController : Controller
             using var stream = model.QuotationFile.OpenReadStream();
             await _applicationService.AddSupplierQuotationAsync(command, stream);
 
-            TempData["SuccessMessage"] = "Quotation added successfully.";
+            TempData["SuccessMessage"] = "Cotización agregada con éxito.";
             return RedirectToAction("Details", "Application", new { id = appId });
         }
         catch (InvalidOperationException ex)
@@ -120,7 +122,7 @@ public class QuotationController : Controller
 
         if (quotationFile is null || quotationFile.Length == 0)
         {
-            TempData["ErrorMessage"] = "A quotation file is required.";
+            TempData["ErrorMessage"] = QuotationFileRequiredMessage;
             return RedirectToAction("Details", "Application", new { id = appId });
         }
 
@@ -144,7 +146,7 @@ public class QuotationController : Controller
         using var stream = quotationFile.OpenReadStream();
         await _applicationService.ReplaceQuotationDocumentAsync(command, stream);
 
-        TempData["SuccessMessage"] = "Quotation document replaced successfully.";
+        TempData["SuccessMessage"] = "Documento de cotización reemplazado con éxito.";
         return RedirectToAction("Details", "Application", new { id = appId });
     }
 
@@ -156,7 +158,7 @@ public class QuotationController : Controller
 
         await _applicationService.RemoveQuotationAsync(appId, itemId, quotationId);
 
-        TempData["SuccessMessage"] = "Quotation removed successfully.";
+        TempData["SuccessMessage"] = "Cotización eliminada con éxito.";
         return RedirectToAction("Details", "Application", new { id = appId });
     }
 
@@ -171,7 +173,7 @@ public class QuotationController : Controller
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (allowedTypes.Length > 0 && !allowedTypes.Contains(extension))
             {
-                return $"File type '{extension}' is not allowed. Allowed types: {string.Join(", ", allowedTypes)}.";
+                return $"El tipo de archivo '{extension}' no está permitido. Tipos permitidos: {string.Join(", ", allowedTypes)}.";
             }
         }
 
@@ -180,7 +182,7 @@ public class QuotationController : Controller
             var maxSizeBytes = (long)(maxSizeMb * 1024 * 1024);
             if (file.Length > maxSizeBytes)
             {
-                return $"File size exceeds the maximum allowed size of {maxSizeMb} MB.";
+                return $"El tamaño del archivo excede el máximo permitido de {maxSizeMb} MB.";
             }
         }
 

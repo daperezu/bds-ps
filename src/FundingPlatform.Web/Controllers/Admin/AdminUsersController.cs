@@ -71,7 +71,7 @@ public class AdminUsersController : Controller
     {
         if (string.Equals(vm.Role, "Applicant", StringComparison.Ordinal) && string.IsNullOrWhiteSpace(vm.LegalId))
         {
-            ModelState.AddModelError(nameof(vm.LegalId), "Legal ID is required for Applicant role.");
+            ModelState.AddModelError(nameof(vm.LegalId), "La cédula es obligatoria para el rol Solicitante.");
         }
         if (!ModelState.IsValid)
         {
@@ -89,7 +89,7 @@ public class AdminUsersController : Controller
                 AddDomainErrors(result.Errors);
                 return View(vm);
             }
-            TempData["SuccessMessage"] = $"User '{vm.Email}' created.";
+            TempData["SuccessMessage"] = $"Usuario '{vm.Email}' creado.";
             return RedirectToAction(nameof(Index));
         }
         catch (SentinelUserModificationException)
@@ -137,7 +137,7 @@ public class AdminUsersController : Controller
         }
         if (string.Equals(vm.Role, "Applicant", StringComparison.Ordinal) && string.IsNullOrWhiteSpace(vm.LegalId))
         {
-            ModelState.AddModelError(nameof(vm.LegalId), "Legal ID is required for Applicant role.");
+            ModelState.AddModelError(nameof(vm.LegalId), "La cédula es obligatoria para el rol Solicitante.");
         }
         if (!ModelState.IsValid)
         {
@@ -155,7 +155,7 @@ public class AdminUsersController : Controller
                 AddDomainErrors(result.Errors);
                 return View(vm);
             }
-            TempData["SuccessMessage"] = $"User '{vm.Email}' updated.";
+            TempData["SuccessMessage"] = $"Usuario '{vm.Email}' actualizado.";
             return RedirectToAction(nameof(Index));
         }
         catch (SentinelUserModificationException)
@@ -185,11 +185,11 @@ public class AdminUsersController : Controller
             var result = await _service.DisableUserAsync(id, actorId, ct);
             if (!result.Succeeded)
             {
-                TempData["ErrorMessage"] = result.Errors.FirstOrDefault()?.Message ?? "Could not disable user.";
+                TempData["ErrorMessage"] = result.Errors.FirstOrDefault()?.Message ?? "No se pudo inhabilitar al usuario.";
             }
             else
             {
-                TempData["SuccessMessage"] = "User disabled.";
+                TempData["SuccessMessage"] = "Usuario inhabilitado.";
             }
         }
         catch (SentinelUserModificationException)
@@ -216,8 +216,8 @@ public class AdminUsersController : Controller
         {
             var result = await _service.EnableUserAsync(id, actorId, ct);
             TempData["SuccessMessage"] = result.Succeeded
-                ? "User enabled."
-                : (result.Errors.FirstOrDefault()?.Message ?? "Could not enable user.");
+                ? "Usuario habilitado."
+                : (result.Errors.FirstOrDefault()?.Message ?? "No se pudo habilitar al usuario.");
         }
         catch (SentinelUserModificationException)
         {
@@ -262,7 +262,7 @@ public class AdminUsersController : Controller
                 AddDomainErrors(result.Errors);
                 return View(vm);
             }
-            TempData["SuccessMessage"] = "Password reset. The user must change it on next sign-in.";
+            TempData["SuccessMessage"] = "Contraseña restablecida. El usuario debe cambiarla al iniciar sesión.";
             return RedirectToAction(nameof(Index));
         }
         catch (SentinelUserModificationException)

@@ -138,7 +138,7 @@ public class ApplicantResponseController : Controller
             return RedirectToAction(nameof(Appeal), new { id });
         }
 
-        TempData["SuccessMessage"] = $"Appeal resolved as {resolution}.";
+        TempData["SuccessMessage"] = $"Apelación resuelta como {resolution}.";
 
         return resolution switch
         {

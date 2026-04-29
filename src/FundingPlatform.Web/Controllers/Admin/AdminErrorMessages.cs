@@ -3,20 +3,20 @@ namespace FundingPlatform.Web.Controllers.Admin;
 internal static class AdminErrorMessages
 {
     public const string SentinelImmutable =
-        "This account is a system account and cannot be modified.";
+        "Esta cuenta es del sistema y no se puede modificar.";
 
     public const string LastAdminProtected =
-        "Cannot disable the last remaining administrator. Promote another user to Admin first.";
+        "No se puede inhabilitar al último administrador. Promueva a otro usuario al rol Administrador primero.";
 
     public const string SelfDisable =
-        "Administrators cannot disable their own account.";
+        "Los administradores no pueden inhabilitar su propia cuenta.";
 
     public const string SelfChangeRole =
-        "Administrators cannot change their own role from the admin area.";
+        "Los administradores no pueden cambiar su propio rol desde el área de administración.";
 
     public const string SelfChangeEmail =
-        "Administrators cannot change their own email from the admin area.";
+        "Los administradores no pueden cambiar su propio correo electrónico desde el área de administración.";
 
     public const string SelfResetPassword =
-        "Administrators cannot reset their own password from the admin area.";
+        "Los administradores no pueden restablecer su propia contraseña desde el área de administración.";
 }

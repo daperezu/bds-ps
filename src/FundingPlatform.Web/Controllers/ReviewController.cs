@@ -125,7 +125,7 @@ public class ReviewController : Controller
         if (error is not null)
             TempData["ErrorMessage"] = error;
         else
-            TempData["SuccessMessage"] = "Item decision recorded.";
+            TempData["SuccessMessage"] = "Decisión del ítem registrada.";
 
         return RedirectToAction(nameof(Review), new { id });
     }
@@ -140,8 +140,8 @@ public class ReviewController : Controller
             TempData["ErrorMessage"] = error;
         else
             TempData["SuccessMessage"] = IsNotEquivalent
-                ? "Item flagged as not technically equivalent."
-                : "Technical equivalence flag cleared.";
+                ? "Ítem marcado como no técnicamente equivalente."
+                : "Marca de equivalencia técnica eliminada.";
 
         return RedirectToAction(nameof(Review), new { id });
     }
@@ -158,7 +158,7 @@ public class ReviewController : Controller
             return RedirectToAction(nameof(Review), new { id });
         }
 
-        TempData["SuccessMessage"] = "Application sent back to applicant.";
+        TempData["SuccessMessage"] = "Solicitud devuelta al solicitante.";
         return RedirectToAction(nameof(Index));
     }
 
@@ -187,7 +187,7 @@ public class ReviewController : Controller
             return View(nameof(Review), viewModel);
         }
 
-        TempData["SuccessMessage"] = "Review finalized. Application resolved.";
+        TempData["SuccessMessage"] = "Revisión finalizada. Solicitud resuelta.";
         return RedirectToAction(nameof(Index));
     }
 

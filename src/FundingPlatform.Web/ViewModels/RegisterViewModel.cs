@@ -4,21 +4,35 @@ namespace FundingPlatform.Web.ViewModels;
 
 public class RegisterViewModel
 {
-    [Required, EmailAddress]
+    [Required(ErrorMessage = "El correo electrónico es obligatorio.")]
+    [EmailAddress(ErrorMessage = "El correo electrónico no es válido.")]
+    [Display(Name = "Correo electrónico")]
     public string Email { get; set; } = string.Empty;
 
-    [Required, DataType(DataType.Password), MinLength(6)]
+    [Required(ErrorMessage = "La contraseña es obligatoria.")]
+    [DataType(DataType.Password)]
+    [MinLength(6, ErrorMessage = "La contraseña debe tener al menos {1} caracteres.")]
+    [Display(Name = "Contraseña")]
     public string Password { get; set; } = string.Empty;
 
-    [Required, DataType(DataType.Password), Display(Name = "Confirm Password"), Compare("Password")]
+    [Required(ErrorMessage = "Debe confirmar la contraseña.")]
+    [DataType(DataType.Password)]
+    [Display(Name = "Confirmar contraseña")]
+    [Compare("Password", ErrorMessage = "Las contraseñas no coinciden.")]
     public string ConfirmPassword { get; set; } = string.Empty;
 
-    [Required, Display(Name = "First Name"), MaxLength(100)]
+    [Required(ErrorMessage = "El nombre es obligatorio.")]
+    [Display(Name = "Nombre")]
+    [MaxLength(100, ErrorMessage = "El nombre debe tener máximo {1} caracteres.")]
     public string FirstName { get; set; } = string.Empty;
 
-    [Required, Display(Name = "Last Name"), MaxLength(100)]
+    [Required(ErrorMessage = "Los apellidos son obligatorios.")]
+    [Display(Name = "Apellidos")]
+    [MaxLength(100, ErrorMessage = "Los apellidos deben tener máximo {1} caracteres.")]
     public string LastName { get; set; } = string.Empty;
 
-    [Required, Display(Name = "Legal ID"), MaxLength(50)]
+    [Required(ErrorMessage = "La cédula es obligatoria.")]
+    [Display(Name = "Cédula")]
+    [MaxLength(50, ErrorMessage = "La cédula debe tener máximo {1} caracteres.")]
     public string LegalId { get; set; } = string.Empty;
 }
