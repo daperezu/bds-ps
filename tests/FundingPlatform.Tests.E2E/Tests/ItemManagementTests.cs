@@ -32,7 +32,7 @@ public class ItemManagementTests : AuthenticatedTestBase
         Assert.That(appIdMatch.Success, Is.True, "Should be on application details page with ID");
 
         // Verify application was created with Draft status
-        var statusBadge = Page.Locator("[data-testid=status-pill]:has-text('Draft')");
+        var statusBadge = Page.Locator("[data-testid=status-pill]:has-text('Borrador')");
         await Expect(statusBadge).ToBeVisibleAsync();
 
         // Add an item
@@ -73,7 +73,7 @@ public class ItemManagementTests : AuthenticatedTestBase
         await itemPage.AddItemAsync(appId, "Original Product", 0, "Original specs", BaseUrl);
 
         // Find the edit button for the item and click it
-        var editButton = Page.Locator("a:has-text('Edit')").First;
+        var editButton = Page.Locator("a:has-text('Editar')").First;
         await editButton.ClickAsync();
 
         // Edit the item

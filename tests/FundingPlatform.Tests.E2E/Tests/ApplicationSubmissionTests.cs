@@ -47,7 +47,7 @@ public class ApplicationSubmissionTests : AuthenticatedTestBase
         var appId = int.Parse(appIdMatch.Groups[1].Value);
 
         // Verify Draft status
-        var draftBadge = Page.Locator("[data-testid=status-pill]:has-text('Draft')");
+        var draftBadge = Page.Locator("[data-testid=status-pill]:has-text('Borrador')");
         await Expect(draftBadge).ToBeVisibleAsync();
 
         // Add an item
@@ -56,7 +56,7 @@ public class ApplicationSubmissionTests : AuthenticatedTestBase
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
         // Add first supplier with quotation
-        var addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        var addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await Expect(addSupplierLink).ToBeVisibleAsync();
         await addSupplierLink.ClickAsync();
 
@@ -75,7 +75,7 @@ public class ApplicationSubmissionTests : AuthenticatedTestBase
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
         // Add second supplier with quotation (MinQuotationsPerItem = 2)
-        var addSupplierLink2 = Page.Locator("a:has-text('Add Supplier')").First;
+        var addSupplierLink2 = Page.Locator("a:has-text('Agregar proveedor')").First;
         await Expect(addSupplierLink2).ToBeVisibleAsync();
         await addSupplierLink2.ClickAsync();
 
@@ -93,7 +93,7 @@ public class ApplicationSubmissionTests : AuthenticatedTestBase
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
         // Set impact assessment
-        var impactButton = Page.Locator("a:has-text('Impact')").First;
+        var impactButton = Page.Locator("a:has-text('Impacto')").First;
         await impactButton.ClickAsync();
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/\d+/Item/\d+/Impact"));
 
@@ -127,7 +127,7 @@ public class ApplicationSubmissionTests : AuthenticatedTestBase
             }
         }
 
-        var saveImpactButton = Page.Locator("button[type=submit]:has-text('Save Impact')");
+        var saveImpactButton = Page.Locator("button[type=submit]:has-text('Guardar impacto')");
         await saveImpactButton.ClickAsync();
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
@@ -136,7 +136,7 @@ public class ApplicationSubmissionTests : AuthenticatedTestBase
         await Expect(completeBadge).ToBeVisibleAsync();
 
         // Submit the application
-        var submitButton = Page.Locator("button[type=submit]:has-text('Submit Application')");
+        var submitButton = Page.Locator("button[type=submit]:has-text('Enviar solicitud')");
         await Expect(submitButton).ToBeVisibleAsync();
         await submitButton.ClickAsync();
 
@@ -146,11 +146,11 @@ public class ApplicationSubmissionTests : AuthenticatedTestBase
         await Expect(successAlert).ToBeVisibleAsync();
 
         // Verify state changed to Submitted
-        var submittedBadge = Page.Locator("[data-testid=status-pill]:has-text('Submitted')");
+        var submittedBadge = Page.Locator("[data-testid=status-pill]:has-text('Enviada')");
         await Expect(submittedBadge).ToBeVisibleAsync();
 
         // Verify submit button is no longer visible
-        var submitButtonAfter = Page.Locator("button[type=submit]:has-text('Submit Application')");
+        var submitButtonAfter = Page.Locator("button[type=submit]:has-text('Enviar solicitud')");
         await Expect(submitButtonAfter).Not.ToBeVisibleAsync();
     }
 
@@ -180,7 +180,7 @@ public class ApplicationSubmissionTests : AuthenticatedTestBase
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
         // Try to submit
-        var submitButton = Page.Locator("button[type=submit]:has-text('Submit Application')");
+        var submitButton = Page.Locator("button[type=submit]:has-text('Enviar solicitud')");
         await Expect(submitButton).ToBeVisibleAsync();
         await submitButton.ClickAsync();
 
@@ -194,7 +194,7 @@ public class ApplicationSubmissionTests : AuthenticatedTestBase
         await Expect(quotationError).ToBeVisibleAsync();
 
         // Verify state is still Draft
-        var draftBadge = Page.Locator("[data-testid=status-pill]:has-text('Draft')");
+        var draftBadge = Page.Locator("[data-testid=status-pill]:has-text('Borrador')");
         await Expect(draftBadge).ToBeVisibleAsync();
     }
 
@@ -217,7 +217,7 @@ public class ApplicationSubmissionTests : AuthenticatedTestBase
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
         // Try to submit (button should be visible even with 0 items for error feedback)
-        var submitButton = Page.Locator("button[type=submit]:has-text('Submit Application')");
+        var submitButton = Page.Locator("button[type=submit]:has-text('Enviar solicitud')");
         await Expect(submitButton).ToBeVisibleAsync();
         await submitButton.ClickAsync();
 
@@ -231,7 +231,7 @@ public class ApplicationSubmissionTests : AuthenticatedTestBase
         await Expect(itemError).ToBeVisibleAsync();
 
         // Verify state is still Draft
-        var draftBadge = Page.Locator("[data-testid=status-pill]:has-text('Draft')");
+        var draftBadge = Page.Locator("[data-testid=status-pill]:has-text('Borrador')");
         await Expect(draftBadge).ToBeVisibleAsync();
     }
 }

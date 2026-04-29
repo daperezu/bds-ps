@@ -144,7 +144,7 @@ public class GenerateAgreementQueueTests : AuthenticatedTestBase
         await Expect(Page.Locator(
             $"[data-testid=generate-agreement-row][data-application-id='{applicationId}']")).ToBeVisibleAsync();
         await Page.Locator(
-            $"[data-testid=generate-agreement-row][data-application-id='{applicationId}'] a:has-text('Open')")
+            $"[data-testid=generate-agreement-row][data-application-id='{applicationId}'] a:has-text('Abierta')")
             .ClickAsync();
 
         Assert.That(Regex.IsMatch(Page.Url, $@"/Applications/{applicationId}/FundingAgreement"), Is.True,

@@ -176,17 +176,17 @@ public class SigningWayfindingTests : AuthenticatedTestBase
         await itemPage.AddItemAsync(appId, "SW Item", 0, "Specs", BaseUrl);
 
         var supplierPage = new SupplierPage(Page);
-        var addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        var addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
         await supplierPage.FillSupplierFormAsync($"SW1-{_uniqueId}", "Supplier Alpha", 900m, "2027-12-31", _quotationFilePath);
         await supplierPage.SubmitAsync();
 
-        addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
         await supplierPage.FillSupplierFormAsync($"SW2-{_uniqueId}", "Supplier Beta", 1100m, "2027-12-31", _quotationFilePath);
         await supplierPage.SubmitAsync();
 
-        var impactButton = Page.Locator("a:has-text('Impact')").First;
+        var impactButton = Page.Locator("a:has-text('Impacto')").First;
         await impactButton.ClickAsync();
         await PickFirstImpactTemplateAsync();
         var paramInputs = Page.Locator(".parameter-field input.form-control");
@@ -197,11 +197,11 @@ public class SigningWayfindingTests : AuthenticatedTestBase
             var inputType = await input.GetAttributeAsync("type");
             await input.FillAsync(inputType == "number" ? "100" : inputType == "date" ? "2026-12-31" : "Test value");
         }
-        await Page.Locator("button[type=submit]:has-text('Save Impact')").ClickAsync();
+        await Page.Locator("button[type=submit]:has-text('Guardar impacto')").ClickAsync();
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
-        await Page.Locator("button[type=submit]:has-text('Submit Application')").ClickAsync();
-        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Submitted')")).ToBeVisibleAsync();
+        await Page.Locator("button[type=submit]:has-text('Enviar solicitud')").ClickAsync();
+        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Enviada')")).ToBeVisibleAsync();
         await Page.Locator("form[action*='Account/Logout'] button[type=submit]").ClickAsync();
 
         await RegisterUserAsync(Page, _reviewerEmail, DefaultPassword, "Reviewer", "Wayfinding", $"SWR-{_uniqueId}");

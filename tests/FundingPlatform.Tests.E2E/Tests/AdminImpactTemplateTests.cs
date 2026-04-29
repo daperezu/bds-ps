@@ -87,7 +87,7 @@ public class AdminImpactTemplateTests : AuthenticatedTestBase
         await Expect(paramCountCell).ToHaveTextAsync("2");
 
         // Verify status is Active
-        var activeBadge = templateRow.Locator(".status:has-text('Active')");
+        var activeBadge = templateRow.Locator(".status:has-text('Activo')");
         await Expect(activeBadge).ToBeVisibleAsync();
     }
 
@@ -116,7 +116,7 @@ public class AdminImpactTemplateTests : AuthenticatedTestBase
         // Click Edit on the template we just created
         var templateRow = Page.Locator($"table tbody tr:has-text('{templateName}')");
         await Expect(templateRow).ToBeVisibleAsync();
-        var editButton = templateRow.Locator("a:has-text('Edit')");
+        var editButton = templateRow.Locator("a:has-text('Editar')");
         await editButton.ClickAsync();
 
         await Expect(Page).ToHaveURLAsync(new Regex("/Admin/EditTemplate/\\d+"));
