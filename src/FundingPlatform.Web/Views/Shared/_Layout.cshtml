@@ -42,11 +42,13 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Funding Platform</title>
+    <title>@ViewData["Title"] - Forge</title>
+    <link rel="icon" type="image/svg+xml" href="~/lib/brand/favicons/favicon.svg" />
+    @* tokens.css MUST load BEFORE Tabler so the --tblr-* bridge in tokens.css applies (FR-008). *@
+    <link rel="stylesheet" href="~/css/tokens.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/tabler/dist/css/tabler.min.css" />
     <link rel="stylesheet" href="~/lib/tabler/dist/css/tabler-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/FundingPlatform.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
     <div class="page">
@@ -58,7 +60,7 @@
                         <span class="navbar-toggler-icon"></span>
                     </button>
                     <h1 class="navbar-brand navbar-brand-autodark">
-                        <a href="@Url.Action("Index", "Home")">Funding Platform</a>
+                        <a href="@Url.Action("Index", "Home")" class="fl-font-display">Forge</a>
                     </h1>
                     <div class="collapse navbar-collapse" id="sidebar-menu">
                         <ul class="navbar-nav pt-lg-3">
@@ -138,7 +140,7 @@
             </div>
             <footer class="footer footer-transparent d-print-none">
                 <div class="container-xl">
-                    <div class="text-secondary text-center py-3">&copy; 2026 Funding Platform</div>
+                    <div class="text-secondary text-center py-3 fl-type-meta">&copy; 2026 Forge &middot; built for entrepreneurs</div>
                 </div>
             </footer>
         </div>
@@ -146,6 +148,9 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/tabler/dist/js/tabler.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/lib/canvas-confetti/canvas-confetti.min.js" defer></script>
+    <script src="~/js/motion.js" asp-append-version="true" defer></script>
+    <script src="~/js/facelift-init.js" asp-append-version="true" defer></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

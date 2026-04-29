@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using FundingPlatform.Application.DTOs;
 using FundingPlatform.Application.Services;
 using FundingPlatform.Application.SignedUploads.Queries;
 using FundingPlatform.Web.ViewModels;
@@ -12,13 +13,16 @@ public class ReviewController : Controller
 {
     private readonly ReviewService _reviewService;
     private readonly SignedUploadService _signedUploadService;
+    private readonly IReviewerQueueProjection _queueProjection;
 
     public ReviewController(
         ReviewService reviewService,
-        SignedUploadService signedUploadService)
+        SignedUploadService signedUploadService,
+        IReviewerQueueProjection queueProjection)
     {
         _reviewService = reviewService;
         _signedUploadService = signedUploadService;
+        _queueProjection = queueProjection;
     }
 
     [HttpGet]
@@ -83,29 +87,21 @@ public class ReviewController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(int page = 1)
+    public async Task<IActionResult> Index(ReviewerFilter filter = ReviewerFilter.All, CancellationToken ct = default)
     {
-        if (page < 1) page = 1;
+        // Spec 011 US4 (FR-052) — Index renders the new QueueDashboard via the projection.
+        var firstName = User.Identity?.Name ?? "Reviewer";
+        var dto = await _queueProjection.GetForReviewerAsync(GetUserId(), firstName, filter, ct);
+        return View("QueueDashboard", dto);
+    }
 
-        var (items, totalCount) = await _reviewService.GetReviewQueueAsync(page);
-        var totalPages = (int)Math.Ceiling(totalCount / 25.0);
-
-        var viewModel = new ReviewQueueViewModel
-        {
-            Applications = items.Select(dto => new ReviewQueueItemViewModel
-            {
-                ApplicationId = dto.ApplicationId,
-                ApplicantName = dto.ApplicantName,
-                ApplicantPerformanceScore = dto.ApplicantPerformanceScore,
-                SubmittedAt = dto.SubmittedAt,
-                ItemCount = dto.ItemCount
-            }).ToList(),
-            CurrentPage = page,
-            TotalPages = totalPages,
-            TotalCount = totalCount
-        };
-
-        return View(viewModel);
+    [HttpGet]
+    [Route("Review/QueueRows")]
+    public async Task<IActionResult> QueueRows(ReviewerFilter filter = ReviewerFilter.All, CancellationToken ct = default)
+    {
+        // Spec 011 US4 (FR-054) — chip-reflow contract.
+        var rows = await _queueProjection.GetRowsAsync(GetUserId(), filter, ct);
+        return PartialView("_ReviewerQueueRows", rows);
     }
 
     [HttpGet]

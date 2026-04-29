@@ -1,0 +1,61 @@
+@using FundingPlatform.Application.DTOs
+@using FundingPlatform.Application.Services
+@inject IReviewerCopyProvider Copy
+@model ReviewerQueueDto
+@{
+    int agingDays = Model.AgingThresholdDays;
+    var filters = new[] {
+        ReviewerFilter.All, ReviewerFilter.AwaitingMe, ReviewerFilter.Aging,
+        ReviewerFilter.SentBack, ReviewerFilter.Appealing,
+    };
+}
+<section class="fl-hero-strip" data-testid="reviewer-hero">
+    <h1 class="fl-welcome-headline" data-testid="welcome-headline">@Copy.WelcomeHeadline(Model.FirstName)</h1>
+    <p class="fl-welcome-subhead fl-type-body" data-testid="welcome-subhead">@Copy.WelcomeSubhead()</p>
+
+    <div class="row g-3 mt-4" data-testid="kpi-strip" role="list">
+        <div class="col-12 col-sm-6 col-lg-3" role="listitem">
+            <div class="fl-kpi-tile" data-testid="kpi-awaiting-review">
+                <div class="fl-kpi-label">@Copy.KpiAwaiting()</div>
+                <div class="fl-kpi-value" data-ticker-target="@Model.Kpis.AwaitingYourReview">@Model.Kpis.AwaitingYourReview</div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3" role="listitem">
+            <div class="fl-kpi-tile" data-testid="kpi-in-progress">
+                <div class="fl-kpi-label">@Copy.KpiInProgress()</div>
+                <div class="fl-kpi-value" data-ticker-target="@Model.Kpis.InProgress">@Model.Kpis.InProgress</div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3" role="listitem">
+            <div class="fl-kpi-tile" data-testid="kpi-aging">
+                <div class="fl-kpi-label">@Copy.KpiAging(agingDays)</div>
+                <div class="fl-kpi-value" data-ticker-target="@Model.Kpis.Aging">@Model.Kpis.Aging</div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3" role="listitem">
+            <div class="fl-kpi-tile" data-testid="kpi-decided-this-month">
+                <div class="fl-kpi-label">@Copy.KpiDecidedThisMonth()</div>
+                <div class="fl-kpi-value" data-ticker-target="@Model.Kpis.DecidedThisMonth">@Model.Kpis.DecidedThisMonth</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="fl-chip-strip mt-4"
+         data-testid="filter-chip-strip"
+         data-chip-strip
+         data-chip-endpoint="@(Url.Action("QueueRows", "Review") ?? "/Review/QueueRows")"
+         data-chip-target="[data-testid='reviewer-queue-tbody']"
+         role="tablist">
+        @foreach (var f in filters)
+        {
+            var isActive = Model.ActiveFilter == f;
+            <button type="button"
+                    class="fl-chip"
+                    data-chip-value="@f.ToString()"
+                    data-testid="chip-@f.ToString().ToLowerInvariant()"
+                    aria-pressed="@(isActive ? "true" : "false")">
+                @Copy.FilterLabel(f)
+            </button>
+        }
+    </div>
+</section>

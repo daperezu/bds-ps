@@ -10,7 +10,7 @@ public class ReviewApplicationPage : BasePage
 
     public ILocator ApplicantName => Page.Locator(".applicant-name");
     public ILocator PerformanceScore => Page.Locator(".performance-score");
-    public ILocator ApplicationState => Page.Locator(".application-state .badge");
+    public ILocator ApplicationState => Page.Locator(".application-state [data-testid=status-pill]");
     public ILocator ItemCards => Page.Locator(".review-item");
     public ILocator SendBackButton => Page.Locator("button:has-text('Send Back')");
     public ILocator FinalizeButton => Page.Locator("button:has-text('Finalize Review')");

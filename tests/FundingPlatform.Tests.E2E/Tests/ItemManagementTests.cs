@@ -32,7 +32,7 @@ public class ItemManagementTests : AuthenticatedTestBase
         Assert.That(appIdMatch.Success, Is.True, "Should be on application details page with ID");
 
         // Verify application was created with Draft status
-        var statusBadge = Page.Locator(".badge:has-text('Draft')");
+        var statusBadge = Page.Locator("[data-testid=status-pill]:has-text('Draft')");
         await Expect(statusBadge).ToBeVisibleAsync();
 
         // Add an item

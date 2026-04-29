@@ -1,0 +1,90 @@
+@using FundingPlatform.Application.DTOs
+@model JourneyViewModel
+@{
+    string variantClass = Model.Variant switch
+    {
+        JourneyVariant.Mini  => "fl-journey-mini",
+        JourneyVariant.Micro => "fl-journey-micro",
+        _                    => "",
+    };
+
+    string StateAttr(JourneyNodeState state) => state switch
+    {
+        JourneyNodeState.Completed => "completed",
+        JourneyNodeState.Current   => "current",
+        _                          => "pending",
+    };
+
+    string KindAttr(JourneyBranchKind kind) => kind switch
+    {
+        JourneyBranchKind.SentBack => "sentback",
+        JourneyBranchKind.Rejected => "rejected",
+        _                          => "appeal",
+    };
+
+    bool IsFull = Model.Variant == JourneyVariant.Full;
+    bool IsMini = Model.Variant == JourneyVariant.Mini;
+    bool IsMicro = Model.Variant == JourneyVariant.Micro;
+    var currentNode = Model.Mainline.FirstOrDefault(n => n.State == JourneyNodeState.Current);
+}
+<div class="fl-journey @variantClass"
+     data-testid="journey-timeline"
+     data-variant="@Model.Variant.ToString().ToLowerInvariant()"
+     data-application-id="@Model.ApplicationId"
+     aria-label="Application journey">
+    <div class="fl-journey-mainline" role="list">
+        @for (var i = 0; i < Model.Mainline.Count; i++)
+        {
+            var node = Model.Mainline[i];
+            var stateAttr = StateAttr(node.State);
+            var anchorAttr = (IsFull && node.State == JourneyNodeState.Completed && !string.IsNullOrEmpty(node.EventLogAnchorId))
+                ? $"data-event-anchor=\"{node.EventLogAnchorId}\""
+                : string.Empty;
+            var tooltip = node.Timestamp.HasValue
+                ? $"{node.Label} — {node.Timestamp.Value.LocalDateTime:yyyy-MM-dd HH:mm}{(string.IsNullOrEmpty(node.ActorName) ? "" : $" · {node.ActorName}")}"
+                : node.Label;
+
+            <span class="fl-journey-node"
+                  data-state="@stateAttr"
+                  data-stage="@node.Stage.ToString()"
+                  role="listitem"
+                  title="@tooltip"
+                  @Html.Raw(anchorAttr)>
+                @if (!IsMicro)
+                {
+                    <i class="@node.IconKey"></i>
+                }
+                @if (IsFull)
+                {
+                    <span class="fl-journey-node-label">@node.Label</span>
+                }
+            </span>
+            @if (i < Model.Mainline.Count - 1)
+            {
+                <span class="fl-journey-connector" aria-hidden="true"></span>
+            }
+        }
+    </div>
+
+    @if (IsMini && currentNode is not null)
+    {
+        <div class="fl-text-secondary fl-type-meta mt-1" data-testid="journey-current-label">@currentNode.Label</div>
+    }
+
+    @if (IsFull && Model.Branches.Count > 0)
+    {
+        @foreach (var branch in Model.Branches)
+        {
+            <div class="fl-journey-branch" data-kind="@KindAttr(branch.Kind)" data-state="@branch.State.ToString().ToLowerInvariant()">
+                <span class="fl-journey-node" data-state="completed" title="@branch.Label">
+                    <i class="ti ti-corner-down-right"></i>
+                    <span class="fl-journey-node-label">@branch.Label</span>
+                </span>
+                @if (!string.IsNullOrEmpty(branch.ActorName))
+                {
+                    <span class="fl-text-muted fl-type-micro">@branch.ActorName · @branch.Occurred.LocalDateTime.ToString("yyyy-MM-dd")</span>
+                }
+            </div>
+        }
+    }
+</div>

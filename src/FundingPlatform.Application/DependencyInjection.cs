@@ -18,6 +18,16 @@ public static class DependencyInjection
         services.AddScoped<FundingAgreementService>();
         services.AddScoped<SignedUploadService>();
 
+        // Spec 011 — facelift projection services + copy providers (FR-024..FR-060, research §7).
+        services.AddSingleton<IStageMappingProvider, StageMappingProvider>();
+        services.AddScoped<IJourneyStageResolver, JourneyStageResolver>();
+        services.AddScoped<IJourneyProjector, JourneyProjector>();
+        services.AddScoped<IApplicantDashboardProjection, ApplicantDashboardProjection>();
+        services.AddScoped<IReviewerQueueProjection, ReviewerQueueProjection>();
+        services.AddSingleton<IApplicantCopyProvider, ApplicantCopyProvider>();
+        services.AddSingleton<IReviewerCopyProvider, ReviewerCopyProvider>();
+        services.AddSingleton<ICeremonyCopyProvider, CeremonyCopyProvider>();
+
         if (configuration is not null)
         {
             services.Configure<SignedUploadOptions>(

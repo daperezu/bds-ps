@@ -1,0 +1,13 @@
+SIL Open Font License, Version 1.1.
+
+Inter is licensed under the SIL OFL 1.1 (https://openfontlicense.org/).
+
+Copyright (c) 2016-2024 The Inter Project Authors (https://github.com/rsms/inter)
+
+Vendored for spec 011 (Warm-Modern Facelift) per FR-003.
+
+inter-variable.woff2 is the Latin subset (unicode-range U+0000-00FF plus
+typographic extras: U+0131, U+0152-0153, U+02BB-BC, U+02C6, U+02DA, U+02DC,
+U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+U+2215, U+FEFF, U+FFFD), variable weight 400-700. Source: Google Fonts
+(fonts.gstatic.com), upstream rsms/inter. ≈ 47 KB.

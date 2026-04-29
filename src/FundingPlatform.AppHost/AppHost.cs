@@ -34,11 +34,14 @@ var adminReportsDefaultCurrency = builder.Configuration["AdminReports:DefaultCur
 var adminReportsCsvRowLimit = builder.Configuration["AdminReports:CsvRowLimit"] ?? "50000";
 
 // E2E fixture runs with EphemeralStorage=true and a fresh DB per fixture run, so
-// the sentinel admin (admin@FundingPlatform.com) is seeded on every startup. Setting
-// Admin:DefaultPassword to a known value when ephemeral keeps test sentinel sign-in
-// deterministic — otherwise the seeder generates a fresh base64 password each run.
-var adminDefaultPassword = builder.Configuration["Admin:DefaultPassword"]
-    ?? (ephemeralStorage ? "Sentinel123!" : null);
+// the sentinel admin (admin@FundingPlatform.com) is seeded on every startup. In
+// ephemeral mode we force the deterministic test password regardless of other
+// config layers — otherwise an appsettings.Development.json entry (added by
+// spec 010) wins via `??` and the test fixture can't predict the password.
+// Outside ephemeral, fall back to whatever Admin:DefaultPassword is configured.
+var adminDefaultPassword = ephemeralStorage
+    ? "Sentinel123!"
+    : builder.Configuration["Admin:DefaultPassword"];
 
 var webApp = builder.AddProject<Projects.FundingPlatform_Web>("webapp")
     .WithExternalHttpEndpoints()

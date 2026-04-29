@@ -14,10 +14,24 @@
         AdminUserRole s => StatusVisualMap.For(s),
         _ => throw new ArgumentOutOfRangeException(nameof(Model.EnumValue), enumValue, $"Unsupported enum type '{enumTypeName}' in _StatusPill"),
     };
+    // FR-011 — map Tabler bg-* class to a token tone so the pill renders against
+    // a --color-*-subtle background. The visual map is preserved (spec-008
+    // contract); we layer a token-driven tone class on top.
+    string tone = visual.Color switch
+    {
+        var c when c.Contains("success") => "success",
+        var c when c.Contains("warning") => "warning",
+        var c when c.Contains("danger")  => "danger",
+        var c when c.Contains("info")    => "info",
+        var c when c.Contains("primary") => "primary",
+        var c when c.Contains("muted") || c.Contains("secondary") => "muted",
+        _ => "primary",
+    };
 }
-<span class="badge @visual.Color"
+<span class="fl-status-pill"
+      data-tone="@tone"
       data-testid="status-pill"
       data-status-enum="@enumTypeName"
       data-status-value="@enumValue">
-    <i class="@visual.Icon me-1"></i>@visual.DisplayLabel
+    <i class="@visual.Icon"></i><span>@visual.DisplayLabel</span>
 </span>

@@ -1,0 +1,510 @@
+/* tokens.css — Spec 011 Warm-Modern Facelift design-token layer.
+   THIS IS THE ONLY FILE WHERE RAW HEX VALUES MAY APPEAR (FR-009, SC-001).
+   THIS IS THE ONLY FILE WHERE LITERAL DURATIONS MAY APPEAR (FR-014, SC-003).
+   Names are SEMANTIC — no value-bound names like --color-white or --motion-200ms (FR-070).
+
+   Imported BEFORE site.css and BEFORE tabler.min.css from _Layout.cshtml so the
+   --tblr-* bridge below takes effect. */
+
+/* ============================================================
+   FONT FACES — self-hosted (FR-003)
+   Vendored as Latin-subsetted variable WOFF2 files under
+   wwwroot/lib/fonts/<family>/. Sources:
+     - Fraunces: Google Fonts (SIL OFL 1.1)
+     - Inter: Google Fonts (SIL OFL 1.1)
+     - JetBrains Mono: Google Fonts (Apache 2.0)
+   Latin subset (U+0000-00FF + typographic extras) covers en + es-CO copy;
+   total wire weight ≈ 105 KB raw, well under the FR-074 / SC-016 400 KB
+   asset budget.
+   ============================================================ */
+
+@font-face {
+  font-family: "Fraunces";
+  src: url("../lib/fonts/fraunces/fraunces-variable.woff2") format("woff2-variations"),
+       url("../lib/fonts/fraunces/fraunces-variable.woff2") format("woff2");
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("../lib/fonts/inter/inter-variable.woff2") format("woff2-variations"),
+       url("../lib/fonts/inter/inter-variable.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("../lib/fonts/jetbrains-mono/jetbrains-mono-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================================
+   ROOT TOKENS
+   ============================================================ */
+
+:root {
+  /* ---------- Color: surfaces ---------- */
+  --color-bg-page:            #FAF7F2;
+  --color-bg-surface:         #FFFFFF;
+  --color-bg-surface-raised:  #F4EFE6;
+
+  /* ---------- Color: text ---------- */
+  --color-text-primary:       #1A1A1A;
+  --color-text-secondary:     #5A5A5A;
+  --color-text-muted:         #8A8A8A;
+
+  /* ---------- Color: brand ---------- */
+  --color-primary:            #2E5E4E;
+  --color-primary-strong:     #1F4438;
+  --color-primary-subtle:     #E1ECE6;
+  --color-primary-rgb:        46, 94, 78;
+
+  --color-accent:             #D98A1B;
+  --color-accent-subtle:      #FBEED6;
+
+  /* ---------- Color: status ---------- */
+  --color-success:            #2E7D32;
+  --color-success-subtle:     #E1F0E2;
+  --color-warning:            #A86E18;
+  --color-warning-subtle:     #F8EAD0;
+  --color-danger:             #9E2A2A;
+  --color-danger-subtle:      #F5DBDB;
+  --color-info:               #2563AB;
+  --color-info-subtle:        #DDE9F4;
+
+  /* ---------- Color: structural ---------- */
+  --color-border:             #E5DED2;
+  --color-focus-ring:         var(--color-primary);
+
+  /* ---------- Spacing (T-shirt scale on 8 px base) ---------- */
+  --space-0:  0;
+  --space-1:  0.25rem; /* 4 px */
+  --space-2:  0.5rem;  /* 8 px */
+  --space-3:  0.75rem; /* 12 px */
+  --space-4:  1rem;    /* 16 px */
+  --space-5:  1.5rem;  /* 24 px */
+  --space-6:  2rem;    /* 32 px */
+  --space-7:  3rem;    /* 48 px */
+  --space-8:  4rem;    /* 64 px */
+
+  /* ---------- Radii ---------- */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 9999px;
+
+  /* ---------- Shadows ---------- */
+  --shadow-sm: 0 1px 2px rgba(26, 26, 26, 0.04), 0 1px 1px rgba(26, 26, 26, 0.06);
+  --shadow-md: 0 4px 12px rgba(26, 26, 26, 0.06), 0 2px 4px rgba(26, 26, 26, 0.04);
+  --shadow-lg: 0 16px 32px rgba(26, 26, 26, 0.08), 0 4px 8px rgba(26, 26, 26, 0.04);
+  --shadow-glow-primary: 0 0 0 4px rgba(46, 94, 78, 0.18);
+
+  /* ---------- Typography families ---------- */
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body:    "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono:    "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+
+  /* ---------- Type scale ---------- */
+  --type-display-xl-size:  3.5rem;   --type-display-xl-lh: 1.05;  --type-display-xl-weight: 600;
+  --type-display-lg-size:  2.5rem;   --type-display-lg-lh: 1.10;  --type-display-lg-weight: 600;
+  --type-heading-lg-size:  1.75rem;  --type-heading-lg-lh: 1.20;  --type-heading-lg-weight: 700;
+  --type-heading-md-size:  1.25rem;  --type-heading-md-lh: 1.30;  --type-heading-md-weight: 600;
+  --type-heading-sm-size:  1rem;     --type-heading-sm-lh: 1.35;  --type-heading-sm-weight: 600;
+  --type-body-size:        0.9375rem;--type-body-lh:       1.50;  --type-body-weight: 400;
+  --type-meta-size:        0.8125rem;--type-meta-lh:       1.40;  --type-meta-weight: 500;
+  --type-micro-size:       0.6875rem;--type-micro-lh:      1.30;  --type-micro-weight: 500;
+
+  /* ---------- Motion durations (FR-012) ---------- */
+  --motion-instant:     50ms;
+  --motion-fast:        150ms;
+  --motion-base:        250ms;
+  --motion-slow:        400ms;
+  --motion-celebratory: 700ms;
+  --motion-opacity-exempt: 150ms; /* preserved under reduced-motion (FR-015) */
+
+  /* ---------- Easings (FR-012) ---------- */
+  --ease-out:        cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-in-out:     cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+
+  /* ---------- Z-index ---------- */
+  --z-base:    0;
+  --z-raised:  10;
+  --z-sticky:  100;
+  --z-overlay: 1000;
+  --z-modal:   1050;
+  --z-toast:   1100;
+}
+
+/* ============================================================
+   TABLER BRIDGE (FR-008, research §2.1)
+   Override the high-traffic --tblr-* tokens so every Tabler component
+   inherits the Forge palette. Tokens.css must load BEFORE tabler.min.css
+   for these to take effect.
+   ============================================================ */
+
+:root {
+  --tblr-primary:        var(--color-primary);
+  --tblr-primary-rgb:    46, 94, 78;
+  --tblr-secondary:      var(--color-text-secondary);
+  --tblr-success:        var(--color-success);
+  --tblr-warning:        var(--color-warning);
+  --tblr-danger:         var(--color-danger);
+  --tblr-info:           var(--color-info);
+  --tblr-body-bg:        var(--color-bg-page);
+  --tblr-body-color:     var(--color-text-primary);
+  --tblr-border-color:   var(--color-border);
+  --tblr-card-bg:        var(--color-bg-surface);
+  --tblr-link-color:     var(--color-primary-strong);
+}
+
+/* ============================================================
+   GLOBAL TYPE BASELINE
+   ============================================================ */
+
+html { background: var(--color-bg-page); }
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-lh);
+  color: var(--color-text-primary);
+  background: var(--color-bg-page);
+}
+
+h1, h2, h3, .display-heading {
+  font-family: var(--font-display);
+  color: var(--color-text-primary);
+}
+
+code, pre, .mono, [data-mono] {
+  font-family: var(--font-mono);
+}
+
+/* ============================================================
+   REDUCED-MOTION CONTRACT (FR-015)
+   Clamps every duration token to 0; preserves opacity exemption at --motion-opacity-exempt.
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-instant:     0ms;
+    --motion-fast:        0ms;
+    --motion-base:        0ms;
+    --motion-slow:        0ms;
+    --motion-celebratory: 0ms;
+    --motion-opacity-exempt: 150ms;
+  }
+}
+
+/* ============================================================
+   FACELIFT-LOCAL UTILITY CLASSES
+   These are CSS classes — partials never use inline style= (FR-010, SC-002).
+   ============================================================ */
+
+/* Fonts */
+.fl-font-display { font-family: var(--font-display); }
+.fl-font-body    { font-family: var(--font-body); }
+.fl-font-mono    { font-family: var(--font-mono); }
+
+/* Type ramp */
+.fl-type-display-xl  { font-family: var(--font-display); font-size: var(--type-display-xl-size); line-height: var(--type-display-xl-lh); font-weight: var(--type-display-xl-weight); letter-spacing: -0.01em; }
+.fl-type-display-lg  { font-family: var(--font-display); font-size: var(--type-display-lg-size); line-height: var(--type-display-lg-lh); font-weight: var(--type-display-lg-weight); letter-spacing: -0.005em; }
+.fl-type-heading-lg  { font-size: var(--type-heading-lg-size); line-height: var(--type-heading-lg-lh); font-weight: var(--type-heading-lg-weight); }
+.fl-type-heading-md  { font-size: var(--type-heading-md-size); line-height: var(--type-heading-md-lh); font-weight: var(--type-heading-md-weight); }
+.fl-type-heading-sm  { font-size: var(--type-heading-sm-size); line-height: var(--type-heading-sm-lh); font-weight: var(--type-heading-sm-weight); }
+.fl-type-body        { font-size: var(--type-body-size);       line-height: var(--type-body-lh);       font-weight: var(--type-body-weight); }
+.fl-type-meta        { font-size: var(--type-meta-size);       line-height: var(--type-meta-lh);       font-weight: var(--type-meta-weight); }
+.fl-type-micro       { font-size: var(--type-micro-size);      line-height: var(--type-micro-lh);      font-weight: var(--type-micro-weight); }
+
+/* Surfaces */
+.fl-surface          { background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+.fl-surface-raised   { background: var(--color-bg-surface-raised); border-radius: var(--radius-lg); }
+.fl-surface-shadow-sm { box-shadow: var(--shadow-sm); }
+.fl-surface-shadow-md { box-shadow: var(--shadow-md); }
+
+/* Brand colors as text */
+.fl-text-primary     { color: var(--color-text-primary); }
+.fl-text-secondary   { color: var(--color-text-secondary); }
+.fl-text-muted       { color: var(--color-text-muted); }
+.fl-text-brand       { color: var(--color-primary); }
+.fl-text-accent      { color: var(--color-accent); }
+.fl-text-success     { color: var(--color-success); }
+.fl-text-warning     { color: var(--color-warning); }
+.fl-text-danger      { color: var(--color-danger); }
+.fl-text-info        { color: var(--color-info); }
+
+/* Backgrounds (subtle status fills) */
+.fl-bg-primary-subtle  { background: var(--color-primary-subtle); color: var(--color-primary); }
+.fl-bg-accent-subtle   { background: var(--color-accent-subtle); color: var(--color-accent); }
+.fl-bg-success-subtle  { background: var(--color-success-subtle); color: var(--color-success); }
+.fl-bg-warning-subtle  { background: var(--color-warning-subtle); color: var(--color-warning); }
+.fl-bg-danger-subtle   { background: var(--color-danger-subtle); color: var(--color-danger); }
+.fl-bg-info-subtle     { background: var(--color-info-subtle); color: var(--color-info); }
+
+/* Spacing helpers (only what tokens.css owns; partials may still use Tabler m-/p-) */
+.fl-pad-2 { padding: var(--space-2); }
+.fl-pad-3 { padding: var(--space-3); }
+.fl-pad-4 { padding: var(--space-4); }
+.fl-pad-5 { padding: var(--space-5); }
+.fl-gap-2 { gap: var(--space-2); }
+.fl-gap-3 { gap: var(--space-3); }
+.fl-gap-4 { gap: var(--space-4); }
+
+/* Status pill (FR-011) — token-driven enum-to-color mapping */
+.fl-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--type-meta-size);
+  line-height: 1;
+  font-weight: 500;
+  border-radius: var(--radius-pill);
+  background: var(--color-bg-surface-raised);
+  color: var(--color-text-secondary);
+}
+.fl-status-pill[data-tone="primary"] { background: var(--color-primary-subtle); color: var(--color-primary); }
+.fl-status-pill[data-tone="success"] { background: var(--color-success-subtle); color: var(--color-success); }
+.fl-status-pill[data-tone="warning"] { background: var(--color-warning-subtle); color: var(--color-warning); }
+.fl-status-pill[data-tone="danger"]  { background: var(--color-danger-subtle);  color: var(--color-danger); }
+.fl-status-pill[data-tone="info"]    { background: var(--color-info-subtle);    color: var(--color-info); }
+.fl-status-pill[data-tone="muted"]   { background: var(--color-bg-surface-raised); color: var(--color-text-muted); }
+
+/* KPI tile + ticker (FR-026) */
+.fl-kpi-tile {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--motion-fast) var(--ease-out),
+              box-shadow var(--motion-fast) var(--ease-out);
+}
+.fl-kpi-tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.fl-kpi-label { color: var(--color-text-secondary); font-size: var(--type-meta-size); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+.fl-kpi-value { font-family: var(--font-display); font-size: 2rem; line-height: 1; color: var(--color-text-primary); margin-top: var(--space-2); }
+.fl-kpi-value[data-ticker-target] { font-variant-numeric: tabular-nums; }
+
+/* Hero strip + welcome */
+.fl-hero-strip {
+  background: var(--color-bg-surface-raised);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+}
+.fl-welcome-headline {
+  font-family: var(--font-display);
+  font-size: var(--type-display-lg-size);
+  line-height: var(--type-display-lg-lh);
+  font-weight: var(--type-display-lg-weight);
+  color: var(--color-text-primary);
+  letter-spacing: -0.005em;
+  margin: 0;
+}
+.fl-welcome-subhead { color: var(--color-text-secondary); margin-top: var(--space-2); }
+
+/* Awaiting-action callout (US1, FR-027) */
+.fl-awaiting {
+  background: var(--color-accent-subtle);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+.fl-awaiting-msg { color: var(--color-text-primary); font-weight: 500; flex: 1 1 auto; }
+
+/* Application card (US1, FR-028) */
+.fl-app-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--motion-fast) var(--ease-out),
+              transform var(--motion-fast) var(--ease-out);
+}
+.fl-app-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.fl-app-card-title { font-family: var(--font-display); font-size: var(--type-heading-md-size); margin: 0 0 var(--space-2); }
+.fl-app-card-meta  { color: var(--color-text-secondary); font-size: var(--type-meta-size); }
+.fl-app-card-mono  { font-family: var(--font-mono); color: var(--color-text-secondary); }
+
+/* Resources / trust strip (FR-030, FR-031) */
+.fl-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); }
+.fl-strip-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+.fl-strip-card-title { font-family: var(--font-display); font-size: var(--type-heading-sm-size); margin: 0 0 var(--space-2); }
+
+/* Journey timeline (US2, FR-034..FR-042) */
+.fl-journey { display: flex; flex-direction: column; gap: var(--space-3); }
+.fl-journey-mainline { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.fl-journey-node {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--type-meta-size);
+  color: var(--color-text-muted);
+  background: var(--color-bg-surface-raised);
+  transition: background var(--motion-base) var(--ease-spring),
+              color var(--motion-base) var(--ease-spring),
+              transform var(--motion-base) var(--ease-spring);
+}
+.fl-journey-node[data-state="completed"] { color: var(--color-text-secondary); background: var(--color-primary-subtle); }
+.fl-journey-node[data-state="current"]   { color: var(--color-text-primary); background: var(--color-primary); color: #FFFFFF; box-shadow: var(--shadow-glow-primary); transform: scale(1.04); }
+.fl-journey-node[data-state="pending"]   { color: var(--color-text-muted); background: var(--color-bg-surface-raised); opacity: 0.6; }
+.fl-journey-connector { flex: 0 0 auto; width: 24px; height: 2px; background: var(--color-border); }
+.fl-journey-mini { gap: var(--space-1); }
+.fl-journey-mini .fl-journey-node { padding: var(--space-1); font-size: var(--type-micro-size); }
+.fl-journey-micro .fl-journey-node {
+  width: 8px; height: 8px; padding: 0; border-radius: 50%;
+  background: var(--color-bg-surface-raised);
+}
+.fl-journey-micro .fl-journey-node[data-state="completed"] { background: var(--color-primary-subtle); }
+.fl-journey-micro .fl-journey-node[data-state="current"]   { width: 12px; height: 12px; background: var(--color-primary); box-shadow: var(--shadow-glow-primary); transform: none; }
+.fl-journey-micro .fl-journey-node[data-state="pending"]   { background: var(--color-border); opacity: 0.6; }
+.fl-journey-branch { display: flex; align-items: center; gap: var(--space-2); padding-left: var(--space-5); }
+.fl-journey-branch[data-kind="sentback"] .fl-journey-node { background: var(--color-warning-subtle); color: var(--color-warning); }
+.fl-journey-branch[data-kind="rejected"] .fl-journey-node { background: var(--color-danger-subtle);  color: var(--color-danger); }
+.fl-journey-branch[data-kind="appeal"]   .fl-journey-node { background: var(--color-info-subtle);    color: var(--color-info); }
+
+/* Event log highlight (FR-039) */
+.is-highlighted {
+  background: var(--color-accent-subtle);
+  transition: background var(--motion-base) var(--ease-out);
+}
+
+/* Empty state (US7, FR-064, FR-065) */
+.fl-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+  padding: var(--space-7) var(--space-4);
+}
+.fl-empty-illustration {
+  opacity: 0;
+  transform: translateY(8px);
+  animation: fl-empty-enter var(--motion-base) var(--ease-out) forwards;
+}
+.fl-empty-illustration[data-size="sm"] { width: 120px; height: 120px; }
+.fl-empty-illustration[data-size="md"] { width: 160px; height: 160px; }
+.fl-empty-illustration[data-size="lg"] { width: 220px; height: 220px; }
+.fl-empty-illustration[data-size="xl"] { width: 280px; height: 280px; }
+@keyframes fl-empty-enter { to { opacity: 1; transform: translateY(0); } }
+
+/* Filter chip (US4, FR-054) */
+.fl-chip-strip { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.fl-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--type-meta-size);
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-out),
+              color var(--motion-fast) var(--ease-out);
+}
+.fl-chip:hover { background: var(--color-bg-surface-raised); color: var(--color-text-primary); }
+.fl-chip[aria-pressed="true"] { background: var(--color-primary-subtle); color: var(--color-primary); border-color: var(--color-primary-subtle); }
+
+/* Reviewer queue row (US4, FR-057) */
+.fl-queue-row {
+  transition: box-shadow var(--motion-fast) var(--ease-out),
+              transform var(--motion-fast) var(--ease-out);
+}
+.fl-queue-row:hover { box-shadow: var(--shadow-md); cursor: pointer; }
+
+/* Ceremony (US3, FR-045) */
+.fl-ceremony { display: flex; flex-direction: column; align-items: center; gap: var(--space-5); padding: var(--space-7) var(--space-4); }
+.fl-ceremony-seal { width: 200px; height: 200px; }
+.fl-ceremony-seal[data-state="static"] { /* used under reduced-motion or bookmark re-visit */ }
+.fl-ceremony-seal[data-state="animate"] {
+  animation: fl-ceremony-draw var(--motion-celebratory) var(--ease-spring) both;
+}
+@keyframes fl-ceremony-draw {
+  from { opacity: 0; transform: scale(0.6) rotate(-8deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+.fl-ceremony-headline {
+  font-family: var(--font-display);
+  font-size: var(--type-display-xl-size);
+  line-height: var(--type-display-xl-lh);
+  font-weight: var(--type-display-xl-weight);
+  text-align: center;
+  letter-spacing: -0.015em;
+}
+.fl-ceremony-subhead { color: var(--color-text-secondary); text-align: center; max-width: 36rem; }
+.fl-ceremony-summary {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-md);
+  display: grid;
+  gap: var(--space-3);
+  min-width: 18rem;
+}
+.fl-ceremony-amount {
+  font-family: var(--font-mono);
+  font-size: 2.25rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+.fl-confetti-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-toast);
+}
+
+/* Auth layout — clean focused single-CTA tone (research §9) */
+.fl-auth-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: var(--color-bg-page);
+  padding: var(--space-5);
+}
+.fl-auth-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-7);
+  width: 100%;
+  max-width: 28rem;
+}
+.fl-auth-headline {
+  font-family: var(--font-display);
+  font-size: var(--type-heading-lg-size);
+  margin: 0 0 var(--space-4);
+}
+
+/* Focus rings (a11y not suppressed under reduced-motion) */
+:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+  transition: outline-color var(--motion-instant) var(--ease-out);
+}

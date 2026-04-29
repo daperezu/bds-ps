@@ -1,0 +1,15 @@
+@using FundingPlatform.Application.DTOs
+@model IReadOnlyList<ReviewerQueueRowDto>
+@if (Model.Count == 0)
+{
+    <tr><td colspan="6">
+        <div class="fl-text-secondary fl-type-meta py-4 text-center">No items match this filter.</div>
+    </td></tr>
+}
+else
+{
+    foreach (var row in Model)
+    {
+        @await Html.PartialAsync("../Shared/Components/_ReviewerQueueRow", row)
+    }
+}

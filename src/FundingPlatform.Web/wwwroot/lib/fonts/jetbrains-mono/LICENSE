@@ -1,0 +1,13 @@
+Apache License, Version 2.0.
+
+JetBrains Mono is licensed under the Apache License, Version 2.0
+(https://www.apache.org/licenses/LICENSE-2.0).
+
+Copyright 2020 The JetBrains Mono Project Authors
+(https://github.com/JetBrains/JetBrainsMono)
+
+Vendored for spec 011 (Warm-Modern Facelift) per FR-003.
+
+jetbrains-mono-regular.woff2 is the Latin subset (unicode-range U+0000-00FF
+plus typographic extras), regular weight 400. Source: Google Fonts
+(fonts.gstatic.com), upstream JetBrains/JetBrainsMono. ≈ 21 KB.

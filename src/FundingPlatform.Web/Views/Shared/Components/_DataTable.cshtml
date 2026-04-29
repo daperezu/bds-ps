@@ -1,9 +1,9 @@
 @model DataTableViewModel
-<div class="card" data-testid="data-table">
+<div class="card fl-surface fl-surface-shadow-sm" data-testid="data-table">
     @if (!string.IsNullOrWhiteSpace(Model.Caption))
     {
         <div class="card-header">
-            <h3 class="card-title mb-0">@Model.Caption</h3>
+            <h3 class="card-title mb-0 fl-type-heading-md">@Model.Caption</h3>
         </div>
     }
     @if (Model.Rows.Count == 0 && Model.EmptyState is not null)
@@ -21,7 +21,7 @@
                     <tr>
                         @foreach (var header in Model.ColumnHeaders)
                         {
-                            <th>@header</th>
+                            <th class="fl-type-meta fl-text-secondary text-uppercase">@header</th>
                         }
                     </tr>
                 </thead>

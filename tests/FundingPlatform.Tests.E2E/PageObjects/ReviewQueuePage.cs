@@ -8,8 +8,10 @@ public class ReviewQueuePage : BasePage
     {
     }
 
-    public ILocator QueueTable => Page.Locator("table.review-queue");
-    public ILocator QueueRows => Page.Locator("table.review-queue tbody tr");
+    // Spec 011 facelift: queue is rendered inside [data-testid=reviewer-queue] in
+    // QueueDashboard.cshtml; rows carry [data-testid=reviewer-queue-row] (one per app).
+    public ILocator QueueTable => Page.Locator("[data-testid=reviewer-queue] table");
+    public ILocator QueueRows => Page.Locator("[data-testid=reviewer-queue-row]");
     public ILocator PaginationLinks => Page.Locator("nav.pagination a");
     public ILocator PageInfo => Page.Locator(".page-info");
     public ILocator NoApplicationsMessage => Page.Locator(".alert:has-text('No applications')");

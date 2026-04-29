@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Forge mark">
+  <defs>
+    <linearGradient id="forge-arc" x1="0" y1="64" x2="64" y2="0">
+      <stop offset="0%" stop-color="#2E5E4E"/>
+      <stop offset="100%" stop-color="#D98A1B"/>
+    </linearGradient>
+  </defs>
+  <path d="M10 48 A 28 28 0 0 1 56 16"
+        stroke="url(#forge-arc)" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <path d="M16 52 A 22 22 0 0 1 50 22"
+        stroke="url(#forge-arc)" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.6"/>
+</svg>

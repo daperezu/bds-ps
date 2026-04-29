@@ -17,15 +17,15 @@
      data-testid="confirm-dialog"
      data-confirm-id="@Model.Id">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content fl-surface fl-surface-shadow-md">
             <form asp-controller="@Model.FormController" asp-action="@Model.FormAction" asp-all-route-data="@routeValues" method="post">
                 @Html.AntiForgeryToken()
                 <div class="modal-header">
-                    <h5 class="modal-title">@Model.Title</h5>
+                    <h5 class="modal-title fl-type-heading-md">@Model.Title</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="confirm-rationale" data-testid="confirm-rationale">@Model.IrreversibilityRationale</p>
+                    <p class="confirm-rationale fl-type-body" data-testid="confirm-rationale">@Model.IrreversibilityRationale</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-link link-secondary" data-bs-dismiss="modal" data-testid="cancel-button">@Model.CancelLabel</button>
