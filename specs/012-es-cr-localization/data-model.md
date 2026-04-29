@@ -85,11 +85,15 @@ public sealed record StatusVisual(string Color, string Icon, string DisplayLabel
 
 **File:** `src/FundingPlatform.Infrastructure/Identity/EsCrIdentityErrorDescriber.cs` (new)
 
-Extends `Microsoft.AspNetCore.Identity.IdentityErrorDescriber`. Overrides every method that returns an `IdentityError` so the `Description` field is Spanish.
+Extends `Microsoft.AspNetCore.Identity.IdentityErrorDescriber`. **Overrides EVERY virtual method on the base class** so the `Description` field is Spanish for every Identity error code, including ones the platform doesn't currently surface (a future code path that triggers an unsurfaced error gets a Spanish description by default).
 
-### Identity error code coverage (per FR-013 / SC-004)
+### Identity error code coverage (per FR-013 / SC-004 — full base-class coverage)
 
-The base class exposes ~28 virtual methods. The subclass MUST override every method that the codebase actually surfaces to users. The minimum set, derived from current Identity usage:
+The base class exposes ~28 virtual methods. The subclass MUST override all of them. The 22 methods below are the ones currently surfaced by the platform (translation reviewer should prioritize these). The remaining 6 (e.g., `LoginAlreadyAssociated` was already in the table; methods related to two-factor / external-login flows the platform does not yet use) ALSO get Spanish descriptions even though the platform doesn't currently exercise them.
+
+**Verification**: a unit test using reflection (`typeof(IdentityErrorDescriber).GetMethods(...).Where(m => m.IsVirtual && !m.IsFinal && m.ReturnType == typeof(IdentityError))`) MUST confirm `EsCrIdentityErrorDescriber` overrides every member of that set.
+
+The 22 currently-surfaced methods (priority for voice-guide review):
 
 | Method | English (base) | Spanish (target) |
 |---|---|---|
