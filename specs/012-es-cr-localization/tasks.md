@@ -19,9 +19,9 @@
 
 **Purpose**: Capture the pre-translation baseline and verify the locale-probe finding from research Decision 1 still holds before any production code changes.
 
-- [ ] T001 Verify the `012-es-cr-localization` feature branch is checked out and the working tree is clean. Run `git status` and `git rev-parse --abbrev-ref HEAD`; abort if either is unexpected.
-- [ ] T002 [P] Capture the pre-translation Lighthouse baseline (LCP and TBT) for the applicant home dashboard, the reviewer queue dashboard, and the signing ceremony surface. Save the report under `specs/012-es-cr-localization/perf-baseline-pre.json` (or `.md` if Lighthouse JSON is too verbose) so post-translation comparison has a fixed reference (NFR-005 / SC-012 / OQ-5). **Threshold for "no regression"** (operationalizes NFR-005 since the spec leaves it qualitative): post-translation LCP MUST stay within `+5%` relative or `+200ms` absolute of the pre-baseline (whichever is greater); post-translation TBT MUST stay within `+10ms` absolute of the pre-baseline. Above either threshold counts as a measurable regression and blocks merge until investigated.
-- [ ] T003 [P] Re-run the `es-CR` CultureInfo probe described in [quickstart.md](./quickstart.md). Confirm that .NET defaults still produce comma-decimal / space-thousands / `d/M/yyyy` (matching research Decision 1). If the OS / .NET / ICU version has shifted defaults, the override pattern in T004 is still required but the override values may need to be revisited.
+- [x] T001 Verify the `012-es-cr-localization` feature branch is checked out and the working tree is clean. Run `git status` and `git rev-parse --abbrev-ref HEAD`; abort if either is unexpected.
+- [x] T002 [P] Capture the pre-translation Lighthouse baseline (LCP and TBT) for the applicant home dashboard, the reviewer queue dashboard, and the signing ceremony surface. Save the report under `specs/012-es-cr-localization/perf-baseline-pre.json` (or `.md` if Lighthouse JSON is too verbose) so post-translation comparison has a fixed reference (NFR-005 / SC-012 / OQ-5). **Threshold for "no regression"** (operationalizes NFR-005 since the spec leaves it qualitative): post-translation LCP MUST stay within `+5%` relative or `+200ms` absolute of the pre-baseline (whichever is greater); post-translation TBT MUST stay within `+10ms` absolute of the pre-baseline. Above either threshold counts as a measurable regression and blocks merge until investigated.
+- [x] T003 [P] Re-run the `es-CR` CultureInfo probe described in [quickstart.md](./quickstart.md). Confirm that .NET defaults still produce comma-decimal / space-thousands / `d/M/yyyy` (matching research Decision 1). If the OS / .NET / ICU version has shifted defaults, the override pattern in T004 is still required but the override values may need to be revisited.
 
 ---
 
@@ -31,17 +31,17 @@
 
 **⚠️ CRITICAL**: All tasks here MUST land before any per-story copy translation (US2, US4, US5, US6) can be reliably verified in a running app.
 
-- [ ] T004 Create `src/FundingPlatform.Web/Localization/EsCrCultureFactory.cs` exposing `public static CultureInfo Build()` that clones `CultureInfo.GetCultureInfo("es-CR")` and overrides: `NumberFormat.NumberDecimalSeparator = "."`, `NumberFormat.NumberGroupSeparator = ","`, `NumberFormat.CurrencyDecimalSeparator = "."`, `NumberFormat.CurrencyGroupSeparator = ","`, `DateTimeFormat.ShortDatePattern = "dd/MM/yyyy"`. Mark the returned `CultureInfo` read-only via `CultureInfo.ReadOnly(...)` to prevent accidental mutation downstream.
-- [ ] T005 Wire `RequestLocalization` middleware in `src/FundingPlatform.Web/Program.cs`. Use `EsCrCultureFactory.Build()` for `DefaultRequestCulture`, `SupportedCultures`, and `SupportedUICultures`. Call `o.RequestCultureProviders.Clear()` to disable Accept-Language negotiation. Call `app.UseRequestLocalization()` after `app.UseRouting()` and before `app.UseAuthentication()`.
-- [ ] T006 Configure `MvcOptions.ModelBindingMessageProvider` Spanish accessors inside the existing `builder.Services.AddControllersWithViews(...)` call in `src/FundingPlatform.Web/Program.cs`. Cover all eight provider methods: `SetValueIsInvalidAccessor`, `SetMissingBindRequiredValueAccessor`, `SetMissingKeyOrValueAccessor`, `SetMissingRequestBodyRequiredValueAccessor`, `SetValueMustNotBeNullAccessor`, `SetAttemptedValueIsInvalidAccessor`, `SetUnknownValueIsInvalidAccessor`, `SetValueMustBeANumberAccessor`. Use voice-guide-aligned formal Spanish strings.
-- [ ] T007 Create `src/FundingPlatform.Infrastructure/Identity/EsCrIdentityErrorDescriber.cs` extending `Microsoft.AspNetCore.Identity.IdentityErrorDescriber`. **Override EVERY virtual method on the base class** (28 in total — the table in [data-model.md §3](./data-model.md) lists the 22 currently-surfaced methods; extend to all 28 for completeness so a future code path that triggers `LoginAlreadyAssociated`, `RecoveryCodeRedemptionFailed`, or any other unsurfaced error gets a Spanish description by default). Place the new class in namespace `FundingPlatform.Infrastructure.Identity`. Verify completeness with reflection: `typeof(IdentityErrorDescriber).GetMethods(...).Where(m => m.IsVirtual && !m.IsFinal)` MUST be a subset of methods overridden by `EsCrIdentityErrorDescriber`.
-- [ ] T008 Register the describer in `src/FundingPlatform.Web/Program.cs` by appending `.AddErrorDescriber<EsCrIdentityErrorDescriber>()` to the `AddIdentity<...>().AddEntityFrameworkStores<...>().AddUserStore<SentinelAwareUserStore>()` chain (insert before `AddDefaultTokenProviders()`). Add the `using FundingPlatform.Infrastructure.Identity;` import.
-- [ ] T009 Add `lang="es-CR"` to the `<html>` element in `src/FundingPlatform.Web/Views/Shared/_Layout.cshtml` and `src/FundingPlatform.Web/Views/Shared/_AuthLayout.cshtml`. **Do not** translate any other copy in this task — it lands in US2 and US3.
-- [ ] T010 Flip `FundingAgreement:LocaleCode` value from `"es-CO"` to `"es-CR"` in `src/FundingPlatform.Web/appsettings.json` and `src/FundingPlatform.Web/appsettings.Development.json`.
-- [ ] T011 Flip the default `LocaleCode` from `"es-CO"` to `"es-CR"` in `src/FundingPlatform.Application/Options/FunderOptions.cs`. Also update the fallback default in `src/FundingPlatform.Web/Controllers/FundingAgreementController.cs` (the `string.IsNullOrWhiteSpace(options.LocaleCode) ? "es-CO" : options.LocaleCode` line) and in `src/FundingPlatform.Web/ViewModels/FundingAgreementDocumentViewModel.cs` (the field default).
-- [ ] T012 Flip the `localeCode` default from `"es-CO"` to `"es-CR"` in `src/FundingPlatform.AppHost/AppHost.cs`.
-- [ ] T013 Add a startup WARN log in `Program.cs` (per NFR-008) when the read `FundingAgreement:LocaleCode` value diverges from the request culture name (`es-CR`). Log via `ILogger<Program>` at WARN level, message in English (per NFR-001).
-- [ ] T014 Build smoke check: `dotnet build` returns green; `dotnet run --project src/FundingPlatform.AppHost` starts the Aspire stack; open the home page and confirm via browser DevTools that `<html lang="es-CR">` is set and that any rendered date or number on the page uses `dd/MM/yyyy` and `1,234.56` formatting (NB: copy is still English at this point — that's expected).
+- [x] T004 Create `src/FundingPlatform.Web/Localization/EsCrCultureFactory.cs` exposing `public static CultureInfo Build()` that clones `CultureInfo.GetCultureInfo("es-CR")` and overrides: `NumberFormat.NumberDecimalSeparator = "."`, `NumberFormat.NumberGroupSeparator = ","`, `NumberFormat.CurrencyDecimalSeparator = "."`, `NumberFormat.CurrencyGroupSeparator = ","`, `DateTimeFormat.ShortDatePattern = "dd/MM/yyyy"`. Mark the returned `CultureInfo` read-only via `CultureInfo.ReadOnly(...)` to prevent accidental mutation downstream.
+- [x] T005 Wire `RequestLocalization` middleware in `src/FundingPlatform.Web/Program.cs`. Use `EsCrCultureFactory.Build()` for `DefaultRequestCulture`, `SupportedCultures`, and `SupportedUICultures`. Call `o.RequestCultureProviders.Clear()` to disable Accept-Language negotiation. Call `app.UseRequestLocalization()` after `app.UseRouting()` and before `app.UseAuthentication()`.
+- [x] T006 Configure `MvcOptions.ModelBindingMessageProvider` Spanish accessors inside the existing `builder.Services.AddControllersWithViews(...)` call in `src/FundingPlatform.Web/Program.cs`. Cover all eight provider methods: `SetValueIsInvalidAccessor`, `SetMissingBindRequiredValueAccessor`, `SetMissingKeyOrValueAccessor`, `SetMissingRequestBodyRequiredValueAccessor`, `SetValueMustNotBeNullAccessor`, `SetAttemptedValueIsInvalidAccessor`, `SetUnknownValueIsInvalidAccessor`, `SetValueMustBeANumberAccessor`. Use voice-guide-aligned formal Spanish strings.
+- [x] T007 Create `src/FundingPlatform.Infrastructure/Identity/EsCrIdentityErrorDescriber.cs` extending `Microsoft.AspNetCore.Identity.IdentityErrorDescriber`. **Override EVERY virtual method on the base class** (28 in total — the table in [data-model.md §3](./data-model.md) lists the 22 currently-surfaced methods; extend to all 28 for completeness so a future code path that triggers `LoginAlreadyAssociated`, `RecoveryCodeRedemptionFailed`, or any other unsurfaced error gets a Spanish description by default). Place the new class in namespace `FundingPlatform.Infrastructure.Identity`. Verify completeness with reflection: `typeof(IdentityErrorDescriber).GetMethods(...).Where(m => m.IsVirtual && !m.IsFinal)` MUST be a subset of methods overridden by `EsCrIdentityErrorDescriber`.
+- [x] T008 Register the describer in `src/FundingPlatform.Web/Program.cs` by appending `.AddErrorDescriber<EsCrIdentityErrorDescriber>()` to the `AddIdentity<...>().AddEntityFrameworkStores<...>().AddUserStore<SentinelAwareUserStore>()` chain (insert before `AddDefaultTokenProviders()`). Add the `using FundingPlatform.Infrastructure.Identity;` import.
+- [x] T009 Add `lang="es-CR"` to the `<html>` element in `src/FundingPlatform.Web/Views/Shared/_Layout.cshtml` and `src/FundingPlatform.Web/Views/Shared/_AuthLayout.cshtml`. **Do not** translate any other copy in this task — it lands in US2 and US3.
+- [x] T010 Flip `FundingAgreement:LocaleCode` value from `"es-CO"` to `"es-CR"` in `src/FundingPlatform.Web/appsettings.json` and `src/FundingPlatform.Web/appsettings.Development.json`.
+- [x] T011 Flip the default `LocaleCode` from `"es-CO"` to `"es-CR"` in `src/FundingPlatform.Application/Options/FunderOptions.cs`. Also update the fallback default in `src/FundingPlatform.Web/Controllers/FundingAgreementController.cs` (the `string.IsNullOrWhiteSpace(options.LocaleCode) ? "es-CO" : options.LocaleCode` line) and in `src/FundingPlatform.Web/ViewModels/FundingAgreementDocumentViewModel.cs` (the field default).
+- [x] T012 Flip the `localeCode` default from `"es-CO"` to `"es-CR"` in `src/FundingPlatform.AppHost/AppHost.cs`.
+- [x] T013 Add a startup WARN log in `Program.cs` (per NFR-008) when the read `FundingAgreement:LocaleCode` value diverges from the request culture name (`es-CR`). Log via `ILogger<Program>` at WARN level, message in English (per NFR-001).
+- [x] T014 Build smoke check: `dotnet build` returns green; `dotnet run --project src/FundingPlatform.AppHost` starts the Aspire stack; open the home page and confirm via browser DevTools that `<html lang="es-CR">` is set and that any rendered date or number on the page uses `dd/MM/yyyy` and `1,234.56` formatting (NB: copy is still English at this point — that's expected).
 
 **Checkpoint**: Locale runtime wired; framework hooks ready. User-story phases can now begin (US1 first per spec).
 
@@ -53,10 +53,10 @@
 
 **Independent Test**: Open `specs/012-es-cr-localization/voice-guide.md` and verify the four required sections (register, tone, glossary, example pairs) per spec User Story 1's Independent Test description.
 
-- [ ] T015 [US1] Author `specs/012-es-cr-localization/voice-guide.md` skeleton with the four required sections per [data-model.md §4](./data-model.md). Use the [quickstart.md](./quickstart.md) "Day-1 Setup → Commit 1" snippet as the starting body. Cover at minimum: 14 glossary terms (application, applicant, reviewer, approver, supplier, quotation, item, funding, agreement, signature, appeal, response, sign, send back), 8 example pairs (Login screen, empty-state, status pill, validation error, Funding Agreement clause, success TempData, Identity error, page title).
-- [ ] T016 [US1] Submit the voice guide for review by the spec 011 voice owner (default per OQ-6) or the chosen CR-region reviewer. Capture the reviewer's name and review pass date in the artifact's frontmatter or a "Reviewers" section.
-- [ ] T017 [US1] Apply reviewer feedback to the voice guide. Resolve the open questions OQ-1 (final term choices) and OQ-2 (footer tagline phrasing) inside the artifact.
-- [ ] T018 [US1] Commit `voice-guide.md` as a STANDALONE commit on the feature branch — no per-view rewrite changes in the same commit. Confirm `git log --oneline 012-es-cr-localization -- specs/012-es-cr-localization/voice-guide.md` shows the commit hash that satisfies SC-009.
+- [x] T015 [US1] Author `specs/012-es-cr-localization/voice-guide.md` skeleton with the four required sections per [data-model.md §4](./data-model.md). Use the [quickstart.md](./quickstart.md) "Day-1 Setup → Commit 1" snippet as the starting body. Cover at minimum: 14 glossary terms (application, applicant, reviewer, approver, supplier, quotation, item, funding, agreement, signature, appeal, response, sign, send back), 8 example pairs (Login screen, empty-state, status pill, validation error, Funding Agreement clause, success TempData, Identity error, page title).
+- [x] T016 [US1] Submit the voice guide for review by the spec 011 voice owner (default per OQ-6) or the chosen CR-region reviewer. Capture the reviewer's name and review pass date in the artifact's frontmatter or a "Reviewers" section.
+- [x] T017 [US1] Apply reviewer feedback to the voice guide. Resolve the open questions OQ-1 (final term choices) and OQ-2 (footer tagline phrasing) inside the artifact.
+- [x] T018 [US1] Commit `voice-guide.md` as a STANDALONE commit on the feature branch — no per-view rewrite changes in the same commit. Confirm `git log --oneline 012-es-cr-localization -- specs/012-es-cr-localization/voice-guide.md` shows the commit hash that satisfies SC-009.
 
 **Checkpoint**: Voice guide committed; per-view rewrites can now reference it.
 
@@ -68,13 +68,13 @@
 
 **Independent Test**: Walk every authenticated view, the auth pages, the error page; inspect title, header, footer, brand SVGs; confirm zero "Forge" leakage. DevTools: `window.ForgeMotion === undefined` and `window.PlatformMotion` defined.
 
-- [ ] T019 [US3] Update `src/FundingPlatform.Web/Views/Shared/_Layout.cshtml`: title suffix `"Forge"` → `"Capital Semilla"`; header brand link text `"Forge"` → `"Capital Semilla"`; footer copyright + tagline → `"© 2026 Capital Semilla · diseñado para emprendedores"` (final tagline phrasing from voice guide OQ-2).
-- [ ] T020 [US3] Update brand wordmark `src/FundingPlatform.Web/wwwroot/lib/brand/wordmark.svg`: `<text>` content from `"Forge"` to `"Capital Semilla"`; `aria-label` from `"Forge wordmark"` to the voice-guide-chosen Spanish equivalent. If a designer-delivered redrawn wordmark is not yet available (per FR-023 / EC-7), use a textual placeholder rendering "Capital Semilla" in the Fraunces display font.
-- [ ] T021 [P] [US3] Update brand mark `src/FundingPlatform.Web/wwwroot/lib/brand/mark.svg`: `aria-label` from `"Forge mark"` to the voice-guide Spanish wording.
-- [ ] T022 [P] [US3] Rename the JS namespace in `src/FundingPlatform.Web/wwwroot/js/motion.js` line 143: `root.ForgeMotion = {` → `root.PlatformMotion = {`. No backwards-compatible alias is created.
-- [ ] T023 [P] [US3] Update six `window.ForgeMotion` callers in `src/FundingPlatform.Web/wwwroot/js/facelift-init.js` (lines 8, 9, 10, 11, 35, 36, 54, 57 per the brainstorm survey) to `window.PlatformMotion`. Verify with `grep -n 'ForgeMotion' src/FundingPlatform.Web/wwwroot/js/`.
-- [ ] T024 [P] [US3] Update brand-reference comment in `src/FundingPlatform.Web/wwwroot/css/tokens.css` line ~150: `"inherits the Forge palette"` → `"inherits the Capital Semilla palette"` (or genericize to `"inherits the platform palette"` if voice guide prefers brand-neutral comments).
-- [ ] T025 [US3] Run brand-sweep grep: `grep -rEn '\bForge\b' src/FundingPlatform.Web/ tests/ --include='*.cs' --include='*.cshtml' --include='*.js' --include='*.svg' --include='*.css' --include='*.json' | grep -vE 'Forgery|forgery'`. Confirm zero results outside `AntiForgery`-family framework symbols and jQuery vendor `// Forget` comments. Update or remove any straggler.
+- [x] T019 [US3] Update `src/FundingPlatform.Web/Views/Shared/_Layout.cshtml`: title suffix `"Forge"` → `"Capital Semilla"`; header brand link text `"Forge"` → `"Capital Semilla"`; footer copyright + tagline → `"© 2026 Capital Semilla · diseñado para emprendedores"` (final tagline phrasing from voice guide OQ-2).
+- [x] T020 [US3] Update brand wordmark `src/FundingPlatform.Web/wwwroot/lib/brand/wordmark.svg`: `<text>` content from `"Forge"` to `"Capital Semilla"`; `aria-label` from `"Forge wordmark"` to the voice-guide-chosen Spanish equivalent. If a designer-delivered redrawn wordmark is not yet available (per FR-023 / EC-7), use a textual placeholder rendering "Capital Semilla" in the Fraunces display font.
+- [x] T021 [P] [US3] Update brand mark `src/FundingPlatform.Web/wwwroot/lib/brand/mark.svg`: `aria-label` from `"Forge mark"` to the voice-guide Spanish wording.
+- [x] T022 [P] [US3] Rename the JS namespace in `src/FundingPlatform.Web/wwwroot/js/motion.js` line 143: `root.ForgeMotion = {` → `root.PlatformMotion = {`. No backwards-compatible alias is created.
+- [x] T023 [P] [US3] Update six `window.ForgeMotion` callers in `src/FundingPlatform.Web/wwwroot/js/facelift-init.js` (lines 8, 9, 10, 11, 35, 36, 54, 57 per the brainstorm survey) to `window.PlatformMotion`. Verify with `grep -n 'ForgeMotion' src/FundingPlatform.Web/wwwroot/js/`.
+- [x] T024 [P] [US3] Update brand-reference comment in `src/FundingPlatform.Web/wwwroot/css/tokens.css` line ~150: `"inherits the Forge palette"` → `"inherits the Capital Semilla palette"` (or genericize to `"inherits the platform palette"` if voice guide prefers brand-neutral comments).
+- [x] T025 [US3] Run brand-sweep grep: `grep -rEn '\bForge\b' src/FundingPlatform.Web/ tests/ --include='*.cs' --include='*.cshtml' --include='*.js' --include='*.svg' --include='*.css' --include='*.json' | grep -vE 'Forgery|forgery'`. Confirm zero results outside `AntiForgery`-family framework symbols and jQuery vendor `// Forget` comments. Update or remove any straggler.
 
 **Checkpoint**: Every page reads "Capital Semilla". JS globals renamed. SC-002 testable.
 
@@ -86,10 +86,10 @@
 
 **Independent Test**: Enumerate every value of every domain enum (`ApplicationState`, `ItemReviewStatus`, `AppealStatus`, `SignedUploadStatus`); confirm each returns a non-empty Spanish `DisplayLabel`. Verify zero `enum.ToString()` callers reach UI surfaces.
 
-- [ ] T026 [US6] Translate the 18 `DisplayLabel` values in `src/FundingPlatform.Web/Helpers/StatusVisualMap.cs` per the table in [data-model.md §2](./data-model.md). Use voice-guide-finalized terminology where ambiguous (e.g., "Resolved" for `ApplicationState.Resolved` vs `AppealStatus.Resolved` — both `"Resuelta"` per data-model.md, but verify against voice guide).
-- [ ] T027 [US6] Add a registry-coverage test at `tests/FundingPlatform.Tests.Integration/Web/StatusVisualMapCoverageTests.cs`: enumerate every value of `ApplicationState`, `ItemReviewStatus`, `AppealStatus`, `SignedUploadStatus` via reflection (or hard-coded list); assert `StatusVisualMap.For(...)` returns a non-empty `DisplayLabel` for each. Use `Assert.That(label.Length > 0, "Missing Spanish label for " + enumValue)`. Also add an assertion that the label contains at least one non-ASCII Spanish character (via regex), guarding against accidental English regressions (e.g., `Assert.That(Regex.IsMatch(label, @"[áéíóúñÁÉÍÓÚÑ]") || allowedAsciiSpanishLabels.Contains(label))` — pin the allowedAsciiSpanishLabels list explicitly).
-- [ ] T028 [US6] Run a static analysis check for `enum.ToString()` calls reaching UI surfaces. Use ripgrep: `rg -t cs '\.ToString\(\)' src/FundingPlatform.Web/Views/ src/FundingPlatform.Web/ViewModels/` and audit every match — confirm none of them are domain enum values reaching a Razor render. Document the audit result in the PR description (zero matches expected per research Decision 5).
-- [ ] T028a [US6] Add UI currency-rendering verification covering [FR-019](./spec.md#functional-requirements). Render at least three `Quotation` instances (one CRC, one USD, one GBP) on a representative view (e.g., `Views/Supplier/Add.cshtml` or any view that shows a quotation amount) and assert that: (a) the currency symbol prefixes correctly (`₡`, `$`, `£`); (b) the amount renders with the format-overridden separators (`1,234.56`); (c) the ISO code (`CRC`, `USD`, `GBP`) appears alongside per spec 010's existing rendering. Implement either as a Playwright E2E test under `tests/FundingPlatform.Tests.E2E/Tests/CurrencyDisplayUnderEsCrTests.cs` or as a Razor-rendered fixture asserting on the rendered HTML. Closes the FR-019 verification gap surfaced during plan review.
+- [x] T026 [US6] Translate the 18 `DisplayLabel` values in `src/FundingPlatform.Web/Helpers/StatusVisualMap.cs` per the table in [data-model.md §2](./data-model.md). Use voice-guide-finalized terminology where ambiguous (e.g., "Resolved" for `ApplicationState.Resolved` vs `AppealStatus.Resolved` — both `"Resuelta"` per data-model.md, but verify against voice guide).
+- [x] T027 [US6] Add a registry-coverage test at `tests/FundingPlatform.Tests.Integration/Web/StatusVisualMapCoverageTests.cs`: enumerate every value of `ApplicationState`, `ItemReviewStatus`, `AppealStatus`, `SignedUploadStatus` via reflection (or hard-coded list); assert `StatusVisualMap.For(...)` returns a non-empty `DisplayLabel` for each. Use `Assert.That(label.Length > 0, "Missing Spanish label for " + enumValue)`. Also add an assertion that the label contains at least one non-ASCII Spanish character (via regex), guarding against accidental English regressions (e.g., `Assert.That(Regex.IsMatch(label, @"[áéíóúñÁÉÍÓÚÑ]") || allowedAsciiSpanishLabels.Contains(label))` — pin the allowedAsciiSpanishLabels list explicitly).
+- [x] T028 [US6] Run a static analysis check for `enum.ToString()` calls reaching UI surfaces. Use ripgrep: `rg -t cs '\.ToString\(\)' src/FundingPlatform.Web/Views/ src/FundingPlatform.Web/ViewModels/` and audit every match — confirm none of them are domain enum values reaching a Razor render. Document the audit result in the PR description (zero matches expected per research Decision 5).
+- [x] T028a [US6] Add UI currency-rendering verification covering [FR-019](./spec.md#functional-requirements). Render at least three `Quotation` instances (one CRC, one USD, one GBP) on a representative view (e.g., `Views/Supplier/Add.cshtml` or any view that shows a quotation amount) and assert that: (a) the currency symbol prefixes correctly (`₡`, `$`, `£`); (b) the amount renders with the format-overridden separators (`1,234.56`); (c) the ISO code (`CRC`, `USD`, `GBP`) appears alongside per spec 010's existing rendering. Implement either as a Playwright E2E test under `tests/FundingPlatform.Tests.E2E/Tests/CurrencyDisplayUnderEsCrTests.cs` or as a Razor-rendered fixture asserting on the rendered HTML. Closes the FR-019 verification gap surfaced during plan review.
 
 **Checkpoint**: Every status pill, journey label, and detail-page status indicator now renders Spanish without changes to consumers.
 
@@ -103,30 +103,30 @@
 
 ### View Models — DataAnnotation translations (14 files, 94 attributes)
 
-- [ ] T029 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/AddItemViewModel.cs` (3 properties, 8 attributes total). Set explicit `ErrorMessage = "..."` on each `[Required]`; translate `[Display(Name=...)]` to Spanish per voice guide.
-- [ ] T030 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/EditItemViewModel.cs` (mirror of AddItem).
-- [ ] T031 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/AddQuotationViewModel.cs` (5 properties incl. `Price` Range message and `Currency` StringLength message).
-- [ ] T032 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/AddSupplierViewModel.cs` (largest — 17 properties incl. CCSS / Hacienda / SICOP compliance flags; CR-specific terminology via voice guide).
-- [ ] T033 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/LoginViewModel.cs` and `src/FundingPlatform.Web/ViewModels/RegisterViewModel.cs` (auth flow).
-- [ ] T034 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/ChangePasswordViewModel.cs` (3 properties incl. `Compare`).
-- [ ] T035 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/CreateImpactTemplateViewModel.cs` and `src/FundingPlatform.Web/ViewModels/EditImpactTemplateViewModel.cs` (incl. nested `ParameterDefinitionViewModel`).
-- [ ] T036 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/SystemConfigurationViewModel.cs` and `src/FundingPlatform.Web/ViewModels/UploadSignedAgreementViewModel.cs`.
-- [ ] T037 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/AdminUserCreateViewModel.cs` (7 properties).
-- [ ] T038 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/AdminUserEditViewModel.cs` (7 properties).
-- [ ] T039 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/AdminUserResetPasswordViewModel.cs` (3 properties incl. `Compare`).
+- [x] T029 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/AddItemViewModel.cs` (3 properties, 8 attributes total). Set explicit `ErrorMessage = "..."` on each `[Required]`; translate `[Display(Name=...)]` to Spanish per voice guide.
+- [x] T030 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/EditItemViewModel.cs` (mirror of AddItem).
+- [x] T031 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/AddQuotationViewModel.cs` (5 properties incl. `Price` Range message and `Currency` StringLength message).
+- [x] T032 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/AddSupplierViewModel.cs` (largest — 17 properties incl. CCSS / Hacienda / SICOP compliance flags; CR-specific terminology via voice guide).
+- [x] T033 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/LoginViewModel.cs` and `src/FundingPlatform.Web/ViewModels/RegisterViewModel.cs` (auth flow).
+- [x] T034 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/ChangePasswordViewModel.cs` (3 properties incl. `Compare`).
+- [x] T035 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/CreateImpactTemplateViewModel.cs` and `src/FundingPlatform.Web/ViewModels/EditImpactTemplateViewModel.cs` (incl. nested `ParameterDefinitionViewModel`).
+- [x] T036 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/SystemConfigurationViewModel.cs` and `src/FundingPlatform.Web/ViewModels/UploadSignedAgreementViewModel.cs`.
+- [x] T037 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/AdminUserCreateViewModel.cs` (7 properties).
+- [x] T038 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/AdminUserEditViewModel.cs` (7 properties).
+- [x] T039 [P] [US5] Translate DataAnnotations in `src/FundingPlatform.Web/ViewModels/AdminUserResetPasswordViewModel.cs` (3 properties incl. `Compare`).
 
 ### Controllers — user-facing strings (10 controllers, 52 sites)
 
-- [ ] T040 [P] [US5] Translate user-facing strings in `src/FundingPlatform.Web/Controllers/ApplicantResponseController.cs` (4 TempData success messages on lines ~59, ~81, ~120, ~141 per research Decision 3). Keys remain English; values translate.
-- [ ] T041 [P] [US5] Translate user-facing strings in `src/FundingPlatform.Web/Controllers/ReviewController.cs` (5 TempData strings on lines ~128, ~142–144, ~161, ~190).
-- [ ] T042 [P] [US5] Translate user-facing strings in `src/FundingPlatform.Web/Controllers/AdminUsersController.cs` (3 TempData + 2 ModelState strings; note interpolated strings like `"User '{vm.Email}' created."` keep `{vm.Email}` placeholder).
-- [ ] T043 [P] [US5] Translate user-facing strings in `src/FundingPlatform.Web/Controllers/ItemController.cs` (3 TempData + 1 ModelState string).
-- [ ] T044 [P] [US5] Translate user-facing strings in `src/FundingPlatform.Web/Controllers/QuotationController.cs` (3 TempData + 2 ModelState strings; the duplicate `"A quotation file is required."` consolidates into a `private const string QuotationFileRequiredMessage = "Se requiere el archivo de la cotización.";` field on the controller).
-- [ ] T045 [P] [US5] Translate user-facing strings in `src/FundingPlatform.Web/Controllers/FundingAgreementController.cs` (3 TempData + 2 TempData "FundingAgreementError" strings; `"A signed PDF file is required."` consolidates into a `private const string SignedPdfRequiredMessage` field).
-- [ ] T046 [P] [US5] Translate user-facing strings in `src/FundingPlatform.Web/Controllers/AdminController.cs` (3 TempData strings).
-- [ ] T047 [P] [US5] Translate user-facing strings in `src/FundingPlatform.Web/Controllers/SupplierController.cs` (1 TempData + 1 ModelState; reuse the QuotationFileRequiredMessage convention if pattern emerges; otherwise inline).
-- [ ] T048 [P] [US5] Translate user-facing strings in `src/FundingPlatform.Web/Controllers/AccountController.cs` (1 ModelState `"Invalid login attempt."` → `"Inicio de sesión inválido."`; 2 dev-endpoint return literals — leave English IF they're only callable from a dev-only auth-debug endpoint, otherwise translate per voice guide).
-- [ ] T049 [P] [US5] Translate user-facing strings in `src/FundingPlatform.Web/Controllers/AdminReportsController.cs` (1 ViewData string about aging threshold range).
+- [x] T040 [P] [US5] Translate user-facing strings in `src/FundingPlatform.Web/Controllers/ApplicantResponseController.cs` (4 TempData success messages on lines ~59, ~81, ~120, ~141 per research Decision 3). Keys remain English; values translate.
+- [x] T041 [P] [US5] Translate user-facing strings in `src/FundingPlatform.Web/Controllers/ReviewController.cs` (5 TempData strings on lines ~128, ~142–144, ~161, ~190).
+- [x] T042 [P] [US5] Translate user-facing strings in `src/FundingPlatform.Web/Controllers/AdminUsersController.cs` (3 TempData + 2 ModelState strings; note interpolated strings like `"User '{vm.Email}' created."` keep `{vm.Email}` placeholder).
+- [x] T043 [P] [US5] Translate user-facing strings in `src/FundingPlatform.Web/Controllers/ItemController.cs` (3 TempData + 1 ModelState string).
+- [x] T044 [P] [US5] Translate user-facing strings in `src/FundingPlatform.Web/Controllers/QuotationController.cs` (3 TempData + 2 ModelState strings; the duplicate `"A quotation file is required."` consolidates into a `private const string QuotationFileRequiredMessage = "Se requiere el archivo de la cotización.";` field on the controller).
+- [x] T045 [P] [US5] Translate user-facing strings in `src/FundingPlatform.Web/Controllers/FundingAgreementController.cs` (3 TempData + 2 TempData "FundingAgreementError" strings; `"A signed PDF file is required."` consolidates into a `private const string SignedPdfRequiredMessage` field).
+- [x] T046 [P] [US5] Translate user-facing strings in `src/FundingPlatform.Web/Controllers/AdminController.cs` (3 TempData strings).
+- [x] T047 [P] [US5] Translate user-facing strings in `src/FundingPlatform.Web/Controllers/SupplierController.cs` (1 TempData + 1 ModelState; reuse the QuotationFileRequiredMessage convention if pattern emerges; otherwise inline).
+- [x] T048 [P] [US5] Translate user-facing strings in `src/FundingPlatform.Web/Controllers/AccountController.cs` (1 ModelState `"Invalid login attempt."` → `"Inicio de sesión inválido."`; 2 dev-endpoint return literals — leave English IF they're only callable from a dev-only auth-debug endpoint, otherwise translate per voice guide).
+- [x] T049 [P] [US5] Translate user-facing strings in `src/FundingPlatform.Web/Controllers/AdminReportsController.cs` (1 ViewData string about aging threshold range).
 
 **Checkpoint**: All form validation, Identity errors, and controller-emitted messages render Spanish. SC-003 / SC-004 testable.
 
@@ -140,37 +140,37 @@
 
 ### Auth surfaces
 
-- [ ] T050 [P] [US2] Translate `src/FundingPlatform.Web/Views/Account/Login.cshtml`. Per voice guide: page title, hero copy, label text, button text, error placeholder.
-- [ ] T051 [P] [US2] Translate `src/FundingPlatform.Web/Views/Account/Register.cshtml`. Same surfaces as Login plus the legal-id, first-name, last-name labels.
-- [ ] T052 [P] [US2] Translate `src/FundingPlatform.Web/Views/Account/ChangePassword.cshtml`.
-- [ ] T053 [P] [US2] Translate `src/FundingPlatform.Web/Views/Account/AccessDenied.cshtml`.
+- [x] T050 [P] [US2] Translate `src/FundingPlatform.Web/Views/Account/Login.cshtml`. Per voice guide: page title, hero copy, label text, button text, error placeholder.
+- [x] T051 [P] [US2] Translate `src/FundingPlatform.Web/Views/Account/Register.cshtml`. Same surfaces as Login plus the legal-id, first-name, last-name labels.
+- [x] T052 [P] [US2] Translate `src/FundingPlatform.Web/Views/Account/ChangePassword.cshtml`.
+- [x] T053 [P] [US2] Translate `src/FundingPlatform.Web/Views/Account/AccessDenied.cshtml`.
 
 ### Shared chrome
 
-- [ ] T054 [US2] Translate `src/FundingPlatform.Web/Views/Shared/Error.cshtml` (generic error page per EH-5; in dev-only correlation IDs / stack traces stay English).
-- [ ] T055 [US2] Translate any user-visible copy that remains in `src/FundingPlatform.Web/Views/Shared/_Layout.cshtml` and `src/FundingPlatform.Web/Views/Shared/_AuthLayout.cshtml` after T009 / T019 (sidebar nav labels, user menu items, footer beyond brand line, breadcrumb defaults, etc.).
-- [ ] T056 [P] [US2] Audit `src/FundingPlatform.Web/Views/Shared/Components/_StatusPill.cshtml` for any in-template English copy beyond the registry consumption — likely none, but verify and translate if found.
+- [x] T054 [US2] Translate `src/FundingPlatform.Web/Views/Shared/Error.cshtml` (generic error page per EH-5; in dev-only correlation IDs / stack traces stay English).
+- [x] T055 [US2] Translate any user-visible copy that remains in `src/FundingPlatform.Web/Views/Shared/_Layout.cshtml` and `src/FundingPlatform.Web/Views/Shared/_AuthLayout.cshtml` after T009 / T019 (sidebar nav labels, user menu items, footer beyond brand line, breadcrumb defaults, etc.).
+- [x] T056 [P] [US2] Audit `src/FundingPlatform.Web/Views/Shared/Components/_StatusPill.cshtml` for any in-template English copy beyond the registry consumption — likely none, but verify and translate if found.
 
 ### Applicant flow surfaces
 
-- [ ] T057 [P] [US2] Translate `src/FundingPlatform.Web/Views/Home/` views (2 files: applicant home dashboard incl. hero / KPI strip / awaiting-action callout / activity feed / resources strip; reviewer-equivalent home if present).
-- [ ] T058 [P] [US2] Translate `src/FundingPlatform.Web/Views/Application/` views (4 files).
-- [ ] T059 [P] [US2] Translate `src/FundingPlatform.Web/Views/Applications/` views (1 file).
-- [ ] T060 [P] [US2] Translate `src/FundingPlatform.Web/Views/Item/` views (3 files: Add, Edit, Impact).
-- [ ] T061 [P] [US2] Translate `src/FundingPlatform.Web/Views/Quotation/Add.cshtml`.
-- [ ] T062 [P] [US2] Translate `src/FundingPlatform.Web/Views/Supplier/Add.cshtml` (incl. CCSS / Hacienda / SICOP compliance labels — CR-specific terminology per voice guide).
-- [ ] T063 [P] [US2] Translate `src/FundingPlatform.Web/Views/ApplicantResponse/` views (3 files: Index, Appeal, _AppealMessage partial).
+- [x] T057 [P] [US2] Translate `src/FundingPlatform.Web/Views/Home/` views (2 files: applicant home dashboard incl. hero / KPI strip / awaiting-action callout / activity feed / resources strip; reviewer-equivalent home if present).
+- [x] T058 [P] [US2] Translate `src/FundingPlatform.Web/Views/Application/` views (4 files).
+- [x] T059 [P] [US2] Translate `src/FundingPlatform.Web/Views/Applications/` views (1 file).
+- [x] T060 [P] [US2] Translate `src/FundingPlatform.Web/Views/Item/` views (3 files: Add, Edit, Impact).
+- [x] T061 [P] [US2] Translate `src/FundingPlatform.Web/Views/Quotation/Add.cshtml`.
+- [x] T062 [P] [US2] Translate `src/FundingPlatform.Web/Views/Supplier/Add.cshtml` (incl. CCSS / Hacienda / SICOP compliance labels — CR-specific terminology per voice guide).
+- [x] T063 [P] [US2] Translate `src/FundingPlatform.Web/Views/ApplicantResponse/` views (3 files: Index, Appeal, _AppealMessage partial).
 
 ### Reviewer / approver / admin surfaces
 
-- [ ] T064 [US2] Translate `src/FundingPlatform.Web/Views/Review/` views (7 files: Index, Review, QueueDashboard, GenerateAgreement, SigningInbox, _ReviewerQueueRows, _ReviewTabs). Sequential rather than parallel because these views share design-token-driven partials and a unified review.
-- [ ] T065 [US2] Translate `src/FundingPlatform.Web/Views/Admin/` views (14 files — largest area). Sequential within this task because the views share the admin sidebar and Tabler shell.
+- [x] T064 [US2] Translate `src/FundingPlatform.Web/Views/Review/` views (7 files: Index, Review, QueueDashboard, GenerateAgreement, SigningInbox, _ReviewerQueueRows, _ReviewTabs). Sequential rather than parallel because these views share design-token-driven partials and a unified review.
+- [x] T065 [US2] Translate `src/FundingPlatform.Web/Views/Admin/` views (14 files — largest area). Sequential within this task because the views share the admin sidebar and Tabler shell.
 
 ### Verification
 
-- [ ] T065a [US2] Audit the 9 empty-state SVG illustrations introduced by spec 011 under `src/FundingPlatform.Web/wwwroot/lib/empty-states/` (or wherever the spec 011 illustrations are vendored — confirm path during implementation). For each `.svg` file: open and search for any `<text>` element containing English glyphs. Closes [FR-023](./spec.md#functional-requirements) / [EC-4](./spec.md#edge-cases). For each finding: (a) document file path, line number, and English text; (b) raise as a designer follow-up tracked in the integration PR description; (c) per [EC-7](./spec.md#edge-cases) the spec MAY ship before designer rework lands. Caption text in surrounding Razor is translated regardless via T057 / T064 / T065. **Must complete before T066** (visual review per surface).
-- [ ] T066 [US2] Run the full Aspire dev stack and walk every authenticated route as each role (applicant, reviewer, approver, admin). Capture screenshots for the integration PR. Note any voice / register inconsistencies; refer back to voice guide; resolve before continuing.
-- [ ] T067 [US2] Run the SC-001 / NFR-002 regex sweep on rendered HTML or on the source `.cshtml` files: `grep -rEn '\b[A-Z][a-z]{3,}\b' src/FundingPlatform.Web/Views/` and audit every match against an allowlist (Capital, Semilla, USD, GBP, CRC, EUR, CRC, Aspire, Tabler, Fraunces, Inter, JetBrains, sentinel test-data tokens, ItemReviewStatus, ApplicationState — only as embedded data attributes, not display copy). Flag any non-allowlisted leakage and fix.
+- [x] T065a [US2] Audit the 9 empty-state SVG illustrations introduced by spec 011 under `src/FundingPlatform.Web/wwwroot/lib/empty-states/` (or wherever the spec 011 illustrations are vendored — confirm path during implementation). For each `.svg` file: open and search for any `<text>` element containing English glyphs. Closes [FR-023](./spec.md#functional-requirements) / [EC-4](./spec.md#edge-cases). For each finding: (a) document file path, line number, and English text; (b) raise as a designer follow-up tracked in the integration PR description; (c) per [EC-7](./spec.md#edge-cases) the spec MAY ship before designer rework lands. Caption text in surrounding Razor is translated regardless via T057 / T064 / T065. **Must complete before T066** (visual review per surface).
+- [x] T066 [US2] Run the full Aspire dev stack and walk every authenticated route as each role (applicant, reviewer, approver, admin). Capture screenshots for the integration PR. Note any voice / register inconsistencies; refer back to voice guide; resolve before continuing.
+- [x] T067 [US2] Run the SC-001 / NFR-002 regex sweep on rendered HTML or on the source `.cshtml` files: `grep -rEn '\b[A-Z][a-z]{3,}\b' src/FundingPlatform.Web/Views/` and audit every match against an allowlist (Capital, Semilla, USD, GBP, CRC, EUR, CRC, Aspire, Tabler, Fraunces, Inter, JetBrains, sentinel test-data tokens, ItemReviewStatus, ApplicationState — only as embedded data attributes, not display copy). Flag any non-allowlisted leakage and fix.
 
 **Checkpoint**: Every authenticated screen renders fully Spanish. SC-001 / SC-006 testable.
 
@@ -182,12 +182,12 @@
 
 **Independent Test**: Trigger Funding Agreement generation for an unsigned application; inspect the produced PDF. Then inspect a previously-signed PDF and confirm byte-identical pre-deployment state.
 
-- [ ] T068 [US4] Translate `src/FundingPlatform.Web/Views/FundingAgreement/Document.cshtml` (orchestrator, 9 lines).
-- [ ] T069 [US4] Translate `src/FundingPlatform.Web/Views/FundingAgreement/_FundingAgreementLayout.cshtml` (HTML frame, 123 lines): document title, reference number labels, generation timestamp label, funder identification block (legal name, tax/legal ID, address, email, phone labels), applicant identification block. Use formal Spanish business register per voice guide.
-- [ ] T070 [US4] Translate the four partials in `src/FundingPlatform.Web/Views/FundingAgreement/` for: items table headers (Product, Category, Supplier, Unit Price, Line Total — translate per voice guide), totals row label, Terms & Conditions placeholder body (~100 words; mark legal text for explicit voice-guide review since legal register requires care), signature blocks (For the Funder / Applicant labels). Final terminology from voice guide (`convenio` vs `acuerdo`, `proveedor` vs `suministrador`, etc.).
-- [ ] T071 [US4] Verify the existing `Money(currency, decimal)` helper and date-formatting calls (`@Model.GeneratedAtUtc.ToString("yyyy-MM-dd HH:mm", culture)`) render correctly under the new culture. Render a representative agreement and inspect the generated PDF for: Spanish copy throughout; numeric format `1,234.56`; date format `dd/MM/yyyy`; currency rendering per per-quotation Currency code (e.g., `₡1,234.56` for CRC, `$1,234.56` for USD).
-- [ ] T072 [US4] PDF visual-diff regression check (closes the "spec 005 PDF visual integrity" open thread carried into spec 010 OQ): render the SAME representative agreement under (a) the prior es-CO config (use a checkout of `b9da2da` or earlier) and (b) the new es-CR config; compare layout. Flag any layout breakage attributable to the number-separator shift (`1.234,56` → `1,234.56` — different glyph widths). Tighten layout in `_FundingAgreementLayout.cshtml` if needed.
-- [ ] T073 [US4] Verify signed-agreement immutability: locate one previously-signed PDF artifact in dev fixtures (or generate one before merge); compute `sha256sum`; deploy the new branch; recompute `sha256sum` on the same artifact; confirm identical hashes. Spec 006 immutability honored.
+- [x] T068 [US4] Translate `src/FundingPlatform.Web/Views/FundingAgreement/Document.cshtml` (orchestrator, 9 lines).
+- [x] T069 [US4] Translate `src/FundingPlatform.Web/Views/FundingAgreement/_FundingAgreementLayout.cshtml` (HTML frame, 123 lines): document title, reference number labels, generation timestamp label, funder identification block (legal name, tax/legal ID, address, email, phone labels), applicant identification block. Use formal Spanish business register per voice guide.
+- [x] T070 [US4] Translate the four partials in `src/FundingPlatform.Web/Views/FundingAgreement/` for: items table headers (Product, Category, Supplier, Unit Price, Line Total — translate per voice guide), totals row label, Terms & Conditions placeholder body (~100 words; mark legal text for explicit voice-guide review since legal register requires care), signature blocks (For the Funder / Applicant labels). Final terminology from voice guide (`convenio` vs `acuerdo`, `proveedor` vs `suministrador`, etc.).
+- [x] T071 [US4] Verify the existing `Money(currency, decimal)` helper and date-formatting calls (`@Model.GeneratedAtUtc.ToString("yyyy-MM-dd HH:mm", culture)`) render correctly under the new culture. Render a representative agreement and inspect the generated PDF for: Spanish copy throughout; numeric format `1,234.56`; date format `dd/MM/yyyy`; currency rendering per per-quotation Currency code (e.g., `₡1,234.56` for CRC, `$1,234.56` for USD).
+- [x] T072 [US4] PDF visual-diff regression check (closes the "spec 005 PDF visual integrity" open thread carried into spec 010 OQ): render the SAME representative agreement under (a) the prior es-CO config (use a checkout of `b9da2da` or earlier) and (b) the new es-CR config; compare layout. Flag any layout breakage attributable to the number-separator shift (`1.234,56` → `1,234.56` — different glyph widths). Tighten layout in `_FundingAgreementLayout.cshtml` if needed.
+- [x] T073 [US4] Verify signed-agreement immutability: locate one previously-signed PDF artifact in dev fixtures (or generate one before merge); compute `sha256sum`; deploy the new branch; recompute `sha256sum` on the same artifact; confirm identical hashes. Spec 006 immutability honored.
 
 **Checkpoint**: New Funding Agreements render formally in Spanish. Already-signed agreements unchanged. SC-005 testable.
 
@@ -201,48 +201,48 @@
 
 ### Constants module
 
-- [ ] T074 [US7] Create `tests/FundingPlatform.Tests.E2E/Constants/UiCopy.cs` with the ~50 unique Spanish strings consumed by POMs and shared fixtures, organized per the layout in [data-model.md §5](./data-model.md). Include both action-button strings (top-level constants) and state-label strings (nested `static class State`). Source strings from voice guide and `StatusVisualMap.cs` (the latter for state labels — duplicate intentionally per the data-model.md note).
+- [x] T074 [US7] Create `tests/FundingPlatform.Tests.E2E/Constants/UiCopy.cs` with the ~50 unique Spanish strings consumed by POMs and shared fixtures, organized per the layout in [data-model.md §5](./data-model.md). Include both action-button strings (top-level constants) and state-label strings (nested `static class State`). Source strings from voice guide and `StatusVisualMap.cs` (the latter for state labels — duplicate intentionally per the data-model.md note).
 
 ### POM refactors (high-leverage — cascading consumers)
 
-- [ ] T075 [P] [US7] Refactor `tests/FundingPlatform.Tests.E2E/PageObjects/AdminPage.cs` (4 text-bearing properties: `ManageTemplatesLink`, `ManageConfigurationLink`, `CreateNewTemplate`, `SaveConfiguration`) to consume `UiCopy.X`.
-- [ ] T076 [P] [US7] Refactor `tests/FundingPlatform.Tests.E2E/PageObjects/ApplicationPage.cs` (3 text-bearing properties: `CreateDraftApplication`, `AddItem`, `SubmitApplication`) to consume `UiCopy.X`.
-- [ ] T077 [P] [US7] Refactor `tests/FundingPlatform.Tests.E2E/PageObjects/ReviewApplicationPage.cs` (2 text-bearing properties: `SendBack`, `FinalizeReview`) to consume `UiCopy.X`.
-- [ ] T078 [P] [US7] Refactor `tests/FundingPlatform.Tests.E2E/PageObjects/ReviewQueuePage.cs` (1 text-bearing property: `NoApplicationsMessage`) to consume `UiCopy.X`.
-- [ ] T079 [P] [US7] Audit and refactor remaining POMs that hold text-based properties: `LoginPage.cs`, `RegisterPage.cs`, `ChangePasswordPage.cs`, `ItemPage.cs`, `QuotationPage.cs`, `SupplierPage.cs`, `ApplicantResponsePage.cs`, `AppealThreadPage.cs`, `FundingAgreementPanelPage.cs`, `FundingAgreementDownloadFlow.cs`, `SigningStagePanelPage.cs`, `SigningReviewInboxPage.cs`, the `Admin/` namespaced POMs (`AdminBasePage`, `AdminReportsPage`, `AdminUserCreatePage`, `AdminUserEditPage`, `AdminUsersListPage`, `Admin/Reports/*`). Migrate any visible-text constants to `UiCopy.X`.
+- [x] T075 [P] [US7] Refactor `tests/FundingPlatform.Tests.E2E/PageObjects/AdminPage.cs` (4 text-bearing properties: `ManageTemplatesLink`, `ManageConfigurationLink`, `CreateNewTemplate`, `SaveConfiguration`) to consume `UiCopy.X`.
+- [x] T076 [P] [US7] Refactor `tests/FundingPlatform.Tests.E2E/PageObjects/ApplicationPage.cs` (3 text-bearing properties: `CreateDraftApplication`, `AddItem`, `SubmitApplication`) to consume `UiCopy.X`.
+- [x] T077 [P] [US7] Refactor `tests/FundingPlatform.Tests.E2E/PageObjects/ReviewApplicationPage.cs` (2 text-bearing properties: `SendBack`, `FinalizeReview`) to consume `UiCopy.X`.
+- [x] T078 [P] [US7] Refactor `tests/FundingPlatform.Tests.E2E/PageObjects/ReviewQueuePage.cs` (1 text-bearing property: `NoApplicationsMessage`) to consume `UiCopy.X`.
+- [x] T079 [P] [US7] Audit and refactor remaining POMs that hold text-based properties: `LoginPage.cs`, `RegisterPage.cs`, `ChangePasswordPage.cs`, `ItemPage.cs`, `QuotationPage.cs`, `SupplierPage.cs`, `ApplicantResponsePage.cs`, `AppealThreadPage.cs`, `FundingAgreementPanelPage.cs`, `FundingAgreementDownloadFlow.cs`, `SigningStagePanelPage.cs`, `SigningReviewInboxPage.cs`, the `Admin/` namespaced POMs (`AdminBasePage`, `AdminReportsPage`, `AdminUserCreatePage`, `AdminUserEditPage`, `AdminUsersListPage`, `Admin/Reports/*`). Migrate any visible-text constants to `UiCopy.X`.
 
 ### Shared fixture refactor (37× cascading)
 
-- [ ] T080 [US7] Refactor `tests/FundingPlatform.Tests.E2E/Fixtures/AuthenticatedTestBase.cs`: replace 37 occurrences of `"Add Supplier"` literal with `UiCopy.AddSupplier`. Cascades to 10+ test files automatically.
+- [x] T080 [US7] Refactor `tests/FundingPlatform.Tests.E2E/Fixtures/AuthenticatedTestBase.cs`: replace 37 occurrences of `"Add Supplier"` literal with `UiCopy.AddSupplier`. Cascades to 10+ test files automatically.
 
 ### Tests with dense visible-text assertions
 
-- [ ] T081 [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/SupplierEvaluationTests.cs` (highest-affected: 21 `has-text` selectors + 2 `ToContainTextAsync`).
-- [ ] T082 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/ApplicationSubmissionTests.cs` (16 selectors).
-- [ ] T083 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/SendBackApplicationTests.cs` (10 selectors + 1 `ToContainTextAsync` + 1 `text=` pseudo-selector at line 70).
-- [ ] T084 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/ImpactTemplateTests.cs` (9 selectors; preserve dynamic `tr:has-text('{templateName}')` data-driven selector at line 82 — locale-safe).
-- [ ] T085 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/FinalizeReviewTests.cs` (9 selectors + 1 assertion).
-- [ ] T086 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/ReviewItemDecisionTests.cs` (3 `ToContainTextAsync` for ItemReviewStatusBadge).
-- [ ] T087 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/ApplicantResponseTests.cs` (Header / ApplicationState / DecisionDisplay assertions).
-- [ ] T088 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/ReviewApplicationTests.cs` (ApplicationState / ApplicantName assertions).
-- [ ] T089 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/TechnicalEquivalenceTests.cs` (2 `ToContainTextAsync`).
-- [ ] T090 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/AdminConfigurationTests.cs` (System Configuration / "No system configurations found" assertions).
-- [ ] T091 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/AdminImpactTemplateTests.cs` (incl. dynamic-template-name selectors which are locale-safe).
-- [ ] T092 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/DraftPersistenceTests.cs`, `ItemManagementTests.cs`, `SupplierQuotationTests.cs`, `SupplierSelectionTests.cs`, `ReviewQueueTests.cs`, `RoleAwareSidebarTests.cs`, `SigningWayfindingTests.cs`, `DigitalSignatureTests.cs`, `FundingAgreementTests.cs`, `GenerateAgreementQueueTests.cs`, `AuthenticationTests.cs`.
-- [ ] T093 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/AdminReports/` (8 files: dashboard, applicants, applications, funded items, aging, stub, tabler shell, currency rollout).
-- [ ] T094 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/Admin/` (8 files: AdminInheritsReviewerTests, AdminUserLifecycleTests, LastAdminGuardTests, RoleAwareSidebarAdminEntriesTests, SelfModificationGuardTests, SentinelExclusionTests, SentinelImmutabilityTests, AdminReportsStubTests).
-- [ ] T095 [P] [US7] Audit `tests/FundingPlatform.Tests.E2E/Helpers/CsvAssertions.cs` and `tests/FundingPlatform.Tests.E2E/Helpers/FundingAgreementPdfAssertions.cs` for embedded English text. CSV exports stay English (per spec Out of Scope); PDF assertions translate.
-- [ ] T096 [P] [US7] Audit `tests/FundingPlatform.Tests.E2E/Fixtures/FundingAgreementSeeder.cs` for any text fixture that asserts on rendered PDF copy; translate.
+- [x] T081 [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/SupplierEvaluationTests.cs` (highest-affected: 21 `has-text` selectors + 2 `ToContainTextAsync`).
+- [x] T082 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/ApplicationSubmissionTests.cs` (16 selectors).
+- [x] T083 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/SendBackApplicationTests.cs` (10 selectors + 1 `ToContainTextAsync` + 1 `text=` pseudo-selector at line 70).
+- [x] T084 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/ImpactTemplateTests.cs` (9 selectors; preserve dynamic `tr:has-text('{templateName}')` data-driven selector at line 82 — locale-safe).
+- [x] T085 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/FinalizeReviewTests.cs` (9 selectors + 1 assertion).
+- [x] T086 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/ReviewItemDecisionTests.cs` (3 `ToContainTextAsync` for ItemReviewStatusBadge).
+- [x] T087 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/ApplicantResponseTests.cs` (Header / ApplicationState / DecisionDisplay assertions).
+- [x] T088 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/ReviewApplicationTests.cs` (ApplicationState / ApplicantName assertions).
+- [x] T089 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/TechnicalEquivalenceTests.cs` (2 `ToContainTextAsync`).
+- [x] T090 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/AdminConfigurationTests.cs` (System Configuration / "No system configurations found" assertions).
+- [x] T091 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/AdminImpactTemplateTests.cs` (incl. dynamic-template-name selectors which are locale-safe).
+- [x] T092 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/DraftPersistenceTests.cs`, `ItemManagementTests.cs`, `SupplierQuotationTests.cs`, `SupplierSelectionTests.cs`, `ReviewQueueTests.cs`, `RoleAwareSidebarTests.cs`, `SigningWayfindingTests.cs`, `DigitalSignatureTests.cs`, `FundingAgreementTests.cs`, `GenerateAgreementQueueTests.cs`, `AuthenticationTests.cs`.
+- [x] T093 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/AdminReports/` (8 files: dashboard, applicants, applications, funded items, aging, stub, tabler shell, currency rollout).
+- [x] T094 [P] [US7] Translate visible-text assertions in `tests/FundingPlatform.Tests.E2E/Tests/Admin/` (8 files: AdminInheritsReviewerTests, AdminUserLifecycleTests, LastAdminGuardTests, RoleAwareSidebarAdminEntriesTests, SelfModificationGuardTests, SentinelExclusionTests, SentinelImmutabilityTests, AdminReportsStubTests).
+- [x] T095 [P] [US7] Audit `tests/FundingPlatform.Tests.E2E/Helpers/CsvAssertions.cs` and `tests/FundingPlatform.Tests.E2E/Helpers/FundingAgreementPdfAssertions.cs` for embedded English text. CSV exports stay English (per spec Out of Scope); PDF assertions translate.
+- [x] T096 [P] [US7] Audit `tests/FundingPlatform.Tests.E2E/Fixtures/FundingAgreementSeeder.cs` for any text fixture that asserts on rendered PDF copy; translate.
 
 ### Integration suite
 
-- [ ] T097 [US7] Audit `tests/FundingPlatform.Tests.Integration/` for any test that asserts on Spanish-translated content; translate as needed (most integration tests don't render UI, so changes should be minimal).
+- [x] T097 [US7] Audit `tests/FundingPlatform.Tests.Integration/` for any test that asserts on Spanish-translated content; translate as needed (most integration tests don't render UI, so changes should be minimal).
 
 ### Suite-wide verification
 
-- [ ] T098 [US7] Run `dotnet test tests/FundingPlatform.Tests.Unit` — confirm green (no UI assertions; should be unaffected).
-- [ ] T099 [US7] Run `dotnet test tests/FundingPlatform.Tests.Integration` — confirm green and at same or higher test count vs. pre-translation.
-- [ ] T100 [US7] Run `dotnet test tests/FundingPlatform.Tests.E2E` — confirm green and at same or higher test count vs. pre-translation. SC-007 testable. NFR-007 testable.
+- [x] T098 [US7] Run `dotnet test tests/FundingPlatform.Tests.Unit` — confirm green (no UI assertions; should be unaffected).
+- [x] T099 [US7] Run `dotnet test tests/FundingPlatform.Tests.Integration` — confirm green and at same or higher test count vs. pre-translation.
+- [x] T100 [US7] Run `dotnet test tests/FundingPlatform.Tests.E2E` — confirm green and at same or higher test count vs. pre-translation. SC-007 testable. NFR-007 testable.
 
 **Checkpoint**: Full test suite green against Spanish build. Translation contract enforced.
 
@@ -252,15 +252,15 @@
 
 **Purpose**: Final verification, performance check, and PR-readiness.
 
-- [ ] T101 [P] Capture post-translation Lighthouse metrics (LCP, TBT) at the same surfaces as T002. Save to `specs/012-es-cr-localization/perf-baseline-post.json`. Compare to pre-baseline using the T002 thresholds (LCP `+5%` / `+200ms` whichever is greater; TBT `+10ms` absolute). Confirm no regression per NFR-005 / SC-012; if either threshold is exceeded, investigate and remediate before merge.
-- [ ] T102 [P] Run final brand-sweep `grep -rEn '\bForge\b' src/ tests/` excluding AntiForgery framework family and jQuery vendor; confirm zero hits per SC-002.
-- [ ] T103 [P] Run final English-token sweep on rendered HTML (or `.cshtml` source) — confirm only allowlisted tokens remain per SC-001.
-- [ ] T104 [P] Capture logs from a happy-path application flow (login → create application → add item → add supplier → submit → review → finalize → generate PDF → sign). Filter for non-ASCII characters; expect zero from log messages (NFR-001 / SC-008).
-- [ ] T105 [P] Verify `<html lang="es-CR">` declaration on every rendered page including auth and error per SC-006.
-- [ ] T106 [P] Verify all four open-thread closures land in `brainstorm/00-overview.md`: spec 005 locale pin, spec 008 partial-check, spec 011 voice-guide-drift, spec 011 brand sign-off (all four already added in commit `c154b89`; verify present).
-- [ ] T107 Compile final integration PR description: link spec, plan, voice-guide commit, summary of all files touched (use `git diff --stat main...HEAD`), screenshots of representative before/after surfaces, link to perf comparison, link to research findings. Reference SC-001 through SC-012 verification status.
-- [ ] T108 Open PR against `main`. Request review from spec 011 voice owner (per OQ-6) and the project maintainer.
-- [ ] T109 After review feedback resolved and PR approved, merge with squash or merge commit per project convention. Update `.specify/feature.json` to point to the next active spec (or leave at 012 until 013 starts).
+- [x] T101 [P] Capture post-translation Lighthouse metrics (LCP, TBT) at the same surfaces as T002. Save to `specs/012-es-cr-localization/perf-baseline-post.json`. Compare to pre-baseline using the T002 thresholds (LCP `+5%` / `+200ms` whichever is greater; TBT `+10ms` absolute). Confirm no regression per NFR-005 / SC-012; if either threshold is exceeded, investigate and remediate before merge.
+- [x] T102 [P] Run final brand-sweep `grep -rEn '\bForge\b' src/ tests/` excluding AntiForgery framework family and jQuery vendor; confirm zero hits per SC-002.
+- [x] T103 [P] Run final English-token sweep on rendered HTML (or `.cshtml` source) — confirm only allowlisted tokens remain per SC-001.
+- [x] T104 [P] Capture logs from a happy-path application flow (login → create application → add item → add supplier → submit → review → finalize → generate PDF → sign). Filter for non-ASCII characters; expect zero from log messages (NFR-001 / SC-008).
+- [x] T105 [P] Verify `<html lang="es-CR">` declaration on every rendered page including auth and error per SC-006.
+- [x] T106 [P] Verify all four open-thread closures land in `brainstorm/00-overview.md`: spec 005 locale pin, spec 008 partial-check, spec 011 voice-guide-drift, spec 011 brand sign-off (all four already added in commit `c154b89`; verify present).
+- [x] T107 Compile final integration PR description: link spec, plan, voice-guide commit, summary of all files touched (use `git diff --stat main...HEAD`), screenshots of representative before/after surfaces, link to perf comparison, link to research findings. Reference SC-001 through SC-012 verification status.
+- [x] T108 Open PR against `main`. Request review from spec 011 voice owner (per OQ-6) and the project maintainer.
+- [x] T109 After review feedback resolved and PR approved, merge with squash or merge commit per project convention. Update `.specify/feature.json` to point to the next active spec (or leave at 012 until 013 starts).
 
 ---
 
