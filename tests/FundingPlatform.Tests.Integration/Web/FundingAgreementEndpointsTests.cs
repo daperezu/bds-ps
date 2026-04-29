@@ -255,8 +255,15 @@ public class FundingAgreementEndpointsTests
 
         Assert.That(result.Success, Is.False);
         Assert.That(result.Errors, Is.Not.Empty);
+        // Spec 012 — domain-rule rejection now flows as a UserFacingError with
+        // the original English domain message preserved as `Detail` for log /
+        // assertion purposes. The Web layer translates the Code, not Detail.
+        var firstError = result.Errors.First();
         Assert.That(
-            result.Errors.First(),
+            firstError.Code,
+            Is.EqualTo(FundingPlatform.Application.Errors.UserFacingErrorCode.OperationRejected));
+        Assert.That(
+            firstError.Detail,
             Does.Contain(expectedReasonFragment).IgnoreCase);
 
         var count = await ctx2.FundingAgreements.CountAsync(f => f.ApplicationId == applicationId);

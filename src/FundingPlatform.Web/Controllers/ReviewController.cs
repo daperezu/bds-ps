@@ -2,6 +2,7 @@ using System.Security.Claims;
 using FundingPlatform.Application.DTOs;
 using FundingPlatform.Application.Services;
 using FundingPlatform.Application.SignedUploads.Queries;
+using FundingPlatform.Web.Localization;
 using FundingPlatform.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,15 +15,18 @@ public class ReviewController : Controller
     private readonly ReviewService _reviewService;
     private readonly SignedUploadService _signedUploadService;
     private readonly IReviewerQueueProjection _queueProjection;
+    private readonly IUserFacingErrorTranslator _errorTranslator;
 
     public ReviewController(
         ReviewService reviewService,
         SignedUploadService signedUploadService,
-        IReviewerQueueProjection queueProjection)
+        IReviewerQueueProjection queueProjection,
+        IUserFacingErrorTranslator errorTranslator)
     {
         _reviewService = reviewService;
         _signedUploadService = signedUploadService;
         _queueProjection = queueProjection;
+        _errorTranslator = errorTranslator;
     }
 
     [HttpGet]
@@ -123,7 +127,7 @@ public class ReviewController : Controller
     {
         var error = await _reviewService.ReviewItemAsync(id, ItemId, Decision, Comment, SelectedSupplierId, GetUserId());
         if (error is not null)
-            TempData["ErrorMessage"] = error;
+            TempData["ErrorMessage"] = _errorTranslator.Translate(error);
         else
             TempData["SuccessMessage"] = "Decisión del ítem registrada.";
 
@@ -137,7 +141,7 @@ public class ReviewController : Controller
     {
         var error = await _reviewService.FlagTechnicalEquivalenceAsync(id, ItemId, IsNotEquivalent, GetUserId());
         if (error is not null)
-            TempData["ErrorMessage"] = error;
+            TempData["ErrorMessage"] = _errorTranslator.Translate(error);
         else
             TempData["SuccessMessage"] = IsNotEquivalent
                 ? "Ítem marcado como no técnicamente equivalente."
@@ -154,7 +158,7 @@ public class ReviewController : Controller
         var error = await _reviewService.SendBackAsync(id, GetUserId());
         if (error is not null)
         {
-            TempData["ErrorMessage"] = error;
+            TempData["ErrorMessage"] = _errorTranslator.Translate(error);
             return RedirectToAction(nameof(Review), new { id });
         }
 
@@ -171,7 +175,7 @@ public class ReviewController : Controller
 
         if (error is not null)
         {
-            TempData["ErrorMessage"] = error;
+            TempData["ErrorMessage"] = _errorTranslator.Translate(error);
             return RedirectToAction(nameof(Review), new { id });
         }
 

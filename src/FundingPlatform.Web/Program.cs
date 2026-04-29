@@ -91,6 +91,10 @@ builder.Services.Configure<SecurityStampValidatorOptions>(o =>
 
 builder.Services.AddScoped<IClaimsTransformation, AdminImpliesReviewerClaimsTransformation>();
 
+// Spec 012 / FR-014 — Spanish translation of Application-layer user-facing
+// error codes. Stateless: a singleton matches the static-string convention.
+builder.Services.AddSingleton<IUserFacingErrorTranslator, UserFacingErrorTranslator>();
+
 var app = builder.Build();
 
 // Spec 012: NFR-008 — warn at startup if FundingAgreement:LocaleCode diverges

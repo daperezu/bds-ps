@@ -79,7 +79,7 @@ public class SignedUploadEndpointsTests
                 Size: stream.Length,
                 Content: stream));
 
-            Assert.That(result.Success, Is.True, result.Error);
+            Assert.That(result.Success, Is.True, result.Error?.ToString());
             Assert.That(result.SignedUploadId, Is.Not.Null);
         }
 
@@ -105,7 +105,7 @@ public class SignedUploadEndpointsTests
                 SignedUploadId: pendingId,
                 Comment: "ok"));
 
-            Assert.That(result.Success, Is.True, result.Error);
+            Assert.That(result.Success, Is.True, result.Error?.ToString());
         }
 
         using (var ctx = CreateContext(dbName))
@@ -196,7 +196,12 @@ public class SignedUploadEndpointsTests
 
             Assert.That(result.Success, Is.False);
             Assert.That(result.ValidationError, Is.True);
-            Assert.That(result.Error, Does.Contain("PDF"));
+            // Spec 012 — validation now surfaces a code instead of the English
+            // sentinel string the previous implementation returned. Either of
+            // the PDF-specific codes is acceptable for this case.
+            Assert.That(result.Error?.Code,
+                Is.EqualTo(FundingPlatform.Application.Errors.UserFacingErrorCode.SignedUploadNotAPdf)
+                    .Or.EqualTo(FundingPlatform.Application.Errors.UserFacingErrorCode.SignedUploadMissingPdfHeader));
         }
 
         using (var ctx = CreateContext(dbName))
@@ -273,7 +278,8 @@ public class SignedUploadEndpointsTests
 
         Assert.That(result.Success, Is.False);
         Assert.That(result.ValidationError, Is.True);
-        Assert.That(result.Error, Does.Contain("comment"));
+        Assert.That(result.Error?.Code,
+            Is.EqualTo(FundingPlatform.Application.Errors.UserFacingErrorCode.SignedUploadRejectionCommentRequired));
     }
 
     [Test]
@@ -293,7 +299,7 @@ public class SignedUploadEndpointsTests
                 SignedUploadId: pendingId,
                 Comment: "signature illegible"));
 
-            Assert.That(result.Success, Is.True, result.Error);
+            Assert.That(result.Success, Is.True, result.Error?.ToString());
         }
 
         using (var ctx = CreateContext(dbName))
@@ -338,7 +344,7 @@ public class SignedUploadEndpointsTests
                 Size: stream.Length,
                 Content: stream));
 
-            Assert.That(result.Success, Is.True, result.Error);
+            Assert.That(result.Success, Is.True, result.Error?.ToString());
             Assert.That(result.SignedUploadId, Is.Not.EqualTo(pendingId));
             newPendingId = result.SignedUploadId!.Value;
         }
@@ -368,7 +374,7 @@ public class SignedUploadEndpointsTests
             var service = BuildService(ctx);
             var result = await service.WithdrawAsync(new WithdrawSignedUploadCommand(
                 appId, applicantUserId, pendingId));
-            Assert.That(result.Success, Is.True, result.Error);
+            Assert.That(result.Success, Is.True, result.Error?.ToString());
         }
 
         using (var ctx = CreateContext(dbName))
@@ -413,7 +419,8 @@ public class SignedUploadEndpointsTests
 
             Assert.That(result.Success, Is.False);
             Assert.That(result.ValidationError, Is.True);
-            Assert.That(result.Error, Does.Contain("re-download"));
+            Assert.That(result.Error?.Code,
+                Is.EqualTo(FundingPlatform.Application.Errors.UserFacingErrorCode.SignedUploadStaleAgreementVersion));
         }
 
         using (var ctx = CreateContext(dbName))
