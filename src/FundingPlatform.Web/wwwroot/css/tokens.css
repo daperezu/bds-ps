@@ -8,8 +8,14 @@
 
 /* ============================================================
    FONT FACES — self-hosted (FR-003)
-   The actual WOFF2 binaries live under wwwroot/lib/fonts/<family>/.
-   See implementation-notes.md for the deferred-vendoring status.
+   Vendored as Latin-subsetted variable WOFF2 files under
+   wwwroot/lib/fonts/<family>/. Sources:
+     - Fraunces: Google Fonts (SIL OFL 1.1)
+     - Inter: Google Fonts (SIL OFL 1.1)
+     - JetBrains Mono: Google Fonts (Apache 2.0)
+   Latin subset (U+0000-00FF + typographic extras) covers en + es-CO copy;
+   total wire weight ≈ 105 KB raw, well under the FR-074 / SC-016 400 KB
+   asset budget.
    ============================================================ */
 
 @font-face {

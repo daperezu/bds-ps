@@ -52,16 +52,25 @@ public sealed class ReviewerQueueProjection : IReviewerQueueProjection
         // <c>reviewerId</c> parameter is wired through for a future-spec evolution
         // that introduces explicit assignment.
         var threshold = await GetAgingThresholdAsync();
+        // Submitted apps haven't been opened yet; they must surface here so reviewers
+        // can pick them up. The pre-spec-011 ReviewService.GetReviewQueueAsync also
+        // queried Submitted — the queue dashboard needs the same scope to avoid
+        // hiding work that has not yet transitioned to UnderReview.
+        var submitted   = await _applications.GetByStatePagedAsync(ApplicationState.Submitted, 1, 200);
         var underReview = await _applications.GetByStatePagedAsync(ApplicationState.UnderReview, 1, 200);
         var resolved    = await _applications.GetByStatePagedAsync(ApplicationState.Resolved, 1, 200);
 
-        var allCandidates = underReview.Items.Concat(resolved.Items).ToList();
+        var allCandidates = submitted.Items.Concat(underReview.Items).Concat(resolved.Items).ToList();
         var now = DateTimeOffset.UtcNow;
 
-        // Counts (filter-independent).
-        int awaiting = underReview.Items.Count(a => a.VersionHistory.LastOrDefault()?.Action != "ReviewItem");
+        // Counts (filter-independent). "Awaiting your review" includes Submitted
+        // (no reviewer has opened it) plus UnderReview that hasn't received a
+        // per-item decision yet.
+        int awaiting = submitted.Items.Count
+                     + underReview.Items.Count(a => a.VersionHistory.LastOrDefault()?.Action != "ReviewItem");
         int inProgress = underReview.Items.Count(a => a.VersionHistory.Any(v => v.Action == "ReviewItem"));
-        int aging = underReview.Items.Count(a => _journey.DaysInCurrentState(a, now) > threshold);
+        int aging = submitted.Items.Concat(underReview.Items)
+            .Count(a => _journey.DaysInCurrentState(a, now) > threshold);
         int decidedThisMonth = resolved.Items.Count(a => a.UpdatedAt.Year == DateTime.UtcNow.Year && a.UpdatedAt.Month == DateTime.UtcNow.Month);
 
         var rows = await ProjectRowsAsync(allCandidates, filter, threshold, now);
@@ -69,7 +78,7 @@ public sealed class ReviewerQueueProjection : IReviewerQueueProjection
             .SelectMany(a => a.VersionHistory.Select(v => new ReviewerActivityEvent(
                 Occurred: new DateTimeOffset(v.Timestamp, TimeSpan.Zero),
                 Title: v.Action,
-                ApplicantName: a.Applicant?.FirstName ?? "Applicant",
+                ApplicantName: FormatApplicantName(a.Applicant),
                 ApplicationNumber: $"APP-{a.Id:D5}",
                 DeepLinkHref: $"/Review/Review/{a.Id}#event-{v.Id}")))
             .OrderByDescending(e => e.Occurred)
@@ -89,9 +98,10 @@ public sealed class ReviewerQueueProjection : IReviewerQueueProjection
     public async Task<IReadOnlyList<ReviewerQueueRowDto>> GetRowsAsync(string reviewerId, ReviewerFilter filter, CancellationToken ct)
     {
         var threshold = await GetAgingThresholdAsync();
+        var submitted   = await _applications.GetByStatePagedAsync(ApplicationState.Submitted, 1, 200);
         var underReview = await _applications.GetByStatePagedAsync(ApplicationState.UnderReview, 1, 200);
         var resolved    = await _applications.GetByStatePagedAsync(ApplicationState.Resolved, 1, 200);
-        var all = underReview.Items.Concat(resolved.Items).ToList();
+        var all = submitted.Items.Concat(underReview.Items).Concat(resolved.Items).ToList();
         return await ProjectRowsAsync(all, filter, threshold, DateTimeOffset.UtcNow);
     }
 
@@ -103,7 +113,8 @@ public sealed class ReviewerQueueProjection : IReviewerQueueProjection
     {
         var filtered = filter switch
         {
-            ReviewerFilter.AwaitingMe => apps.Where(a => a.State == ApplicationState.UnderReview).ToList(),
+            ReviewerFilter.AwaitingMe => apps.Where(a =>
+                a.State == ApplicationState.Submitted || a.State == ApplicationState.UnderReview).ToList(),
             ReviewerFilter.Aging      => apps.Where(a => _journey.DaysInCurrentState(a, now) > agingThresholdDays).ToList(),
             ReviewerFilter.SentBack   => apps.Where(a => a.VersionHistory.Any(v => v.Action == "SendBack")).ToList(),
             ReviewerFilter.Appealing  => apps.Where(a => a.Appeals.Any(p => p.Status == AppealStatus.Open)).ToList(),
@@ -118,7 +129,7 @@ public sealed class ReviewerQueueProjection : IReviewerQueueProjection
                 ApplicationId: Guid.Empty,
                 ApplicationNumber: $"APP-{a.Id:D5}",
                 ProjectName: a.Items.FirstOrDefault()?.ProductName ?? $"Application #{a.Id}",
-                ApplicantName: a.Applicant?.FirstName ?? "Applicant",
+                ApplicantName: FormatApplicantName(a.Applicant),
                 ApplicantAvatarUrl: null,
                 JourneyMicro: micro,
                 DaysInCurrentState: _journey.DaysInCurrentState(a, now),
@@ -126,6 +137,15 @@ public sealed class ReviewerQueueProjection : IReviewerQueueProjection
                 PrimaryAction: new ContextualAction("Review", $"/Review/Review/{a.Id}", ContextualActionStyle.Primary));
         }).ToList();
         return Task.FromResult<IReadOnlyList<ReviewerQueueRowDto>>(rows);
+    }
+
+    private static string FormatApplicantName(Applicant? applicant)
+    {
+        if (applicant is null) return "Applicant";
+        var first = applicant.FirstName ?? string.Empty;
+        var last = applicant.LastName ?? string.Empty;
+        var full = $"{first} {last}".Trim();
+        return string.IsNullOrEmpty(full) ? "Applicant" : full;
     }
 
     private async Task<int> GetAgingThresholdAsync()

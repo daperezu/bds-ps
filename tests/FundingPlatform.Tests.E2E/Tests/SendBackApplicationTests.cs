@@ -64,7 +64,7 @@ public class SendBackApplicationTests : AuthenticatedTestBase
         await Page.GotoAsync($"{BaseUrl}/Application/Details/{appId}");
 
         // Verify state is Draft
-        await Expect(Page.Locator(".badge:has-text('Draft')")).ToBeVisibleAsync();
+        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Draft')")).ToBeVisibleAsync();
 
         // Verify reviewer comments are visible
         await Expect(Page.Locator("text=Please provide updated specifications")).ToBeVisibleAsync();
@@ -120,7 +120,7 @@ public class SendBackApplicationTests : AuthenticatedTestBase
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
         await Page.Locator("button[type=submit]:has-text('Submit Application')").ClickAsync();
-        await Expect(Page.Locator(".badge:has-text('Submitted')")).ToBeVisibleAsync();
+        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Submitted')")).ToBeVisibleAsync();
 
         await Page.Locator("form[action*='Account/Logout'] button[type=submit]").ClickAsync();
 

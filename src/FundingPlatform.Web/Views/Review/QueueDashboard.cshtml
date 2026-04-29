@@ -5,6 +5,10 @@
 @model ReviewerQueueDto
 @{
     ViewData["Title"] = "Review Queue";
+    // Spec 007 SC-007 wayfinding: Initial / Generate Agreement / Signing Inbox tabs must
+    // remain reachable from /Review. The new spec-011 dashboard layered the hero on top
+    // of (not in place of) the queue surface, so the tabs render above the hero.
+    ViewData["ActiveTab"] = "Initial";
     bool isEmpty = Model.Rows.Count == 0
                    && Model.Kpis.AwaitingYourReview == 0
                    && Model.Kpis.InProgress == 0
@@ -12,6 +16,8 @@
 }
 
 <div class="container py-3" data-testid="reviewer-queue-dashboard">
+    @await Html.PartialAsync("_ReviewTabs")
+
     @await Html.PartialAsync("../Shared/Components/_ReviewerHero", Model)
 
     @if (Model.RecentActivity.Count > 0)

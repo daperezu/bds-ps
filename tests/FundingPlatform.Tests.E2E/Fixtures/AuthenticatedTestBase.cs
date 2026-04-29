@@ -173,7 +173,7 @@ public class AuthenticatedTestBase : PageTest
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
         await Page.Locator("button[type=submit]:has-text('Submit Application')").ClickAsync();
-        await Expect(Page.Locator(".badge:has-text('Submitted')")).ToBeVisibleAsync();
+        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Submitted')")).ToBeVisibleAsync();
         await Page.Locator("form[action*='Account/Logout'] button[type=submit]").ClickAsync();
 
         await RegisterUserAsync(Page, reviewerEmail, password, "Seed", "Reviewer", $"SREV-{uniqueId}");

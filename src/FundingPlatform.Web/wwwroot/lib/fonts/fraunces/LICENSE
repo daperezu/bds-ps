@@ -7,9 +7,6 @@ Copyright 2017 The Fraunces Project Authors
 
 Vendored for spec 011 (Warm-Modern Facelift) per FR-003.
 
-NOTE: This directory ships the LICENSE marker. The actual subsetted WOFF2 file
-(Latin-1 + numerals subset, variable weight 400-800) MUST be placed at
-fraunces-variable.woff2 by an operator with network access. Until then, the
-@font-face declaration in tokens.css will fail to fetch and the browser will
-fall back to the next family in the stack (Inter then system serif). This is
-documented as a deferred-asset condition in specs/011-warm-modern-facelift/implementation-notes.md.
+fraunces-variable.woff2 is the Latin subset (unicode-range U+0000-00FF plus
+typographic extras), variable weight 400-800. Source: Google Fonts
+(fonts.gstatic.com), upstream undercasetype/Fraunces. ≈ 36 KB.

@@ -47,7 +47,7 @@ public class ApplicationSubmissionTests : AuthenticatedTestBase
         var appId = int.Parse(appIdMatch.Groups[1].Value);
 
         // Verify Draft status
-        var draftBadge = Page.Locator(".badge:has-text('Draft')");
+        var draftBadge = Page.Locator("[data-testid=status-pill]:has-text('Draft')");
         await Expect(draftBadge).ToBeVisibleAsync();
 
         // Add an item
@@ -146,7 +146,7 @@ public class ApplicationSubmissionTests : AuthenticatedTestBase
         await Expect(successAlert).ToBeVisibleAsync();
 
         // Verify state changed to Submitted
-        var submittedBadge = Page.Locator(".badge:has-text('Submitted')");
+        var submittedBadge = Page.Locator("[data-testid=status-pill]:has-text('Submitted')");
         await Expect(submittedBadge).ToBeVisibleAsync();
 
         // Verify submit button is no longer visible
@@ -194,7 +194,7 @@ public class ApplicationSubmissionTests : AuthenticatedTestBase
         await Expect(quotationError).ToBeVisibleAsync();
 
         // Verify state is still Draft
-        var draftBadge = Page.Locator(".badge:has-text('Draft')");
+        var draftBadge = Page.Locator("[data-testid=status-pill]:has-text('Draft')");
         await Expect(draftBadge).ToBeVisibleAsync();
     }
 
@@ -231,7 +231,7 @@ public class ApplicationSubmissionTests : AuthenticatedTestBase
         await Expect(itemError).ToBeVisibleAsync();
 
         // Verify state is still Draft
-        var draftBadge = Page.Locator(".badge:has-text('Draft')");
+        var draftBadge = Page.Locator("[data-testid=status-pill]:has-text('Draft')");
         await Expect(draftBadge).ToBeVisibleAsync();
     }
 }
