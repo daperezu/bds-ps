@@ -37,7 +37,7 @@ public class ApplicantResponseTests : AuthenticatedTestBase
         var responsePage = new ApplicantResponsePage(Page);
         await responsePage.GotoAsync(BaseUrl, appId);
 
-        await Expect(responsePage.Header).ToContainTextAsync("Applicant Response");
+        await Expect(responsePage.Header).ToContainTextAsync("Respuesta del solicitante");
 
         await responsePage.AcceptRadio(itemId).CheckAsync();
         await responsePage.SubmitAsync();
@@ -45,7 +45,12 @@ public class ApplicantResponseTests : AuthenticatedTestBase
         await Expect(responsePage.SuccessMessage).ToBeVisibleAsync();
         await Expect(responsePage.ApplicationState).ToContainTextAsync("Respuesta finalizada");
 
-        // Reload and confirm response is read-only
+        // Reload and confirm response is read-only.
+        // Note: the decision-display still renders the raw enum name (Accept/Reject)
+        // because it binds @item.Decision directly. That's a UI-copy gap left by spec
+        // 012 — the enum value bleeding through is unconditional, not localized — but
+        // it's outside this batch's scope (no behavior change). The test asserts on
+        // the enum text it actually emits.
         await responsePage.GotoAsync(BaseUrl, appId);
         await Expect(responsePage.DecisionDisplay(itemId)).ToContainTextAsync("Accept");
     }
@@ -91,7 +96,7 @@ public class ApplicantResponseTests : AuthenticatedTestBase
         await responsePage.OpenAppealButton.ClickAsync();
 
         var appealPage = new AppealThreadPage(Page);
-        await Expect(appealPage.AppealStatus).ToContainTextAsync("Open");
+        await Expect(appealPage.AppealStatus).ToContainTextAsync(UiCopy.State.Open);
 
         await Page.Locator("form[action*='Account/Logout'] button[type=submit]").ClickAsync();
 
@@ -121,7 +126,7 @@ public class ApplicantResponseTests : AuthenticatedTestBase
         await responsePage.OpenAppealButton.ClickAsync();
 
         var appealPage = new AppealThreadPage(Page);
-        await Expect(appealPage.AppealStatus).ToContainTextAsync("Open");
+        await Expect(appealPage.AppealStatus).ToContainTextAsync(UiCopy.State.Open);
 
         // Applicant posts a message
         await appealPage.PostMessageAsync("Please reconsider — the item is still needed.");
