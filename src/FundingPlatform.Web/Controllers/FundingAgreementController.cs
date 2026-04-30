@@ -422,12 +422,30 @@ public class FundingAgreementController : Controller
     [HttpGet("")]
     public async Task<IActionResult> Details(int applicationId)
     {
-        var viewModel = await BuildPanelViewModelAsync(applicationId);
-        if (viewModel is null)
+        var panel = await BuildPanelViewModelAsync(applicationId);
+        if (panel is null)
         {
             LogUnauthorized(applicationId, "Details", "access-denied-or-missing");
             return NotFound();
         }
+
+        var application = await _service.LoadForGenerationAsync(applicationId);
+        FundingAgreementDocumentViewModel? preview = null;
+        var hasApplicantResponse = false;
+
+        if (application is not null)
+        {
+            preview = await BuildDocumentViewModelAsync(application);
+            hasApplicantResponse = application.ApplicantResponses.Any();
+        }
+
+        var viewModel = new FundingAgreementDetailsViewModel
+        {
+            Panel = panel,
+            Preview = preview,
+            HasApplicantResponse = hasApplicantResponse
+        };
+
         return View(viewModel);
     }
 
