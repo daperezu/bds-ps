@@ -22,7 +22,7 @@ if (!ephemeralStorage)
 }
 
 var syncfusionLicense = builder.Configuration["Syncfusion:LicenseKey"] ?? "Ngo9BigBOggjHTQxAR8/V1JHaF1cXmhMYVJpR2NbeU5xdF9DZVZURGY/P1ZhSXxVdkFhXX1cdXFQRmJVU019XEE=";
-var localeCode = builder.Configuration["FundingAgreement:LocaleCode"] ?? "es-CO";
+var localeCode = builder.Configuration["FundingAgreement:LocaleCode"] ?? "es-CR";
 var currencyIsoCode = builder.Configuration["FundingAgreement:CurrencyIsoCode"] ?? "COP";
 var funderLegalName = builder.Configuration["FundingAgreement:Funder:LegalName"] ?? "";
 var funderTaxId = builder.Configuration["FundingAgreement:Funder:TaxId"] ?? "";

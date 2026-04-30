@@ -30,9 +30,9 @@
 
     <div class="d-flex justify-content-between align-items-center flex-wrap fl-gap-3">
         <div class="fl-app-card-meta" data-testid="application-card-meta">
-            <span data-testid="days-in-state">@Model.DaysInCurrentState days in current state</span>
+            <span data-testid="days-in-state">@Model.DaysInCurrentState días en el estado actual</span>
             <span class="mx-2">&middot;</span>
-            <span data-testid="last-activity">Last activity @Model.LastActivity.LocalDateTime.ToString("MMM d, yyyy")</span>
+            <span data-testid="last-activity">Última actividad @Model.LastActivity.LocalDateTime.ToString("dd/MM/yyyy")</span>
         </div>
         <a class="@primaryClass" href="@Model.PrimaryAction.Href" data-testid="application-card-action">@Model.PrimaryAction.Label</a>
     </div>

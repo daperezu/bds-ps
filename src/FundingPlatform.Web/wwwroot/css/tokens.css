@@ -147,7 +147,7 @@
 /* ============================================================
    TABLER BRIDGE (FR-008, research §2.1)
    Override the high-traffic --tblr-* tokens so every Tabler component
-   inherits the Forge palette. Tokens.css must load BEFORE tabler.min.css
+   inherits the Capital Semilla palette. Tokens.css must load BEFORE tabler.min.css
    for these to take effect.
    ============================================================ */
 

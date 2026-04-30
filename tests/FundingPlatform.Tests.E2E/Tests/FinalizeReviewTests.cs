@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using FundingPlatform.Tests.E2E.Constants;
 using FundingPlatform.Tests.E2E.Fixtures;
 using FundingPlatform.Tests.E2E.PageObjects;
 using Microsoft.Playwright;
@@ -53,7 +54,7 @@ public class FinalizeReviewTests : AuthenticatedTestBase
 
         // Should redirect to queue with success
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Review"));
-        await Expect(Page.Locator(".alert-success:has-text('finalized')")).ToBeVisibleAsync();
+        await Expect(Page.Locator($".alert-success:has-text('{UiCopy.ReviewFinalized}')")).ToBeVisibleAsync();
     }
 
     [Test]
@@ -81,7 +82,7 @@ public class FinalizeReviewTests : AuthenticatedTestBase
 
         // Should redirect to queue with success
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Review"));
-        await Expect(Page.Locator(".alert-success:has-text('finalized')")).ToBeVisibleAsync();
+        await Expect(Page.Locator($".alert-success:has-text('{UiCopy.ReviewFinalized}')")).ToBeVisibleAsync();
     }
 
     [Test]
@@ -104,10 +105,10 @@ public class FinalizeReviewTests : AuthenticatedTestBase
         await Expect(reviewPage.UnresolvedWarning).ToBeVisibleAsync();
 
         // Click Cancel
-        await Page.Locator(".unresolved-warning a:has-text('Cancel')").ClickAsync();
+        await Page.Locator(".unresolved-warning a:has-text('Cancelar')").ClickAsync();
 
         // Should stay on review page with Under Review state
-        await Expect(reviewPage.ApplicationState).ToContainTextAsync("Under Review");
+        await Expect(reviewPage.ApplicationState).ToContainTextAsync("En revisión");
     }
 
     private async Task<int> SetupSubmittedApplicationAsync()
@@ -131,17 +132,17 @@ public class FinalizeReviewTests : AuthenticatedTestBase
         await itemPage.AddItemAsync(appId, "Finalization Test Item", 0, "Test specs", BaseUrl);
 
         var supplierPage = new SupplierPage(Page);
-        var addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        var addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
         await supplierPage.FillSupplierFormAsync($"FR1-{_uniqueId}", "Supplier Alpha", 900m, "2027-12-31", _testFilePath);
         await supplierPage.SubmitAsync();
 
-        addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
         await supplierPage.FillSupplierFormAsync($"FR2-{_uniqueId}", "Supplier Beta", 1100m, "2027-12-31", _testFilePath);
         await supplierPage.SubmitAsync();
 
-        var impactButton = Page.Locator("a:has-text('Impact')").First;
+        var impactButton = Page.Locator("a:has-text('Impacto')").First;
         await impactButton.ClickAsync();
         await PickFirstImpactTemplateAsync();
         var paramInputs = Page.Locator(".parameter-field input.form-control");
@@ -152,11 +153,11 @@ public class FinalizeReviewTests : AuthenticatedTestBase
             var inputType = await input.GetAttributeAsync("type");
             await input.FillAsync(inputType == "number" ? "100" : inputType == "date" ? "2026-12-31" : "Test value");
         }
-        await Page.Locator("button[type=submit]:has-text('Save Impact')").ClickAsync();
+        await Page.Locator("button[type=submit]:has-text('Guardar impacto')").ClickAsync();
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
-        await Page.Locator("button[type=submit]:has-text('Submit Application')").ClickAsync();
-        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Submitted')")).ToBeVisibleAsync();
+        await Page.Locator("button[type=submit]:has-text('Enviar solicitud')").ClickAsync();
+        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Enviada')")).ToBeVisibleAsync();
 
         await Page.Locator("form[action*='Account/Logout'] button[type=submit]").ClickAsync();
 

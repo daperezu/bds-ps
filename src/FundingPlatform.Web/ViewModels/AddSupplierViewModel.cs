@@ -8,53 +8,69 @@ public class AddSupplierViewModel
     public int ApplicationId { get; set; }
     public int ItemId { get; set; }
 
-    [Required, Display(Name = "Supplier Legal ID"), MaxLength(50)]
+    [Required(ErrorMessage = "La cédula jurídica del proveedor es obligatoria.")]
+    [Display(Name = "Cédula jurídica del proveedor")]
+    [MaxLength(50, ErrorMessage = "La cédula jurídica debe tener máximo {1} caracteres.")]
     public string SupplierLegalId { get; set; } = string.Empty;
 
-    [Required, Display(Name = "Supplier Name"), MaxLength(200)]
+    [Required(ErrorMessage = "El nombre del proveedor es obligatorio.")]
+    [Display(Name = "Razón social del proveedor")]
+    [MaxLength(200, ErrorMessage = "El nombre del proveedor debe tener máximo {1} caracteres.")]
     public string SupplierName { get; set; } = string.Empty;
 
-    [Display(Name = "Contact Name"), MaxLength(200)]
+    [Display(Name = "Persona de contacto")]
+    [MaxLength(200, ErrorMessage = "El nombre de contacto debe tener máximo {1} caracteres.")]
     public string? ContactName { get; set; }
 
-    [Display(Name = "Email"), EmailAddress, MaxLength(200)]
+    [Display(Name = "Correo electrónico")]
+    [EmailAddress(ErrorMessage = "El correo electrónico no es válido.")]
+    [MaxLength(200, ErrorMessage = "El correo electrónico debe tener máximo {1} caracteres.")]
     public string? Email { get; set; }
 
-    [Display(Name = "Phone"), Phone, MaxLength(50)]
+    [Display(Name = "Teléfono")]
+    [Phone(ErrorMessage = "El teléfono no es válido.")]
+    [MaxLength(50, ErrorMessage = "El teléfono debe tener máximo {1} caracteres.")]
     public string? Phone { get; set; }
 
-    [Display(Name = "Location"), MaxLength(500)]
+    [Display(Name = "Ubicación")]
+    [MaxLength(500, ErrorMessage = "La ubicación debe tener máximo {1} caracteres.")]
     public string? Location { get; set; }
 
-    [Display(Name = "Has Electronic Invoice")]
+    [Display(Name = "Emite factura electrónica")]
     public bool HasElectronicInvoice { get; set; }
 
-    [Display(Name = "Shipping Details"), MaxLength(1000)]
+    [Display(Name = "Detalles de envío")]
+    [MaxLength(1000, ErrorMessage = "Los detalles de envío deben tener máximo {1} caracteres.")]
     public string? ShippingDetails { get; set; }
 
-    [Display(Name = "Warranty Info"), MaxLength(1000)]
+    [Display(Name = "Información de garantía")]
+    [MaxLength(1000, ErrorMessage = "La información de garantía debe tener máximo {1} caracteres.")]
     public string? WarrantyInfo { get; set; }
 
-    [Display(Name = "CCSS Compliance")]
+    [Display(Name = "Al día con la CCSS")]
     public bool IsCompliantCCSS { get; set; }
 
-    [Display(Name = "Hacienda Compliance")]
+    [Display(Name = "Al día con Hacienda")]
     public bool IsCompliantHacienda { get; set; }
 
-    [Display(Name = "SICOP Registration")]
+    [Display(Name = "Inscrito en SICOP")]
     public bool IsCompliantSICOP { get; set; }
 
-    [Required, Display(Name = "Price")]
-    [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than zero.")]
+    [Required(ErrorMessage = "El precio es obligatorio.")]
+    [Display(Name = "Precio")]
+    [Range(0.01, double.MaxValue, ErrorMessage = "El precio debe ser mayor a cero.")]
     public decimal Price { get; set; }
 
-    [Required, Display(Name = "Currency")]
-    [StringLength(3, MinimumLength = 3, ErrorMessage = "Currency must be a 3-character code.")]
+    [Required(ErrorMessage = "La moneda es obligatoria.")]
+    [Display(Name = "Moneda")]
+    [StringLength(3, MinimumLength = 3, ErrorMessage = "La moneda debe ser un código de 3 caracteres.")]
     public string Currency { get; set; } = string.Empty;
 
-    [Required, Display(Name = "Valid Until")]
+    [Required(ErrorMessage = "La fecha de vigencia es obligatoria.")]
+    [Display(Name = "Vigente hasta")]
     public DateOnly ValidUntil { get; set; }
 
-    [Required, Display(Name = "Quotation File")]
+    [Required(ErrorMessage = "El archivo de la cotización es obligatorio.")]
+    [Display(Name = "Archivo de la cotización")]
     public IFormFile? QuotationFile { get; set; }
 }

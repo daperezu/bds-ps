@@ -31,7 +31,7 @@
      data-testid="journey-timeline"
      data-variant="@Model.Variant.ToString().ToLowerInvariant()"
      data-application-id="@Model.ApplicationId"
-     aria-label="Application journey">
+     aria-label="Trayecto de la solicitud">
     <div class="fl-journey-mainline" role="list">
         @for (var i = 0; i < Model.Mainline.Count; i++)
         {
@@ -41,7 +41,7 @@
                 ? $"data-event-anchor=\"{node.EventLogAnchorId}\""
                 : string.Empty;
             var tooltip = node.Timestamp.HasValue
-                ? $"{node.Label} — {node.Timestamp.Value.LocalDateTime:yyyy-MM-dd HH:mm}{(string.IsNullOrEmpty(node.ActorName) ? "" : $" · {node.ActorName}")}"
+                ? $"{node.Label} — {node.Timestamp.Value.LocalDateTime:dd/MM/yyyy HH:mm}{(string.IsNullOrEmpty(node.ActorName) ? "" : $" · {node.ActorName}")}"
                 : node.Label;
 
             <span class="fl-journey-node"
@@ -82,7 +82,7 @@
                 </span>
                 @if (!string.IsNullOrEmpty(branch.ActorName))
                 {
-                    <span class="fl-text-muted fl-type-micro">@branch.ActorName · @branch.Occurred.LocalDateTime.ToString("yyyy-MM-dd")</span>
+                    <span class="fl-text-muted fl-type-micro">@branch.ActorName · @branch.Occurred.LocalDateTime.ToString("dd/MM/yyyy")</span>
                 }
             </div>
         }

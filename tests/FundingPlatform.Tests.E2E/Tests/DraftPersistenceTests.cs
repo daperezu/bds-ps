@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using FundingPlatform.Tests.E2E.Constants;
 using FundingPlatform.Tests.E2E.Fixtures;
 using FundingPlatform.Tests.E2E.PageObjects;
 using Microsoft.Playwright;
@@ -29,7 +30,7 @@ public class DraftPersistenceTests : AuthenticatedTestBase
         var appId = int.Parse(appIdMatch.Groups[1].Value);
 
         // Verify Draft status
-        var draftBadge = Page.Locator("[data-testid=status-pill]:has-text('Draft')");
+        var draftBadge = Page.Locator("[data-testid=status-pill]:has-text('Borrador')");
         await Expect(draftBadge).ToBeVisibleAsync();
 
         // Add an item
@@ -42,7 +43,7 @@ public class DraftPersistenceTests : AuthenticatedTestBase
         await Expect(itemRow).ToBeVisibleAsync();
 
         // Log out by clicking the logout button in the navigation
-        var logoutButton = Page.Locator("button:has-text('Logout')");
+        var logoutButton = Page.Locator($"button:has-text('{UiCopy.Logout}')");
         await logoutButton.ClickAsync();
         // Wait for redirect to home
         await Expect(Page).ToHaveURLAsync(new Regex(@"/$|/Home"));
@@ -58,7 +59,7 @@ public class DraftPersistenceTests : AuthenticatedTestBase
         await Expect(appRow).ToBeVisibleAsync();
 
         // Verify Draft status in the list
-        var draftBadgeInList = appRow.Locator("[data-testid=status-pill]:has-text('Draft')");
+        var draftBadgeInList = appRow.Locator("[data-testid=status-pill]:has-text('Borrador')");
         await Expect(draftBadgeInList).ToBeVisibleAsync();
 
         // Click to view details
@@ -70,7 +71,7 @@ public class DraftPersistenceTests : AuthenticatedTestBase
         await Expect(persistedItem).ToBeVisibleAsync();
 
         // Verify application is still in Draft state
-        var draftBadgeAfterReturn = Page.Locator("[data-testid=status-pill]:has-text('Draft')");
+        var draftBadgeAfterReturn = Page.Locator("[data-testid=status-pill]:has-text('Borrador')");
         await Expect(draftBadgeAfterReturn).ToBeVisibleAsync();
     }
 }

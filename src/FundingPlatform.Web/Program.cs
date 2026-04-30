@@ -7,10 +7,13 @@ using FundingPlatform.Infrastructure.DocumentGeneration;
 using FundingPlatform.Infrastructure.Identity;
 using FundingPlatform.Infrastructure.Persistence;
 using FundingPlatform.Web.Identity;
+using FundingPlatform.Web.Localization;
 using FundingPlatform.Web.Middleware;
 using FundingPlatform.Web.Services;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,9 +44,34 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     })
     .AddEntityFrameworkStores<AppDbContext>()
     .AddUserStore<SentinelAwareUserStore>()
+    .AddErrorDescriber<EsCrIdentityErrorDescriber>()
     .AddDefaultTokenProviders();
 
-builder.Services.AddControllersWithViews();
+// Spec 012: pin the request culture to es-CR with format overrides (research Decision 1).
+// Single-locale; no negotiation; built-in providers cleared so Accept-Language cannot
+// shift the culture per-request.
+var esCrCulture = EsCrCultureFactory.Build();
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture(esCrCulture, esCrCulture);
+    options.SupportedCultures = new[] { esCrCulture };
+    options.SupportedUICultures = new[] { esCrCulture };
+    options.RequestCultureProviders.Clear();
+});
+
+builder.Services.AddControllersWithViews(options =>
+{
+    // Spec 012: Spanish ModelBinding messages (FR-012).
+    var p = options.ModelBindingMessageProvider;
+    p.SetValueIsInvalidAccessor(v => $"El valor '{v}' no es válido.");
+    p.SetMissingBindRequiredValueAccessor(name => $"El campo {name} es obligatorio.");
+    p.SetMissingKeyOrValueAccessor(() => "Falta una clave o valor obligatorio.");
+    p.SetMissingRequestBodyRequiredValueAccessor(() => "Se requiere un cuerpo de solicitud no vacío.");
+    p.SetValueMustNotBeNullAccessor(v => $"El valor '{v}' no es válido.");
+    p.SetAttemptedValueIsInvalidAccessor((v, name) => $"El valor '{v}' no es válido para {name}.");
+    p.SetUnknownValueIsInvalidAccessor(name => $"El valor proporcionado no es válido para {name}.");
+    p.SetValueMustBeANumberAccessor(name => $"El campo {name} debe ser un número.");
+});
 builder.Services.AddRazorPages();
 
 builder.Services.Configure<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions>(options =>
@@ -63,7 +91,27 @@ builder.Services.Configure<SecurityStampValidatorOptions>(o =>
 
 builder.Services.AddScoped<IClaimsTransformation, AdminImpliesReviewerClaimsTransformation>();
 
+// Spec 012 / FR-014 — Spanish translation of Application-layer user-facing
+// error codes. Stateless: a singleton matches the static-string convention.
+builder.Services.AddSingleton<IUserFacingErrorTranslator, UserFacingErrorTranslator>();
+
 var app = builder.Build();
+
+// Spec 012: NFR-008 — warn at startup if FundingAgreement:LocaleCode diverges
+// from the pinned request culture (es-CR). The PDF generator's LocaleCode
+// remains overridable for testing flexibility, but production deployments
+// should match the request culture.
+{
+    var startupLogger = app.Services.GetRequiredService<ILogger<Program>>();
+    var configuredLocale = app.Configuration["FundingAgreement:LocaleCode"];
+    if (!string.IsNullOrWhiteSpace(configuredLocale)
+        && !string.Equals(configuredLocale, esCrCulture.Name, StringComparison.OrdinalIgnoreCase))
+    {
+        startupLogger.LogWarning(
+            "FundingAgreement:LocaleCode is '{Configured}' but request culture is '{Pinned}'. PDF and UI locales will diverge.",
+            configuredLocale, esCrCulture.Name);
+    }
+}
 
 using (var scope = app.Services.CreateScope())
 {
@@ -129,6 +177,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+
+app.UseRequestLocalization();
 
 app.MapDefaultEndpoints();
 

@@ -1,4 +1,5 @@
 using FundingPlatform.Application.DTOs;
+using FundingPlatform.Application.Errors;
 using FundingPlatform.Domain.Entities;
 using FundingPlatform.Domain.Enums;
 using FundingPlatform.Domain.Interfaces;
@@ -67,15 +68,15 @@ public class ReviewService
         return MapToReviewDto(application);
     }
 
-    public async Task<string?> ReviewItemAsync(int applicationId, int itemId, string decision, string? comment, int? selectedSupplierId, string userId)
+    public async Task<UserFacingError?> ReviewItemAsync(int applicationId, int itemId, string decision, string? comment, int? selectedSupplierId, string userId)
     {
         var application = await _applicationRepository.GetByIdWithDetailsAsync(applicationId);
-        if (application is null) return "Application not found.";
+        if (application is null) return UserFacingError.From(UserFacingErrorCode.ApplicationNotFound);
         if (application.State != ApplicationState.UnderReview)
-            return "Application is not under review.";
+            return UserFacingError.From(UserFacingErrorCode.ApplicationNotUnderReview);
 
         var item = application.Items.FirstOrDefault(i => i.Id == itemId);
-        if (item is null) return "Item not found.";
+        if (item is null) return UserFacingError.From(UserFacingErrorCode.ApplicationItemNotFound);
 
         try
         {
@@ -83,7 +84,7 @@ public class ReviewService
             {
                 case "Approve":
                     if (!selectedSupplierId.HasValue)
-                        return "A supplier must be selected when approving an item.";
+                        return UserFacingError.From(UserFacingErrorCode.SupplierRequiredOnApprove);
                     item.Approve(selectedSupplierId.Value, comment);
                     break;
                 case "Reject":
@@ -93,7 +94,7 @@ public class ReviewService
                     item.RequestMoreInfo(comment);
                     break;
                 default:
-                    return $"Invalid decision: {decision}";
+                    return UserFacingError.From(UserFacingErrorCode.InvalidReviewDecision, decision);
             }
 
             application.AddVersionHistory(new VersionHistory(userId, "ReviewItem",
@@ -104,23 +105,23 @@ public class ReviewService
         }
         catch (InvalidOperationException ex)
         {
-            return ex.Message;
+            return UserFacingError.From(UserFacingErrorCode.OperationRejected, ex.Message);
         }
         catch (Exception ex) when (ex.GetType().Name == "DbUpdateConcurrencyException")
         {
-            return "This application has been modified by another user. Please refresh and try again.";
+            return UserFacingError.From(UserFacingErrorCode.ConcurrentApplicationModification);
         }
     }
 
-    public async Task<string?> FlagTechnicalEquivalenceAsync(int applicationId, int itemId, bool isNotEquivalent, string userId)
+    public async Task<UserFacingError?> FlagTechnicalEquivalenceAsync(int applicationId, int itemId, bool isNotEquivalent, string userId)
     {
         var application = await _applicationRepository.GetByIdWithDetailsAsync(applicationId);
-        if (application is null) return "Application not found.";
+        if (application is null) return UserFacingError.From(UserFacingErrorCode.ApplicationNotFound);
         if (application.State != ApplicationState.UnderReview)
-            return "Application is not under review.";
+            return UserFacingError.From(UserFacingErrorCode.ApplicationNotUnderReview);
 
         var item = application.Items.FirstOrDefault(i => i.Id == itemId);
-        if (item is null) return "Item not found.";
+        if (item is null) return UserFacingError.From(UserFacingErrorCode.ApplicationItemNotFound);
 
         try
         {
@@ -137,14 +138,14 @@ public class ReviewService
         }
         catch (Exception ex) when (ex.GetType().Name == "DbUpdateConcurrencyException")
         {
-            return "This application has been modified by another user. Please refresh and try again.";
+            return UserFacingError.From(UserFacingErrorCode.ConcurrentApplicationModification);
         }
     }
 
-    public async Task<string?> SendBackAsync(int applicationId, string userId)
+    public async Task<UserFacingError?> SendBackAsync(int applicationId, string userId)
     {
         var application = await _applicationRepository.GetByIdWithDetailsAsync(applicationId);
-        if (application is null) return "Application not found.";
+        if (application is null) return UserFacingError.From(UserFacingErrorCode.ApplicationNotFound);
 
         try
         {
@@ -157,18 +158,19 @@ public class ReviewService
         }
         catch (InvalidOperationException ex)
         {
-            return ex.Message;
+            return UserFacingError.From(UserFacingErrorCode.OperationRejected, ex.Message);
         }
         catch (Exception ex) when (ex.GetType().Name == "DbUpdateConcurrencyException")
         {
-            return "This application has been modified by another user. Please refresh and try again.";
+            return UserFacingError.From(UserFacingErrorCode.ConcurrentApplicationModification);
         }
     }
 
-    public async Task<(string? Error, List<string>? UnresolvedItems)> FinalizeReviewAsync(int applicationId, bool force, string userId)
+    public async Task<(UserFacingError? Error, List<string>? UnresolvedItems)> FinalizeReviewAsync(int applicationId, bool force, string userId)
     {
         var application = await _applicationRepository.GetByIdWithDetailsAsync(applicationId);
-        if (application is null) return ("Application not found.", null);
+        if (application is null)
+            return (UserFacingError.From(UserFacingErrorCode.ApplicationNotFound), null);
 
         try
         {
@@ -190,11 +192,11 @@ public class ReviewService
         }
         catch (InvalidOperationException ex)
         {
-            return (ex.Message, null);
+            return (UserFacingError.From(UserFacingErrorCode.OperationRejected, ex.Message), null);
         }
         catch (Exception ex) when (ex.GetType().Name == "DbUpdateConcurrencyException")
         {
-            return ("This application has been modified by another user. Please refresh and try again.", null);
+            return (UserFacingError.From(UserFacingErrorCode.ConcurrentApplicationModification), null);
         }
     }
 

@@ -45,10 +45,10 @@ public class TechnicalEquivalenceTests : AuthenticatedTestBase
 
         // Verify auto-rejection
         await Expect(Page.Locator(".alert-success")).ToBeVisibleAsync();
-        await Expect(reviewPage.ItemReviewStatusBadge(itemId)).ToContainTextAsync("Rejected");
+        await Expect(reviewPage.ItemReviewStatusBadge(itemId)).ToContainTextAsync("Rechazado");
 
         // Verify item is flagged (the flag warning should be visible)
-        var flagWarning = Page.Locator($".review-item[data-item-id='{itemId}'] .alert-warning:has-text('not technically equivalent')");
+        var flagWarning = Page.Locator($".review-item[data-item-id='{itemId}'] .alert-warning:has-text('no son técnicamente equivalentes')");
         await Expect(flagWarning).ToBeVisibleAsync();
 
         // Clear the flag
@@ -56,7 +56,7 @@ public class TechnicalEquivalenceTests : AuthenticatedTestBase
 
         // Verify returns to Pending
         await Expect(Page.Locator(".alert-success")).ToBeVisibleAsync();
-        await Expect(reviewPage.ItemReviewStatusBadge(itemId)).ToContainTextAsync("Pending");
+        await Expect(reviewPage.ItemReviewStatusBadge(itemId)).ToContainTextAsync("Pendiente");
     }
 
     private async Task<int> SetupSubmittedApplicationAsync()
@@ -80,17 +80,17 @@ public class TechnicalEquivalenceTests : AuthenticatedTestBase
         await itemPage.AddItemAsync(appId, "Tech Equivalence Item", 0, "Various specs", BaseUrl);
 
         var supplierPage = new SupplierPage(Page);
-        var addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        var addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
         await supplierPage.FillSupplierFormAsync($"TE1-{_uniqueId}", "Supplier One", 600m, "2027-12-31", _testFilePath);
         await supplierPage.SubmitAsync();
 
-        addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
         await supplierPage.FillSupplierFormAsync($"TE2-{_uniqueId}", "Supplier Two", 800m, "2027-12-31", _testFilePath);
         await supplierPage.SubmitAsync();
 
-        var impactButton = Page.Locator("a:has-text('Impact')").First;
+        var impactButton = Page.Locator("a:has-text('Impacto')").First;
         await impactButton.ClickAsync();
         await PickFirstImpactTemplateAsync();
         var paramInputs = Page.Locator(".parameter-field input.form-control");
@@ -101,11 +101,11 @@ public class TechnicalEquivalenceTests : AuthenticatedTestBase
             var inputType = await input.GetAttributeAsync("type");
             await input.FillAsync(inputType == "number" ? "100" : inputType == "date" ? "2026-12-31" : "Test value");
         }
-        await Page.Locator("button[type=submit]:has-text('Save Impact')").ClickAsync();
+        await Page.Locator("button[type=submit]:has-text('Guardar impacto')").ClickAsync();
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
-        await Page.Locator("button[type=submit]:has-text('Submit Application')").ClickAsync();
-        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Submitted')")).ToBeVisibleAsync();
+        await Page.Locator("button[type=submit]:has-text('Enviar solicitud')").ClickAsync();
+        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Enviada')")).ToBeVisibleAsync();
 
         await Page.Locator("form[action*='Account/Logout'] button[type=submit]").ClickAsync();
 

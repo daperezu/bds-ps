@@ -1,3 +1,4 @@
+using FundingPlatform.Tests.E2E.Constants;
 using Microsoft.Playwright;
 
 namespace FundingPlatform.Tests.E2E.PageObjects;
@@ -9,10 +10,10 @@ public class ApplicationPage : BasePage
     }
 
     public ILocator CreateButton => Page.Locator("a[href*='Application/Create']").First;
-    public ILocator SubmitDraftButton => Page.Locator("button[type=submit]:has-text('Create Draft Application')");
+    public ILocator SubmitDraftButton => Page.Locator($"button[type=submit]:has-text('{UiCopy.CreateDraftApplication}')");
     public ILocator ApplicationsTable => Page.Locator("table");
-    public ILocator AddItemButton => Page.Locator("a:has-text('Add Item')").First;
-    public ILocator SubmitApplicationButton => Page.Locator("button[type=submit]:has-text('Submit Application')");
+    public ILocator AddItemButton => Page.Locator($"a:has-text('{UiCopy.AddItem}')").First;
+    public ILocator SubmitApplicationButton => Page.Locator($"button[type=submit]:has-text('{UiCopy.SubmitApplication}')");
     public ILocator StatusBadge => Page.Locator(".badge");
     public ILocator ItemRows => Page.Locator("table tbody tr");
 

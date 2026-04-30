@@ -15,7 +15,7 @@ public class FundingAgreementDocumentViewModel
     public string ApplicantEmail { get; set; } = string.Empty;
     public string? ApplicantPhone { get; set; }
 
-    public string LocaleCode { get; set; } = "es-CO";
+    public string LocaleCode { get; set; } = "es-CR";
     public string CurrencyIsoCode { get; set; } = "COP";
 
     public IReadOnlyList<FundingAgreementItemRowDto> Items { get; set; } = Array.Empty<FundingAgreementItemRowDto>();

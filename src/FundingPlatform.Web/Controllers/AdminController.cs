@@ -71,7 +71,7 @@ public class AdminController : Controller
 
         await _adminService.CreateImpactTemplateAsync(command);
 
-        TempData["SuccessMessage"] = "Impact template created successfully.";
+        TempData["SuccessMessage"] = "Plantilla de impacto creada con éxito.";
         return RedirectToAction(nameof(ImpactTemplates));
     }
 
@@ -128,7 +128,7 @@ public class AdminController : Controller
 
         await _adminService.UpdateImpactTemplateAsync(command);
 
-        TempData["SuccessMessage"] = "Impact template updated successfully.";
+        TempData["SuccessMessage"] = "Plantilla de impacto actualizada con éxito.";
         return RedirectToAction(nameof(ImpactTemplates));
     }
 
@@ -165,7 +165,7 @@ public class AdminController : Controller
 
         await _adminService.UpdateSystemConfigurationAsync(command);
 
-        TempData["SuccessMessage"] = "System configuration updated successfully.";
+        TempData["SuccessMessage"] = "Configuración del sistema actualizada con éxito.";
         return RedirectToAction(nameof(Configuration));
     }
 }

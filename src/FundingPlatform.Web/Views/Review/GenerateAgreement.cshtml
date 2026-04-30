@@ -1,7 +1,7 @@
 @model FundingPlatform.Web.ViewModels.GenerateAgreementQueueViewModel
 
 @{
-    ViewData["Title"] = "Generate Agreement";
+    ViewData["Title"] = "Generar convenio";
     ViewData["ActiveTab"] = "Generate";
 }
 
@@ -9,16 +9,16 @@
 
 @await Html.PartialAsync("Components/_PageHeader",
     new PageHeaderViewModel(
-        Title: "Generate Agreement",
-        Subtitle: "Applications awaiting funding agreement generation."))
+        Title: "Generar convenio",
+        Subtitle: "Solicitudes pendientes de generación del convenio de financiamiento."))
 
 @if (Model.Applications.Count == 0)
 {
     <div data-testid="generate-agreement-empty">
         @await Html.PartialAsync("Components/_EmptyState",
             new EmptyStateViewModel(
-                Headline: "No applications awaiting agreement",
-                Body: "Applications waiting for funding agreement generation will appear here once their reviews are finalized.",
+                Headline: "No hay solicitudes pendientes de convenio",
+                Body: "Las solicitudes pendientes de generación del convenio de financiamiento aparecerán aquí cuando sus revisiones se finalicen.",
                 Icon: "ti ti-file-text"))
     </div>
 }
@@ -29,23 +29,23 @@ else
             <table class="table card-table table-vcenter table-sm" data-testid="generate-agreement-table">
                 <thead>
                     <tr>
-                        <th>Application</th>
-                        <th>Applicant</th>
-                        <th>Response finalized on</th>
-                        <th>Actions</th>
+                        <th>Solicitud</th>
+                        <th>Solicitante</th>
+                        <th>Respuesta finalizada el</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var row in Model.Applications)
                     {
                         <tr data-testid="generate-agreement-row" data-application-id="@row.ApplicationId">
-                            <td>#@row.ApplicationId</td>
+                            <td>N.º @row.ApplicationId</td>
                             <td>@row.ApplicantDisplayName</td>
-                            <td>@row.ResponseFinalizedAtUtc.ToString("yyyy-MM-dd HH:mm") UTC</td>
+                            <td>@row.ResponseFinalizedAtUtc.ToString("dd/MM/yyyy HH:mm") UTC</td>
                             <td>
                                 <a class="btn btn-sm btn-outline-primary"
                                    href="@Url.RouteUrl(new { controller = "FundingAgreement", action = "Details", applicationId = row.ApplicationId })">
-                                    <i class="ti ti-arrow-right me-1"></i>Open
+                                    <i class="ti ti-arrow-right me-1"></i>Abrir
                                 </a>
                             </td>
                         </tr>

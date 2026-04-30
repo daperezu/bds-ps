@@ -5,6 +5,7 @@ using FundingPlatform.Application.DTOs;
 using FundingPlatform.Application.Services;
 using FundingPlatform.Domain.Enums;
 using FundingPlatform.Infrastructure.Persistence;
+using FundingPlatform.Web.Localization;
 using FundingPlatform.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,11 +18,16 @@ public class ApplicantResponseController : Controller
 {
     private readonly ApplicantResponseService _service;
     private readonly AppDbContext _dbContext;
+    private readonly IUserFacingErrorTranslator _errorTranslator;
 
-    public ApplicantResponseController(ApplicantResponseService service, AppDbContext dbContext)
+    public ApplicantResponseController(
+        ApplicantResponseService service,
+        AppDbContext dbContext,
+        IUserFacingErrorTranslator errorTranslator)
     {
         _service = service;
         _dbContext = dbContext;
+        _errorTranslator = errorTranslator;
     }
 
     [HttpGet]
@@ -52,11 +58,11 @@ public class ApplicantResponseController : Controller
 
         if (error is not null)
         {
-            TempData["ErrorMessage"] = error;
+            TempData["ErrorMessage"] = _errorTranslator.Translate(error);
         }
         else
         {
-            TempData["SuccessMessage"] = "Response submitted.";
+            TempData["SuccessMessage"] = "Respuesta enviada.";
         }
 
         return RedirectToAction(nameof(Index), new { id });
@@ -74,11 +80,11 @@ public class ApplicantResponseController : Controller
         var (result, error) = await _service.OpenAppealAsync(new OpenAppealCommand(id, userId), applicantId);
         if (error is not null)
         {
-            TempData["ErrorMessage"] = error;
+            TempData["ErrorMessage"] = _errorTranslator.Translate(error);
             return RedirectToAction(nameof(Index), new { id });
         }
 
-        TempData["SuccessMessage"] = "Appeal opened.";
+        TempData["SuccessMessage"] = "Apelación abierta.";
         return RedirectToAction(nameof(Appeal), new { id });
     }
 
@@ -113,11 +119,11 @@ public class ApplicantResponseController : Controller
 
         if (error is not null)
         {
-            TempData["ErrorMessage"] = error;
+            TempData["ErrorMessage"] = _errorTranslator.Translate(error);
         }
         else
         {
-            TempData["SuccessMessage"] = "Message posted.";
+            TempData["SuccessMessage"] = "Mensaje publicado.";
         }
 
         return RedirectToAction(nameof(Appeal), new { id });
@@ -134,11 +140,20 @@ public class ApplicantResponseController : Controller
 
         if (error is not null)
         {
-            TempData["ErrorMessage"] = error;
+            TempData["ErrorMessage"] = _errorTranslator.Translate(error);
             return RedirectToAction(nameof(Appeal), new { id });
         }
 
-        TempData["SuccessMessage"] = $"Appeal resolved as {resolution}.";
+        // Spec 012 / FR-010 / FR-014: route the enum through a Spanish display
+        // string instead of letting AppealResolution.ToString() reach the UI.
+        var resolutionLabel = resolution switch
+        {
+            AppealResolution.Uphold => "Confirmada",
+            AppealResolution.GrantReopenToDraft => "Concedida (reabrir como borrador)",
+            AppealResolution.GrantReopenToReview => "Concedida (reabrir en revisión)",
+            _ => resolution.ToString(),
+        };
+        TempData["SuccessMessage"] = $"Apelación resuelta como {resolutionLabel}.";
 
         return resolution switch
         {

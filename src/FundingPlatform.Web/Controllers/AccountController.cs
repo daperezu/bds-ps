@@ -104,7 +104,7 @@ public class AccountController : Controller
 
         if (!result.Succeeded)
         {
-            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+            ModelState.AddModelError(string.Empty, "Inicio de sesión inválido.");
             return View(model);
         }
 

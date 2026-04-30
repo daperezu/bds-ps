@@ -14,7 +14,7 @@ public class ReviewQueuePage : BasePage
     public ILocator QueueRows => Page.Locator("[data-testid=reviewer-queue-row]");
     public ILocator PaginationLinks => Page.Locator("nav.pagination a");
     public ILocator PageInfo => Page.Locator(".page-info");
-    public ILocator NoApplicationsMessage => Page.Locator(".alert:has-text('No applications')");
+    public ILocator NoApplicationsMessage => Page.Locator(".alert:has-text('No hay solicitudes')");
 
     public ILocator ReviewTabs => Page.Locator("[data-testid=review-tabs]");
     public ILocator InitialQueueTab => Page.Locator("[data-testid=review-tab-initial]");

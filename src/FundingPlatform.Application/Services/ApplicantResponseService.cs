@@ -1,6 +1,7 @@
 using FundingPlatform.Application.Applications.Commands;
 using FundingPlatform.Application.Applications.Queries;
 using FundingPlatform.Application.DTOs;
+using FundingPlatform.Application.Errors;
 using FundingPlatform.Domain.Entities;
 using FundingPlatform.Domain.Enums;
 using FundingPlatform.Domain.Interfaces;
@@ -36,13 +37,15 @@ public class ApplicantResponseService
         return MapToResponseDto(application);
     }
 
-    public async Task<(ApplicantResponseDto? Result, string? Error)> SubmitResponseAsync(
+    public async Task<(ApplicantResponseDto? Result, UserFacingError? Error)> SubmitResponseAsync(
         SubmitApplicantResponseCommand command,
         int applicantId)
     {
         var application = await _applicationRepository.GetByIdWithResponseAndAppealsAsync(command.ApplicationId);
-        if (application is null) return (null, "Application not found.");
-        if (application.ApplicantId != applicantId) return (null, "You do not own this application.");
+        if (application is null)
+            return (null, UserFacingError.From(UserFacingErrorCode.ApplicationNotFound));
+        if (application.ApplicantId != applicantId)
+            return (null, UserFacingError.From(UserFacingErrorCode.ApplicationNotOwnedByApplicant));
 
         try
         {
@@ -59,21 +62,23 @@ public class ApplicantResponseService
         }
         catch (InvalidOperationException ex)
         {
-            return (null, ex.Message);
+            return (null, UserFacingError.From(UserFacingErrorCode.OperationRejected, ex.Message));
         }
         catch (Exception ex) when (ex.GetType().Name == "DbUpdateConcurrencyException")
         {
-            return (null, "This application has been modified by another user. Please refresh and try again.");
+            return (null, UserFacingError.From(UserFacingErrorCode.ConcurrentApplicationModification));
         }
     }
 
-    public async Task<(AppealDto? Result, string? Error)> OpenAppealAsync(
+    public async Task<(AppealDto? Result, UserFacingError? Error)> OpenAppealAsync(
         OpenAppealCommand command,
         int applicantId)
     {
         var application = await _applicationRepository.GetByIdWithResponseAndAppealsAsync(command.ApplicationId);
-        if (application is null) return (null, "Application not found.");
-        if (application.ApplicantId != applicantId) return (null, "You do not own this application.");
+        if (application is null)
+            return (null, UserFacingError.From(UserFacingErrorCode.ApplicationNotFound));
+        if (application.ApplicantId != applicantId)
+            return (null, UserFacingError.From(UserFacingErrorCode.ApplicationNotOwnedByApplicant));
 
         var maxAppeals = await GetMaxAppealsAsync();
 
@@ -92,11 +97,11 @@ public class ApplicantResponseService
         }
         catch (InvalidOperationException ex)
         {
-            return (null, ex.Message);
+            return (null, UserFacingError.From(UserFacingErrorCode.OperationRejected, ex.Message));
         }
         catch (Exception ex) when (ex.GetType().Name == "DbUpdateConcurrencyException")
         {
-            return (null, "This application has been modified by another user. Please refresh and try again.");
+            return (null, UserFacingError.From(UserFacingErrorCode.ConcurrentApplicationModification));
         }
     }
 
@@ -118,24 +123,26 @@ public class ApplicantResponseService
         return MapAppealToDto(appeal, application);
     }
 
-    public async Task<(AppealDto? Result, string? Error)> PostMessageAsync(
+    public async Task<(AppealDto? Result, UserFacingError? Error)> PostMessageAsync(
         PostAppealMessageCommand command,
         int? applicantId,
         bool isReviewer)
     {
         var application = await _applicationRepository.GetByIdWithResponseAndAppealsAsync(command.ApplicationId);
-        if (application is null) return (null, "Application not found.");
+        if (application is null)
+            return (null, UserFacingError.From(UserFacingErrorCode.ApplicationNotFound));
 
         if (!isReviewer)
         {
             if (applicantId is null || application.ApplicantId != applicantId)
-                return (null, "You do not have access to this appeal.");
+                return (null, UserFacingError.From(UserFacingErrorCode.AppealAccessDenied));
         }
 
         var appeal = application.Appeals
             .OrderByDescending(a => a.OpenedAt)
             .FirstOrDefault(a => a.Status == AppealStatus.Open);
-        if (appeal is null) return (null, "No open appeal to post on.");
+        if (appeal is null)
+            return (null, UserFacingError.From(UserFacingErrorCode.NoOpenAppealForMessage));
 
         try
         {
@@ -152,19 +159,20 @@ public class ApplicantResponseService
         }
         catch (InvalidOperationException ex)
         {
-            return (null, ex.Message);
+            return (null, UserFacingError.From(UserFacingErrorCode.OperationRejected, ex.Message));
         }
         catch (Exception ex) when (ex.GetType().Name == "DbUpdateConcurrencyException")
         {
-            return (null, "This appeal has been modified by another user. Please refresh and try again.");
+            return (null, UserFacingError.From(UserFacingErrorCode.ConcurrentAppealModification));
         }
     }
 
-    public async Task<(AppealDto? Result, string? Error)> ResolveAppealAsync(
+    public async Task<(AppealDto? Result, UserFacingError? Error)> ResolveAppealAsync(
         ResolveAppealCommand command)
     {
         var application = await _applicationRepository.GetByIdWithResponseAndAppealsAsync(command.ApplicationId);
-        if (application is null) return (null, "Application not found.");
+        if (application is null)
+            return (null, UserFacingError.From(UserFacingErrorCode.ApplicationNotFound));
 
         try
         {
@@ -180,7 +188,8 @@ public class ApplicantResponseService
                     application.ResolveAppealAsGrantReopenToReview(command.UserId);
                     break;
                 default:
-                    return (null, $"Unknown resolution '{command.Resolution}'.");
+                    return (null, UserFacingError.From(
+                        UserFacingErrorCode.UnknownAppealResolution, command.Resolution.ToString()));
             }
 
             application.AddVersionHistory(new VersionHistory(
@@ -198,11 +207,11 @@ public class ApplicantResponseService
         }
         catch (InvalidOperationException ex)
         {
-            return (null, ex.Message);
+            return (null, UserFacingError.From(UserFacingErrorCode.OperationRejected, ex.Message));
         }
         catch (Exception ex) when (ex.GetType().Name == "DbUpdateConcurrencyException")
         {
-            return (null, "This appeal has been modified by another user. Please refresh and try again.");
+            return (null, UserFacingError.From(UserFacingErrorCode.ConcurrentAppealModification));
         }
     }
 

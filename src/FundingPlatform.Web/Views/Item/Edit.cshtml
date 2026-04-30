@@ -1,17 +1,17 @@
 @model FundingPlatform.Web.ViewModels.EditItemViewModel
 
 @{
-    ViewData["Title"] = "Edit Item";
+    ViewData["Title"] = "Editar ítem";
 }
 
 @await Html.PartialAsync("Components/_PageHeader",
     new PageHeaderViewModel(
-        Title: "Edit Item",
+        Title: "Editar ítem",
         Breadcrumbs: new[]
         {
-            new BreadcrumbItem("My Applications", Url.Action("Index", "Application")),
-            new BreadcrumbItem($"Application #{Model.ApplicationId}", Url.Action("Details", "Application", new { id = Model.ApplicationId })),
-            new BreadcrumbItem("Edit Item"),
+            new BreadcrumbItem("Mis solicitudes", Url.Action("Index", "Application")),
+            new BreadcrumbItem($"Solicitud N.º {Model.ApplicationId}", Url.Action("Details", "Application", new { id = Model.ApplicationId })),
+            new BreadcrumbItem("Editar ítem"),
         }))
 
 <div class="card">
@@ -32,7 +32,7 @@
             <div class="mb-3" data-testid="form-section" data-field="CategoryId">
                 <label asp-for="CategoryId" class="form-label"></label>
                 <select asp-for="CategoryId" asp-items="Model.Categories" class="form-select">
-                    <option value="">-- Select Category --</option>
+                    <option value="">-- Seleccione una categoría --</option>
                 </select>
                 <span asp-validation-for="CategoryId" class="invalid-feedback d-block"></span>
             </div>
@@ -44,8 +44,8 @@
             </div>
 
             <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Save Changes</button>
-                <a asp-controller="Application" asp-action="Details" asp-route-id="@Model.ApplicationId" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                <a asp-controller="Application" asp-action="Details" asp-route-id="@Model.ApplicationId" class="btn btn-outline-secondary">Cancelar</a>
             </div>
         </form>
     </div>

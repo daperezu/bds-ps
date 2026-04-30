@@ -7,17 +7,17 @@
     <div class="empty-icon text-danger">
         <i class="ti ti-alert-circle icon-empty-state"></i>
     </div>
-    <p class="empty-title">An error occurred</p>
+    <p class="empty-title">Ocurrió un error</p>
     <p class="empty-subtitle text-secondary">
-        We hit a snag processing your request. Please try again.
+        Tuvimos un inconveniente al procesar su solicitud. Inténtelo nuevamente.
     </p>
     @if (Model.ShowRequestId)
     {
-        <p class="text-secondary"><strong>Request ID:</strong> <code>@Model.RequestId</code></p>
+        <p class="text-secondary"><strong>Identificador de solicitud:</strong> <code>@Model.RequestId</code></p>
     }
     <div class="empty-action">
         <a href="@Url.Action("Index", "Home")" class="btn btn-primary">
-            <i class="ti ti-home me-1"></i> Back to Home
+            <i class="ti ti-home me-1"></i> Volver al inicio
         </a>
     </div>
 </div>

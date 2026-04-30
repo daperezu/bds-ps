@@ -1,0 +1,121 @@
+using FundingPlatform.Application.Errors;
+
+namespace FundingPlatform.Web.Localization;
+
+/// <summary>
+/// Spec 012 / FR-014 — translates Application-layer
+/// <see cref="UserFacingErrorCode"/> values into the Spanish (es-CR) string
+/// surfaced to the user via TempData / ModelState.
+///
+/// <para>
+/// Lives in the Web layer so the Application layer can stay English (NFR-001).
+/// Strings are hard-coded inline here — NFR-003 forbids
+/// <c>IStringLocalizer</c> / <c>.resx</c> machinery; the static-class approach
+/// matches the existing convention from <c>AdminErrorMessages</c>.
+/// </para>
+/// </summary>
+public interface IUserFacingErrorTranslator
+{
+    /// <summary>Render <paramref name="error"/> as the Spanish text shown to
+    /// the user. Never returns null or empty; falls back to a generic
+    /// "operación no se pudo completar" string for unmapped codes.</summary>
+    string Translate(UserFacingError error);
+
+    /// <summary>Convenience overload for when only a code is on hand (no Detail).</summary>
+    string Translate(UserFacingErrorCode code);
+}
+
+/// <inheritdoc />
+public sealed class UserFacingErrorTranslator : IUserFacingErrorTranslator
+{
+    public string Translate(UserFacingError error) => Translate(error.Code);
+
+    public string Translate(UserFacingErrorCode code) => code switch
+    {
+        // Domain rule rejection — the Detail string is intentionally NOT
+        // rendered (it is English from the domain). FR-14 / NFR-001: a
+        // generic Spanish phrase wins.
+        UserFacingErrorCode.OperationRejected =>
+            "La operación no se pudo completar. Inténtelo nuevamente o contacte al soporte.",
+
+        // Application aggregate
+        UserFacingErrorCode.ApplicationNotFound =>
+            "Solicitud no encontrada.",
+        UserFacingErrorCode.ApplicationNotUnderReview =>
+            "La solicitud no está en revisión.",
+        UserFacingErrorCode.ApplicationItemNotFound =>
+            "Ítem no encontrado en la solicitud.",
+        UserFacingErrorCode.ApplicationNotOwnedByApplicant =>
+            "Usted no es el dueño de esta solicitud.",
+        UserFacingErrorCode.SupplierRequiredOnApprove =>
+            "Debe seleccionar un proveedor para aprobar el ítem.",
+        UserFacingErrorCode.InvalidReviewDecision =>
+            "Decisión de revisión no válida.",
+        UserFacingErrorCode.ConcurrentApplicationModification =>
+            "Otro usuario modificó esta solicitud. Refresque la página e inténtelo nuevamente.",
+
+        // Appeal aggregate
+        UserFacingErrorCode.AppealAccessDenied =>
+            "Usted no tiene acceso a esta apelación.",
+        UserFacingErrorCode.NoOpenAppealForMessage =>
+            "No hay una apelación abierta para responder.",
+        UserFacingErrorCode.UnknownAppealResolution =>
+            "Resolución de apelación no reconocida.",
+        UserFacingErrorCode.ConcurrentAppealModification =>
+            "Otro usuario modificó esta apelación. Refresque la página e inténtelo nuevamente.",
+
+        // Funding-agreement aggregate
+        UserFacingErrorCode.AgreementGenerationPreconditionsNotMet =>
+            "No se cumplen las precondiciones del convenio de financiamiento.",
+        UserFacingErrorCode.AgreementRegenerationPreconditionsNotMet =>
+            "No se cumplen las precondiciones para regenerar el convenio.",
+        UserFacingErrorCode.AgreementPdfRenderingFailed =>
+            "No se pudo generar el convenio. Inténtelo nuevamente o contacte al soporte.",
+        UserFacingErrorCode.AgreementGenerationFailed =>
+            "Falló la generación del convenio de financiamiento.",
+        UserFacingErrorCode.ConcurrentAgreementModification =>
+            "Otro usuario modificó este convenio. Refresque la página e inténtelo nuevamente.",
+
+        // Signed upload (resource not found / authz)
+        UserFacingErrorCode.SignedUploadResourceNotFound =>
+            "Recurso no encontrado.",
+        UserFacingErrorCode.ConcurrentSignedUploadModification =>
+            "Otra acción modificó esta carga. Refresque la página e inténtelo nuevamente.",
+
+        // Signed upload (validation)
+        UserFacingErrorCode.SignedUploadStaleAgreementVersion =>
+            "Descargue nuevamente el convenio más reciente y fírmelo otra vez.",
+        UserFacingErrorCode.SignedUploadAlreadyPending =>
+            "Ya existe una carga firmada pendiente. Use Reemplazar.",
+        UserFacingErrorCode.SignedUploadNoPendingToReplace =>
+            "No hay una carga pendiente para reemplazar; use Cargar.",
+        UserFacingErrorCode.SignedUploadWrongPendingId =>
+            "La carga indicada no es la pendiente actual.",
+        UserFacingErrorCode.SignedUploadNoPendingToWithdraw =>
+            "No hay una carga pendiente para retirar.",
+        UserFacingErrorCode.SignedUploadStalePendingId =>
+            "El identificador de la carga pendiente no es válido; refresque la página.",
+        UserFacingErrorCode.SignedUploadNoPendingToApprove =>
+            "No hay una carga pendiente para aprobar.",
+        UserFacingErrorCode.SignedUploadNoPendingToReject =>
+            "No hay una carga pendiente para rechazar.",
+        UserFacingErrorCode.SignedUploadRejectionCommentRequired =>
+            "Se requiere un comentario para rechazar la carga.",
+
+        // Signed upload (intake validation)
+        UserFacingErrorCode.SignedUploadUnsupportedContentType =>
+            "Solo se aceptan archivos PDF (application/pdf).",
+        UserFacingErrorCode.SignedUploadFileEmpty =>
+            "El archivo cargado está vacío.",
+        UserFacingErrorCode.SignedUploadFileTooLarge =>
+            "El archivo excede el tamaño máximo permitido.",
+        UserFacingErrorCode.SignedUploadContentUnreadable =>
+            "No se pudo leer el contenido del archivo cargado.",
+        UserFacingErrorCode.SignedUploadNotAPdf =>
+            "El archivo cargado no parece ser un PDF.",
+        UserFacingErrorCode.SignedUploadMissingPdfHeader =>
+            "El archivo cargado no parece ser un PDF (falta el encabezado %PDF-).",
+
+        _ => "La operación no se pudo completar. Inténtelo nuevamente o contacte al soporte.",
+    };
+}

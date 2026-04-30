@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using FundingPlatform.Tests.E2E.Constants;
 using FundingPlatform.Tests.E2E.Fixtures;
 using FundingPlatform.Tests.E2E.PageObjects;
 using Microsoft.Playwright;
@@ -36,15 +37,20 @@ public class ApplicantResponseTests : AuthenticatedTestBase
         var responsePage = new ApplicantResponsePage(Page);
         await responsePage.GotoAsync(BaseUrl, appId);
 
-        await Expect(responsePage.Header).ToContainTextAsync("Applicant Response");
+        await Expect(responsePage.Header).ToContainTextAsync("Respuesta del solicitante");
 
         await responsePage.AcceptRadio(itemId).CheckAsync();
         await responsePage.SubmitAsync();
 
         await Expect(responsePage.SuccessMessage).ToBeVisibleAsync();
-        await Expect(responsePage.ApplicationState).ToContainTextAsync("Response Finalized");
+        await Expect(responsePage.ApplicationState).ToContainTextAsync("Respuesta finalizada");
 
-        // Reload and confirm response is read-only
+        // Reload and confirm response is read-only.
+        // Note: the decision-display still renders the raw enum name (Accept/Reject)
+        // because it binds @item.Decision directly. That's a UI-copy gap left by spec
+        // 012 — the enum value bleeding through is unconditional, not localized — but
+        // it's outside this batch's scope (no behavior change). The test asserts on
+        // the enum text it actually emits.
         await responsePage.GotoAsync(BaseUrl, appId);
         await Expect(responsePage.DecisionDisplay(itemId)).ToContainTextAsync("Accept");
     }
@@ -90,7 +96,7 @@ public class ApplicantResponseTests : AuthenticatedTestBase
         await responsePage.OpenAppealButton.ClickAsync();
 
         var appealPage = new AppealThreadPage(Page);
-        await Expect(appealPage.AppealStatus).ToContainTextAsync("Open");
+        await Expect(appealPage.AppealStatus).ToContainTextAsync(UiCopy.State.Open);
 
         await Page.Locator("form[action*='Account/Logout'] button[type=submit]").ClickAsync();
 
@@ -120,7 +126,7 @@ public class ApplicantResponseTests : AuthenticatedTestBase
         await responsePage.OpenAppealButton.ClickAsync();
 
         var appealPage = new AppealThreadPage(Page);
-        await Expect(appealPage.AppealStatus).ToContainTextAsync("Open");
+        await Expect(appealPage.AppealStatus).ToContainTextAsync(UiCopy.State.Open);
 
         // Applicant posts a message
         await appealPage.PostMessageAsync("Please reconsider — the item is still needed.");
@@ -163,17 +169,17 @@ public class ApplicantResponseTests : AuthenticatedTestBase
         await itemPage.AddItemAsync(appId, "Response Item", 0, "Specs", BaseUrl);
 
         var supplierPage = new SupplierPage(Page);
-        var addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        var addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
         await supplierPage.FillSupplierFormAsync($"AR1-{_uniqueId}", "Supplier Alpha", 900m, "2027-12-31", _testFilePath);
         await supplierPage.SubmitAsync();
 
-        addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
         await supplierPage.FillSupplierFormAsync($"AR2-{_uniqueId}", "Supplier Beta", 1100m, "2027-12-31", _testFilePath);
         await supplierPage.SubmitAsync();
 
-        var impactButton = Page.Locator("a:has-text('Impact')").First;
+        var impactButton = Page.Locator("a:has-text('Impacto')").First;
         await impactButton.ClickAsync();
         await PickFirstImpactTemplateAsync();
         var paramInputs = Page.Locator(".parameter-field input.form-control");
@@ -184,11 +190,11 @@ public class ApplicantResponseTests : AuthenticatedTestBase
             var inputType = await input.GetAttributeAsync("type");
             await input.FillAsync(inputType == "number" ? "100" : inputType == "date" ? "2026-12-31" : "Test value");
         }
-        await Page.Locator("button[type=submit]:has-text('Save Impact')").ClickAsync();
+        await Page.Locator("button[type=submit]:has-text('Guardar impacto')").ClickAsync();
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
-        await Page.Locator("button[type=submit]:has-text('Submit Application')").ClickAsync();
-        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Submitted')")).ToBeVisibleAsync();
+        await Page.Locator("button[type=submit]:has-text('Enviar solicitud')").ClickAsync();
+        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Enviada')")).ToBeVisibleAsync();
 
         await Page.Locator("form[action*='Account/Logout'] button[type=submit]").ClickAsync();
 
@@ -221,7 +227,7 @@ public class ApplicantResponseTests : AuthenticatedTestBase
 
         await reviewPage.FinalizeButton.ClickAsync();
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Review"));
-        await Expect(Page.Locator(".alert-success:has-text('finalized')")).ToBeVisibleAsync();
+        await Expect(Page.Locator($".alert-success:has-text('{UiCopy.ReviewFinalized}')")).ToBeVisibleAsync();
 
         await Page.Locator("form[action*='Account/Logout'] button[type=submit]").ClickAsync();
 

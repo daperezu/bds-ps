@@ -60,7 +60,7 @@ public class SupplierController : Controller
 
         if (model.QuotationFile is null || model.QuotationFile.Length == 0)
         {
-            ModelState.AddModelError(nameof(model.QuotationFile), "A quotation file is required.");
+            ModelState.AddModelError(nameof(model.QuotationFile), "Se requiere el archivo de la cotización.");
             model.ApplicationId = appId;
             model.ItemId = itemId;
             return View(model);
@@ -95,7 +95,7 @@ public class SupplierController : Controller
             using var stream = model.QuotationFile.OpenReadStream();
             await _applicationService.AddSupplierQuotationAsync(command, stream);
 
-            TempData["SuccessMessage"] = "Supplier and quotation added successfully.";
+            TempData["SuccessMessage"] = "Proveedor y cotización agregados con éxito.";
             return RedirectToAction("Details", "Application", new { id = appId });
         }
         catch (InvalidOperationException ex)

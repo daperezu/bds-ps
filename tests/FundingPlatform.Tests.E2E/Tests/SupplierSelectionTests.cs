@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using FundingPlatform.Tests.E2E.Constants;
 using FundingPlatform.Tests.E2E.Fixtures;
 using FundingPlatform.Tests.E2E.PageObjects;
 using Microsoft.Playwright;
@@ -42,7 +43,7 @@ public class SupplierSelectionTests : AuthenticatedTestBase
 
         // Verify recommended badge is shown on lowest-price supplier
         var recommendedText = await firstItem.Locator(".quotation-row.table-success").TextContentAsync();
-        Assert.That(recommendedText, Does.Contain("Recommended"));
+        Assert.That(recommendedText, Does.Contain(UiCopy.Recommended));
 
         // Approve without selecting supplier — should show error
         await reviewPage.ItemDecisionRadio(itemId, "Approve").CheckAsync();
@@ -62,7 +63,7 @@ public class SupplierSelectionTests : AuthenticatedTestBase
         await reviewPage.ItemSubmitButton(itemId).ClickAsync();
 
         await Expect(Page.Locator(".alert-success")).ToBeVisibleAsync();
-        await Expect(reviewPage.ItemReviewStatusBadge(itemId)).ToContainTextAsync("Approved");
+        await Expect(reviewPage.ItemReviewStatusBadge(itemId)).ToContainTextAsync("Aprobado");
     }
 
     [Test]
@@ -110,17 +111,17 @@ public class SupplierSelectionTests : AuthenticatedTestBase
         await itemPage.AddItemAsync(appId, "Supplier Selection Item", 0, "Specs for supplier test", BaseUrl);
 
         var supplierPage = new SupplierPage(Page);
-        var addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        var addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
         await supplierPage.FillSupplierFormAsync($"SS1-{_uniqueId}", "Supplier Cheap", price1, "2027-12-31", _testFilePath);
         await supplierPage.SubmitAsync();
 
-        addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
         await supplierPage.FillSupplierFormAsync($"SS2-{_uniqueId}", "Supplier Expensive", price2, "2027-12-31", _testFilePath);
         await supplierPage.SubmitAsync();
 
-        var impactButton = Page.Locator("a:has-text('Impact')").First;
+        var impactButton = Page.Locator("a:has-text('Impacto')").First;
         await impactButton.ClickAsync();
         await PickFirstImpactTemplateAsync();
         var paramInputs = Page.Locator(".parameter-field input.form-control");
@@ -131,11 +132,11 @@ public class SupplierSelectionTests : AuthenticatedTestBase
             var inputType = await input.GetAttributeAsync("type");
             await input.FillAsync(inputType == "number" ? "100" : inputType == "date" ? "2026-12-31" : "Test value");
         }
-        await Page.Locator("button[type=submit]:has-text('Save Impact')").ClickAsync();
+        await Page.Locator("button[type=submit]:has-text('Guardar impacto')").ClickAsync();
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
-        await Page.Locator("button[type=submit]:has-text('Submit Application')").ClickAsync();
-        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Submitted')")).ToBeVisibleAsync();
+        await Page.Locator("button[type=submit]:has-text('Enviar solicitud')").ClickAsync();
+        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Enviada')")).ToBeVisibleAsync();
 
         await Page.Locator("form[action*='Account/Logout'] button[type=submit]").ClickAsync();
 

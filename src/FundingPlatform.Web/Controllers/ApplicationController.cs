@@ -60,7 +60,7 @@ public class ApplicationController : Controller
         var command = new CreateApplicationCommand(applicantId);
         var applicationId = await _applicationService.CreateApplicationAsync(command, userId);
 
-        TempData["SuccessMessage"] = "Application created successfully.";
+        TempData["SuccessMessage"] = "Solicitud creada con éxito.";
         return RedirectToAction(nameof(Details), new { id = applicationId });
     }
 
@@ -117,7 +117,7 @@ public class ApplicationController : Controller
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        TempData["SuccessMessage"] = "Application submitted successfully.";
+        TempData["SuccessMessage"] = "Solicitud enviada con éxito.";
         return RedirectToAction(nameof(Details), new { id });
     }
 

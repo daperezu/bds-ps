@@ -1,6 +1,7 @@
 namespace FundingPlatform.Web.Models;
 
 public sealed record SidebarEntry(
+    string Slug,
     string Label,
     string Url,
     string Icon,

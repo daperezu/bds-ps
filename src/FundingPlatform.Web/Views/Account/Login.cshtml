@@ -1,11 +1,11 @@
 @model FundingPlatform.Web.ViewModels.LoginViewModel
 
 @{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Iniciar sesión";
     Layout = "_AuthLayout";
 }
 
-<h2 class="card-title text-center mb-4">Login</h2>
+<h2 class="card-title text-center mb-4">Iniciar sesión</h2>
 
 <form asp-action="Login" asp-controller="Account" method="post">
     <div asp-validation-summary="All" class="text-danger mb-3"></div>
@@ -23,10 +23,10 @@
     </div>
 
     <div class="form-footer">
-        <button type="submit" class="btn btn-primary w-100">Login</button>
+        <button type="submit" class="btn btn-primary w-100">Iniciar sesión</button>
     </div>
 </form>
 
 <div class="text-center text-secondary mt-3">
-    Don't have an account? <a asp-action="Register" asp-controller="Account">Register here</a>
+    ¿Aún no tiene cuenta? <a asp-action="Register" asp-controller="Account">Regístrese aquí</a>
 </div>

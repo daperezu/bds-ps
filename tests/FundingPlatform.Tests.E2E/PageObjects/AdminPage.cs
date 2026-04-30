@@ -1,3 +1,4 @@
+using FundingPlatform.Tests.E2E.Constants;
 using Microsoft.Playwright;
 
 namespace FundingPlatform.Tests.E2E.PageObjects;
@@ -9,11 +10,11 @@ public class AdminPage : BasePage
     }
 
     // Dashboard
-    public ILocator ManageTemplatesLink => Page.Locator("a:has-text('Manage Templates')");
-    public ILocator ManageConfigurationLink => Page.Locator("a:has-text('Manage Configuration')");
+    public ILocator ManageTemplatesLink => Page.Locator($"a:has-text('{UiCopy.ManageTemplates}')");
+    public ILocator ManageConfigurationLink => Page.Locator($"a:has-text('{UiCopy.ManageConfiguration}')");
 
     // Impact Templates list
-    public ILocator CreateNewTemplateButton => Page.Locator("a:has-text('Create New Template')");
+    public ILocator CreateNewTemplateButton => Page.Locator($"a:has-text('{UiCopy.CreateNewTemplate}')");
     public ILocator TemplatesTable => Page.Locator("table");
     public ILocator TemplateRows => Page.Locator("table tbody tr");
 
@@ -27,7 +28,7 @@ public class AdminPage : BasePage
 
     // Configuration
     public ILocator ConfigurationTable => Page.Locator("table");
-    public ILocator SaveConfigurationButton => Page.Locator("button[type=submit]:has-text('Save Configuration')");
+    public ILocator SaveConfigurationButton => Page.Locator($"button[type=submit]:has-text('{UiCopy.SaveConfiguration}')");
 
     public async Task GotoDashboardAsync(string baseUrl)
     {

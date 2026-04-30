@@ -1,6 +1,6 @@
 # bsd-ps Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-28
+Auto-generated from all feature plans. Last updated: 2026-04-29
 
 ## Active Technologies
 - C# / .NET 10.0 + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire (002-review-approval-workflow)
@@ -18,6 +18,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-28
 - SQL Server (Aspire-managed for dev, dacpac schema management). **Schema change**: one new column on `dbo.Quotations` (`Currency` NVARCHAR(3) NOT NULL after backfill). One new seed row in `dbo.SystemConfigurations` (`DefaultCurrency`). No new tables. No new managed storage subsystems. CSV exports stream directly from the DB to the HTTP response — no temp file, no in-memory materialization beyond the page-buffer. (010-admin-reports)
 - C# / .NET 10.0 (matches all prior specs). + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire. **No new managed dependencies.** New **static-asset** vendored dependencies only: Fraunces (display serif, SIL OFL), Inter (body sans, SIL OFL), JetBrains Mono (monospace, Apache 2.0), 9 in-house empty-state SVG illustrations, and `canvas-confetti` (≤ 5 KB gz, vendored as a static `.js`) — all served from `wwwroot/lib/`. Tabler.io static-asset bundle (vendored by spec 008) and Syncfusion HTML-to-PDF (vendored by spec 005) remain unchanged. (011-warm-modern-facelift)
 - SQL Server (Aspire-managed for dev, dacpac schema management). **No schema changes** (FR-067). Wow-moment data flows through new Application-layer query/projection services (e.g., `IApplicantDashboardProjection`, `IReviewerQueueProjection`, `IJourneyProjector`) that read existing aggregates. (011-warm-modern-facelift)
+- C# / .NET 10.0 (matches all prior specs). + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire, Syncfusion HTML-to-PDF (existing — vendored by spec 005), Tabler.io static-asset bundle (existing — vendored by spec 008), Fraunces / Inter / JetBrains Mono / canvas-confetti static assets (existing — vendored by spec 011). **Zero new managed dependencies.** **Zero new vendored static assets** (other than the new "Capital Semilla" wordmark SVG, which is a designer artifact, not a library). (012-es-cr-localization)
+- SQL Server (Aspire-managed for dev, dacpac schema management). **No schema changes.** Local file system for PDFs (existing). **No new storage subsystems.** (012-es-cr-localization)
 
 - C# / .NET 8+ (latest LTS) + ASP.NET MVC, .NET Aspire, EF Core, ASP.NET Identity, Playwright (001-core-model-submission)
 
@@ -37,6 +39,7 @@ tests/
 C# / .NET 8+ (latest LTS): Follow standard conventions
 
 ## Recent Changes
+- 012-es-cr-localization: Added C# / .NET 10.0 (matches all prior specs). + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire, Syncfusion HTML-to-PDF (existing — vendored by spec 005), Tabler.io static-asset bundle (existing — vendored by spec 008), Fraunces / Inter / JetBrains Mono / canvas-confetti static assets (existing — vendored by spec 011). **Zero new managed dependencies.** **Zero new vendored static assets** (other than the new "Capital Semilla" wordmark SVG, which is a designer artifact, not a library).
 - 011-warm-modern-facelift: Added C# / .NET 10.0 (matches all prior specs). + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire. **No new managed dependencies.** New **static-asset** vendored dependencies only: Fraunces (display serif, SIL OFL), Inter (body sans, SIL OFL), JetBrains Mono (monospace, Apache 2.0), 9 in-house empty-state SVG illustrations, and `canvas-confetti` (≤ 5 KB gz, vendored as a static `.js`) — all served from `wwwroot/lib/`. Tabler.io static-asset bundle (vendored by spec 008) and Syncfusion HTML-to-PDF (vendored by spec 005) remain unchanged.
 - 010-admin-reports: Added C# / .NET 10.0 (matches all prior specs). + ASP.NET MVC, Entity Framework Core 10.0, ASP.NET Identity, .NET Aspire. **No new dependencies introduced by this feature.** The Tabler.io static-asset bundle vendored by spec 008 is reused as-is. The Syncfusion HTML-to-PDF renderer and license validator vendored by spec 005 are reused as-is for the Funding Agreement currency-code render change.
 

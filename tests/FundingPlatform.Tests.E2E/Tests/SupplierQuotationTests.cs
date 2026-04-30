@@ -55,7 +55,7 @@ public class SupplierQuotationTests : AuthenticatedTestBase
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
         // Extract item ID from the items table - find the "Add Supplier" link
-        var addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        var addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await Expect(addSupplierLink).ToBeVisibleAsync();
         await addSupplierLink.ClickAsync();
 
@@ -107,7 +107,7 @@ public class SupplierQuotationTests : AuthenticatedTestBase
         await itemPage.AddItemAsync(appId, "Network Switch", 0, "48-port managed switch", BaseUrl);
 
         // Add first supplier successfully
-        var addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        var addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await Expect(addSupplierLink).ToBeVisibleAsync();
         await addSupplierLink.ClickAsync();
 
@@ -124,7 +124,7 @@ public class SupplierQuotationTests : AuthenticatedTestBase
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
         // Try adding same supplier again
-        var addSupplierLink2 = Page.Locator("a:has-text('Add Supplier')").First;
+        var addSupplierLink2 = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink2.ClickAsync();
 
         await supplierPage.FillSupplierFormAsync(

@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using FundingPlatform.Tests.E2E.Constants;
 using FundingPlatform.Tests.E2E.Fixtures;
 using FundingPlatform.Tests.E2E.PageObjects;
 using Microsoft.Playwright;
@@ -49,11 +50,11 @@ public class SendBackApplicationTests : AuthenticatedTestBase
 
         // Send back the application (accept the confirm dialog)
         Page.Dialog += (_, dialog) => dialog.AcceptAsync();
-        await Page.Locator("button:has-text('Send Back')").ClickAsync();
+        await Page.Locator("button:has-text('Devolver')").ClickAsync();
 
         // Should redirect to queue with success message
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Review"));
-        await Expect(Page.Locator(".alert-success:has-text('sent back')")).ToBeVisibleAsync();
+        await Expect(Page.Locator($".alert-success:has-text('{UiCopy.ApplicationSentBack}')")).ToBeVisibleAsync();
 
         // Logout and login as applicant
         await Page.Locator("form[action*='Account/Logout'] button[type=submit]").ClickAsync();
@@ -64,13 +65,13 @@ public class SendBackApplicationTests : AuthenticatedTestBase
         await Page.GotoAsync($"{BaseUrl}/Application/Details/{appId}");
 
         // Verify state is Draft
-        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Draft')")).ToBeVisibleAsync();
+        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Borrador')")).ToBeVisibleAsync();
 
         // Verify reviewer comments are visible
         await Expect(Page.Locator("text=Please provide updated specifications")).ToBeVisibleAsync();
 
         // Verify applicant can resubmit
-        var submitButton = Page.Locator("button[type=submit]:has-text('Submit Application')");
+        var submitButton = Page.Locator("button[type=submit]:has-text('Enviar solicitud')");
         await Expect(submitButton).ToBeVisibleAsync();
     }
 
@@ -95,17 +96,17 @@ public class SendBackApplicationTests : AuthenticatedTestBase
         await itemPage.AddItemAsync(appId, "Send Back Item", 0, "Original specs", BaseUrl);
 
         var supplierPage = new SupplierPage(Page);
-        var addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        var addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
         await supplierPage.FillSupplierFormAsync($"SB1-{_uniqueId}", "Supplier One", 1000m, "2027-12-31", _testFilePath);
         await supplierPage.SubmitAsync();
 
-        addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
         await supplierPage.FillSupplierFormAsync($"SB2-{_uniqueId}", "Supplier Two", 1200m, "2027-12-31", _testFilePath);
         await supplierPage.SubmitAsync();
 
-        var impactButton = Page.Locator("a:has-text('Impact')").First;
+        var impactButton = Page.Locator("a:has-text('Impacto')").First;
         await impactButton.ClickAsync();
         await PickFirstImpactTemplateAsync();
         var paramInputs = Page.Locator(".parameter-field input.form-control");
@@ -116,11 +117,11 @@ public class SendBackApplicationTests : AuthenticatedTestBase
             var inputType = await input.GetAttributeAsync("type");
             await input.FillAsync(inputType == "number" ? "100" : inputType == "date" ? "2026-12-31" : "Test value");
         }
-        await Page.Locator("button[type=submit]:has-text('Save Impact')").ClickAsync();
+        await Page.Locator("button[type=submit]:has-text('Guardar impacto')").ClickAsync();
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
-        await Page.Locator("button[type=submit]:has-text('Submit Application')").ClickAsync();
-        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Submitted')")).ToBeVisibleAsync();
+        await Page.Locator("button[type=submit]:has-text('Enviar solicitud')").ClickAsync();
+        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Enviada')")).ToBeVisibleAsync();
 
         await Page.Locator("form[action*='Account/Logout'] button[type=submit]").ClickAsync();
 

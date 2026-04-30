@@ -2,7 +2,7 @@
 @model IReadOnlyList<FundingPlatform.Web.ViewModels.SigningInboxRowViewModel>
 
 @{
-    ViewData["Title"] = "Signing Inbox";
+    ViewData["Title"] = "Bandeja de firmas";
     ViewData["ActiveTab"] = "Signing";
     var page = (int)(ViewData["SigningInbox.Page"] ?? 1);
     var pageSize = (int)(ViewData["SigningInbox.PageSize"] ?? 25);
@@ -14,16 +14,16 @@
 
 @await Html.PartialAsync("Components/_PageHeader",
     new PageHeaderViewModel(
-        Title: "Signing Inbox",
-        Subtitle: $"{totalCount} pending signed agreement(s) awaiting review"))
+        Title: "Bandeja de firmas",
+        Subtitle: $"{totalCount} convenio(s) firmado(s) pendiente(s) de revisión"))
 
 @if (Model.Count == 0)
 {
     <div data-testid="signing-inbox-empty">
         @await Html.PartialAsync("Components/_EmptyState",
             new EmptyStateViewModel(
-                Headline: "No pending signed uploads",
-                Body: "Signed agreements awaiting reviewer approval will appear here.",
+                Headline: "No hay cargas firmadas pendientes",
+                Body: "Los convenios firmados pendientes de aprobación del revisor aparecerán aquí.",
                 Icon: "ti ti-pen"))
     </div>
 }
@@ -34,34 +34,34 @@ else
             <table class="table card-table table-vcenter table-sm" data-testid="signing-inbox-table">
                 <thead>
                     <tr>
-                        <th>Application</th>
-                        <th>Applicant</th>
-                        <th>Uploaded</th>
-                        <th>Version match</th>
-                        <th>Actions</th>
+                        <th>Solicitud</th>
+                        <th>Solicitante</th>
+                        <th>Cargado</th>
+                        <th>Coincidencia de versión</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var row in Model)
                     {
                         <tr data-testid="signing-inbox-row" data-application-id="@row.ApplicationId">
-                            <td>#@row.ApplicationId</td>
+                            <td>N.º @row.ApplicationId</td>
                             <td>@row.ApplicantDisplayName</td>
-                            <td>@row.UploadedAtUtc.ToString("yyyy-MM-dd HH:mm") UTC</td>
+                            <td>@row.UploadedAtUtc.ToString("dd/MM/yyyy HH:mm") UTC</td>
                             <td>
                                 @if (row.VersionMatchesCurrent)
                                 {
-                                    <span class="status status-green"><i class="ti ti-check"></i> Matches current</span>
+                                    <span class="status status-green"><i class="ti ti-check"></i> Coincide con la actual</span>
                                 }
                                 else
                                 {
-                                    <span class="status status-yellow"><i class="ti ti-alert-triangle"></i> Stale (v@row.GeneratedVersionAtUpload)</span>
+                                    <span class="status status-yellow"><i class="ti ti-alert-triangle"></i> Desactualizada (v@row.GeneratedVersionAtUpload)</span>
                                 }
                             </td>
                             <td>
                                 <a class="btn btn-sm btn-outline-primary"
                                    href="@Url.RouteUrl(new { controller = "FundingAgreement", action = "Details", applicationId = row.ApplicationId })">
-                                    Open
+                                    Abrir
                                 </a>
                             </td>
                         </tr>

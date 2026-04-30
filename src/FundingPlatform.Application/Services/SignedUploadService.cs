@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FundingPlatform.Application.DTOs;
+using FundingPlatform.Application.Errors;
 using FundingPlatform.Application.Interfaces;
 using FundingPlatform.Application.Options;
 using FundingPlatform.Application.SignedUploads.Commands;
@@ -15,7 +16,7 @@ namespace FundingPlatform.Application.Services;
 
 public record SignedUploadResult(
     bool Success,
-    string? Error,
+    UserFacingError? Error,
     bool ValidationError,
     bool ConflictDetected,
     int? SignedUploadId);
@@ -168,13 +169,13 @@ public class SignedUploadService
 
         var intakeError = ValidateIntake(command.ContentType, command.Size, command.Content);
         if (intakeError is not null)
-            return Validation(intakeError);
+            return Validation(intakeError.Value);
 
         if (command.GeneratedVersion != application.FundingAgreement.GeneratedVersion)
-            return Validation("Please re-download the latest agreement and re-sign.");
+            return Validation(UserFacingErrorCode.SignedUploadStaleAgreementVersion);
 
         if (application.FundingAgreement.PendingUpload is not null)
-            return Validation("A pending signed upload already exists. Use Replace instead.");
+            return Validation(UserFacingErrorCode.SignedUploadAlreadyPending);
 
         command.Content.Position = 0;
         var storagePath = await _fileStorage.SaveFileAsync(command.Content, command.FileName, command.ContentType);
@@ -194,7 +195,7 @@ public class SignedUploadService
             catch (InvalidOperationException ex)
             {
                 await TryDeleteAsync(storagePath);
-                return Validation(ex.Message);
+                return ValidationFromDomain(ex.Message);
             }
 
             application.AddVersionHistory(new VersionHistory(
@@ -238,18 +239,18 @@ public class SignedUploadService
 
         var pending = application.FundingAgreement.PendingUpload;
         if (pending is null)
-            return Validation("No pending upload to replace; use Upload.");
+            return Validation(UserFacingErrorCode.SignedUploadNoPendingToReplace);
         if (pending.Id != command.SignedUploadId)
-            return Validation("The specified upload is not the current pending upload.");
+            return Validation(UserFacingErrorCode.SignedUploadWrongPendingId);
         if (pending.UploaderUserId != command.UserId)
             return NotFound();
 
         var intakeError = ValidateIntake(command.ContentType, command.Size, command.Content);
         if (intakeError is not null)
-            return Validation(intakeError);
+            return Validation(intakeError.Value);
 
         if (command.GeneratedVersion != application.FundingAgreement.GeneratedVersion)
-            return Validation("Please re-download the latest agreement and re-sign.");
+            return Validation(UserFacingErrorCode.SignedUploadStaleAgreementVersion);
 
         command.Content.Position = 0;
         var storagePath = await _fileStorage.SaveFileAsync(command.Content, command.FileName, command.ContentType);
@@ -270,7 +271,7 @@ public class SignedUploadService
             catch (InvalidOperationException ex)
             {
                 await TryDeleteAsync(storagePath);
-                return Validation(ex.Message);
+                return ValidationFromDomain(ex.Message);
             }
 
             application.AddVersionHistory(new VersionHistory(
@@ -308,8 +309,8 @@ public class SignedUploadService
         if (application.FundingAgreement is null) return NotFound();
 
         var pending = application.FundingAgreement.PendingUpload;
-        if (pending is null) return Validation("No pending upload to withdraw.");
-        if (pending.Id != command.SignedUploadId) return Validation("Stale pending upload id; please refresh.");
+        if (pending is null) return Validation(UserFacingErrorCode.SignedUploadNoPendingToWithdraw);
+        if (pending.Id != command.SignedUploadId) return Validation(UserFacingErrorCode.SignedUploadStalePendingId);
         if (pending.UploaderUserId != command.UserId) return NotFound();
 
         try
@@ -318,7 +319,7 @@ public class SignedUploadService
         }
         catch (InvalidOperationException ex)
         {
-            return Validation(ex.Message);
+            return ValidationFromDomain(ex.Message);
         }
 
         application.AddVersionHistory(new VersionHistory(
@@ -353,8 +354,8 @@ public class SignedUploadService
         if (application.FundingAgreement is null) return NotFound();
 
         var pending = application.FundingAgreement.PendingUpload;
-        if (pending is null) return Validation("No pending upload to approve.");
-        if (pending.Id != command.SignedUploadId) return Validation("Stale pending upload id; please refresh.");
+        if (pending is null) return Validation(UserFacingErrorCode.SignedUploadNoPendingToApprove);
+        if (pending.Id != command.SignedUploadId) return Validation(UserFacingErrorCode.SignedUploadStalePendingId);
 
         try
         {
@@ -362,7 +363,7 @@ public class SignedUploadService
         }
         catch (InvalidOperationException ex)
         {
-            return Validation(ex.Message);
+            return ValidationFromDomain(ex.Message);
         }
 
         application.AddVersionHistory(new VersionHistory(
@@ -390,7 +391,7 @@ public class SignedUploadService
     public async Task<SignedUploadResult> RejectAsync(RejectSignedUploadCommand command)
     {
         if (string.IsNullOrWhiteSpace(command.Comment))
-            return Validation("Rejection comment is required.");
+            return Validation(UserFacingErrorCode.SignedUploadRejectionCommentRequired);
 
         var application = await _applicationRepository.GetByIdWithResponseAndAppealsAsync(command.ApplicationId);
         if (application is null) return NotFound();
@@ -401,8 +402,8 @@ public class SignedUploadService
         if (application.FundingAgreement is null) return NotFound();
 
         var pending = application.FundingAgreement.PendingUpload;
-        if (pending is null) return Validation("No pending upload to reject.");
-        if (pending.Id != command.SignedUploadId) return Validation("Stale pending upload id; please refresh.");
+        if (pending is null) return Validation(UserFacingErrorCode.SignedUploadNoPendingToReject);
+        if (pending.Id != command.SignedUploadId) return Validation(UserFacingErrorCode.SignedUploadStalePendingId);
 
         try
         {
@@ -410,7 +411,7 @@ public class SignedUploadService
         }
         catch (InvalidOperationException ex)
         {
-            return Validation(ex.Message);
+            return ValidationFromDomain(ex.Message);
         }
 
         application.AddVersionHistory(new VersionHistory(
@@ -467,20 +468,20 @@ public class SignedUploadService
         return new SigningInboxResult(rows, totalCount);
     }
 
-    private string? ValidateIntake(string contentType, long size, Stream content)
+    private UserFacingErrorCode? ValidateIntake(string contentType, long size, Stream content)
     {
         if (!string.Equals(contentType, "application/pdf", StringComparison.OrdinalIgnoreCase))
-            return "Only application/pdf uploads are accepted.";
+            return UserFacingErrorCode.SignedUploadUnsupportedContentType;
 
         if (size <= 0)
-            return "Uploaded file is empty.";
+            return UserFacingErrorCode.SignedUploadFileEmpty;
 
         var maxSize = _options.Value.MaxSizeBytes;
         if (size > maxSize)
-            return $"File exceeds maximum size of {maxSize} bytes.";
+            return UserFacingErrorCode.SignedUploadFileTooLarge;
 
         if (!content.CanRead)
-            return "Unable to read uploaded content.";
+            return UserFacingErrorCode.SignedUploadContentUnreadable;
 
         if (content.CanSeek) content.Position = 0;
 
@@ -496,12 +497,12 @@ public class SignedUploadService
         if (content.CanSeek) content.Position = 0;
 
         if (readTotal < PdfMagicHeader.Length)
-            return "Uploaded file does not appear to be a PDF.";
+            return UserFacingErrorCode.SignedUploadNotAPdf;
 
         for (var i = 0; i < PdfMagicHeader.Length; i++)
         {
             if (header[i] != PdfMagicHeader[i])
-                return "Uploaded file does not appear to be a PDF (missing %PDF- header).";
+                return UserFacingErrorCode.SignedUploadMissingPdfHeader;
         }
 
         return null;
@@ -525,11 +526,14 @@ public class SignedUploadService
         JsonSerializer.Serialize(values);
 
     private static SignedUploadResult NotFound() =>
-        new(false, "Not found.", false, false, null);
+        new(false, UserFacingError.From(UserFacingErrorCode.SignedUploadResourceNotFound), false, false, null);
 
-    private static SignedUploadResult Validation(string message) =>
-        new(false, message, true, false, null);
+    private static SignedUploadResult Validation(UserFacingErrorCode code) =>
+        new(false, UserFacingError.From(code), true, false, null);
+
+    private static SignedUploadResult ValidationFromDomain(string detail) =>
+        new(false, UserFacingError.From(UserFacingErrorCode.OperationRejected, detail), true, false, null);
 
     private static SignedUploadResult Conflict() =>
-        new(false, "Another action just modified this upload; please refresh.", false, true, null);
+        new(false, UserFacingError.From(UserFacingErrorCode.ConcurrentSignedUploadModification), false, true, null);
 }

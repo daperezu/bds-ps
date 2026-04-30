@@ -1,17 +1,17 @@
 @model FundingPlatform.Web.ViewModels.EditImpactTemplateViewModel
 
 @{
-    ViewData["Title"] = "Edit Impact Template";
+    ViewData["Title"] = "Editar plantilla de impacto";
 }
 
 @await Html.PartialAsync("Components/_PageHeader",
     new PageHeaderViewModel(
-        Title: "Edit Impact Template",
+        Title: "Editar plantilla de impacto",
         Breadcrumbs: new[]
         {
-            new BreadcrumbItem("Admin Dashboard", Url.Action("Index")),
-            new BreadcrumbItem("Impact Templates", Url.Action("ImpactTemplates")),
-            new BreadcrumbItem("Edit"),
+            new BreadcrumbItem("Panel de administración", Url.Action("Index")),
+            new BreadcrumbItem("Plantillas de impacto", Url.Action("ImpactTemplates")),
+            new BreadcrumbItem("Editar"),
         }))
 
 <div class="row">
@@ -21,13 +21,13 @@
             <input type="hidden" asp-for="Id" />
 
             <div class="mb-3">
-                <label asp-for="Name" class="form-label">Template Name</label>
+                <label asp-for="Name" class="form-label">Nombre de la plantilla</label>
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
-                <label asp-for="Description" class="form-label">Description</label>
+                <label asp-for="Description" class="form-label">Descripción</label>
                 <textarea asp-for="Description" class="form-control" rows="3"></textarea>
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
@@ -35,12 +35,12 @@
             <div class="mb-3">
                 <div class="form-check">
                     <input asp-for="IsActive" class="form-check-input" />
-                    <label asp-for="IsActive" class="form-check-label">Active</label>
+                    <label asp-for="IsActive" class="form-check-label">Activa</label>
                 </div>
             </div>
 
             <hr />
-            <h4>Parameters</h4>
+            <h4>Parámetros</h4>
             <div id="parametersContainer">
                 @if (Model.Parameters.Count > 0)
                 {
@@ -49,20 +49,20 @@
                         <div class="card mb-3 parameter-row" data-index="@i">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h6 class="mb-0">Parameter @(i + 1)</h6>
-                                    <button type="button" class="btn btn-sm btn-danger remove-parameter">Remove</button>
+                                    <h6 class="mb-0">Parámetro @(i + 1)</h6>
+                                    <button type="button" class="btn btn-sm btn-danger remove-parameter">Eliminar</button>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-4 mb-2">
-                                        <label class="form-label">Name</label>
+                                        <label class="form-label">Nombre</label>
                                         <input name="Parameters[@i].Name" value="@Model.Parameters[i].Name" class="form-control" required />
                                     </div>
                                     <div class="col-md-4 mb-2">
-                                        <label class="form-label">Display Label</label>
+                                        <label class="form-label">Etiqueta</label>
                                         <input name="Parameters[@i].DisplayLabel" value="@Model.Parameters[i].DisplayLabel" class="form-control" required />
                                     </div>
                                     <div class="col-md-4 mb-2">
-                                        <label class="form-label">Data Type</label>
+                                        <label class="form-label">Tipo de dato</label>
                                         <select name="Parameters[@i].DataType" class="form-select" required>
                                             <option value="Text" selected="@(Model.Parameters[i].DataType == "Text" ? "selected" : null)">Text</option>
                                             <option value="Decimal" selected="@(Model.Parameters[i].DataType == "Decimal" ? "selected" : null)">Decimal</option>
@@ -76,11 +76,11 @@
                                         <div class="form-check mt-4">
                                             <input name="Parameters[@i].IsRequired" type="checkbox" class="form-check-input" value="true"
                                                    @(Model.Parameters[i].IsRequired ? "checked" : "") />
-                                            <label class="form-check-label">Required</label>
+                                            <label class="form-check-label">Obligatorio</label>
                                         </div>
                                     </div>
                                     <div class="col-md-4 mb-2">
-                                        <label class="form-label">Sort Order</label>
+                                        <label class="form-label">Orden</label>
                                         <input name="Parameters[@i].SortOrder" type="number" value="@Model.Parameters[i].SortOrder" class="form-control" required />
                                     </div>
                                 </div>
@@ -90,11 +90,11 @@
                 }
             </div>
 
-            <button type="button" class="btn btn-outline-primary mb-3" id="addParameter">Add Parameter</button>
+            <button type="button" class="btn btn-outline-primary mb-3" id="addParameter">Agregar parámetro</button>
 
             <div>
-                <button type="submit" class="btn btn-primary">Save Changes</button>
-                <a asp-action="ImpactTemplates" class="btn btn-secondary ms-2">Cancel</a>
+                <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                <a asp-action="ImpactTemplates" class="btn btn-secondary ms-2">Cancelar</a>
             </div>
         </form>
     </div>
@@ -117,19 +117,19 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="mb-0">Parameter ${idx + 1}</h6>
-                            <button type="button" class="btn btn-sm btn-danger remove-parameter">Remove</button>
+                            <button type="button" class="btn btn-sm btn-danger remove-parameter">Eliminar</button>
                         </div>
                         <div class="row">
                             <div class="col-md-4 mb-2">
-                                <label class="form-label">Name</label>
+                                <label class="form-label">Nombre</label>
                                 <input name="Parameters[${idx}].Name" class="form-control" required />
                             </div>
                             <div class="col-md-4 mb-2">
-                                <label class="form-label">Display Label</label>
+                                <label class="form-label">Etiqueta</label>
                                 <input name="Parameters[${idx}].DisplayLabel" class="form-control" required />
                             </div>
                             <div class="col-md-4 mb-2">
-                                <label class="form-label">Data Type</label>
+                                <label class="form-label">Tipo de dato</label>
                                 <select name="Parameters[${idx}].DataType" class="form-select" required>
                                     <option value="Text">Text</option>
                                     <option value="Decimal">Decimal</option>
@@ -142,11 +142,11 @@
                             <div class="col-md-3 mb-2">
                                 <div class="form-check mt-4">
                                     <input name="Parameters[${idx}].IsRequired" type="checkbox" class="form-check-input" value="true" />
-                                    <label class="form-check-label">Required</label>
+                                    <label class="form-check-label">Obligatorio</label>
                                 </div>
                             </div>
                             <div class="col-md-4 mb-2">
-                                <label class="form-label">Sort Order</label>
+                                <label class="form-label">Orden</label>
                                 <input name="Parameters[${idx}].SortOrder" type="number" value="${idx}" class="form-control" required />
                             </div>
                         </div>
@@ -166,7 +166,7 @@
                 const rows = container.querySelectorAll('.parameter-row');
                 rows.forEach(function (row, idx) {
                     row.setAttribute('data-index', idx);
-                    row.querySelector('h6').textContent = 'Parameter ' + (idx + 1);
+                    row.querySelector('h6').textContent = 'Parámetro ' + (idx + 1);
                     const inputs = row.querySelectorAll('input, select');
                     inputs.forEach(function (input) {
                         const name = input.getAttribute('name');

@@ -74,7 +74,7 @@ public class ItemController : Controller
 
         await _applicationService.AddItemAsync(command);
 
-        TempData["SuccessMessage"] = "Item added successfully.";
+        TempData["SuccessMessage"] = "Ítem agregado con éxito.";
         return RedirectToAction("Details", "Application", new { id = appId });
     }
 
@@ -141,7 +141,7 @@ public class ItemController : Controller
 
         await _applicationService.UpdateItemAsync(command);
 
-        TempData["SuccessMessage"] = "Item updated successfully.";
+        TempData["SuccessMessage"] = "Ítem actualizado con éxito.";
         return RedirectToAction("Details", "Application", new { id = appId });
     }
 
@@ -154,7 +154,7 @@ public class ItemController : Controller
         var command = new RemoveItemCommand(itemId, appId);
         await _applicationService.RemoveItemAsync(command);
 
-        TempData["SuccessMessage"] = "Item removed successfully.";
+        TempData["SuccessMessage"] = "Ítem eliminado con éxito.";
         return RedirectToAction("Details", "Application", new { id = appId });
     }
 
@@ -221,7 +221,7 @@ public class ItemController : Controller
 
         if (!model.SelectedTemplateId.HasValue)
         {
-            ModelState.AddModelError(nameof(model.SelectedTemplateId), "Please select an impact template.");
+            ModelState.AddModelError(nameof(model.SelectedTemplateId), "Seleccione una plantilla de impacto.");
         }
 
         if (!ModelState.IsValid || !model.SelectedTemplateId.HasValue)
@@ -255,7 +255,7 @@ public class ItemController : Controller
 
         await _applicationService.SetItemImpactAsync(command);
 
-        TempData["SuccessMessage"] = "Impact assessment saved successfully.";
+        TempData["SuccessMessage"] = "Evaluación de impacto guardada con éxito.";
         return RedirectToAction("Details", "Application", new { id = appId });
     }
 

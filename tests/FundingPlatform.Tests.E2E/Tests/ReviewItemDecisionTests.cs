@@ -38,7 +38,7 @@ public class ReviewItemDecisionTests : AuthenticatedTestBase
         await reviewPage.GotoAsync(BaseUrl, appId);
 
         // Verify Under Review state
-        await Expect(reviewPage.ApplicationState).ToContainTextAsync("Under Review");
+        await Expect(reviewPage.ApplicationState).ToContainTextAsync("En revisión");
 
         // Get the item ID from the first review item
         var firstItem = reviewPage.ItemCards.First;
@@ -65,7 +65,7 @@ public class ReviewItemDecisionTests : AuthenticatedTestBase
 
         // Verify success and status update
         await Expect(Page.Locator(".alert-success")).ToBeVisibleAsync();
-        await Expect(reviewPage.ItemReviewStatusBadge(id)).ToContainTextAsync("Approved");
+        await Expect(reviewPage.ItemReviewStatusBadge(id)).ToContainTextAsync("Aprobado");
     }
 
     [Test]
@@ -90,7 +90,7 @@ public class ReviewItemDecisionTests : AuthenticatedTestBase
         await reviewPage.ItemSubmitButton(itemId).ClickAsync();
 
         await Expect(Page.Locator(".alert-success")).ToBeVisibleAsync();
-        await Expect(reviewPage.ItemReviewStatusBadge(itemId)).ToContainTextAsync("Rejected");
+        await Expect(reviewPage.ItemReviewStatusBadge(itemId)).ToContainTextAsync("Rechazado");
     }
 
     [Test]
@@ -114,7 +114,7 @@ public class ReviewItemDecisionTests : AuthenticatedTestBase
         await reviewPage.ItemSubmitButton(itemId).ClickAsync();
 
         await Expect(Page.Locator(".alert-success")).ToBeVisibleAsync();
-        await Expect(reviewPage.ItemReviewStatusBadge(itemId)).ToContainTextAsync("Needs Info");
+        await Expect(reviewPage.ItemReviewStatusBadge(itemId)).ToContainTextAsync("Requiere información");
     }
 
     private string _uniqueId = string.Empty;
@@ -140,17 +140,17 @@ public class ReviewItemDecisionTests : AuthenticatedTestBase
         await itemPage.AddItemAsync(appId, "Decision Test Item", 0, "Test specs for decisions", BaseUrl);
 
         var supplierPage = new SupplierPage(Page);
-        var addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        var addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
         await supplierPage.FillSupplierFormAsync($"S1-{_uniqueId}", "Supplier Alpha", 500m, "2027-12-31", _testFilePath);
         await supplierPage.SubmitAsync();
 
-        addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
         await supplierPage.FillSupplierFormAsync($"S2-{_uniqueId}", "Supplier Beta", 750m, "2027-12-31", _testFilePath);
         await supplierPage.SubmitAsync();
 
-        var impactButton = Page.Locator("a:has-text('Impact')").First;
+        var impactButton = Page.Locator("a:has-text('Impacto')").First;
         await impactButton.ClickAsync();
         await PickFirstImpactTemplateAsync();
         var paramInputs = Page.Locator(".parameter-field input.form-control");
@@ -161,11 +161,11 @@ public class ReviewItemDecisionTests : AuthenticatedTestBase
             var inputType = await input.GetAttributeAsync("type");
             await input.FillAsync(inputType == "number" ? "100" : inputType == "date" ? "2026-12-31" : "Test value");
         }
-        await Page.Locator("button[type=submit]:has-text('Save Impact')").ClickAsync();
+        await Page.Locator("button[type=submit]:has-text('Guardar impacto')").ClickAsync();
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
-        await Page.Locator("button[type=submit]:has-text('Submit Application')").ClickAsync();
-        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Submitted')")).ToBeVisibleAsync();
+        await Page.Locator("button[type=submit]:has-text('Enviar solicitud')").ClickAsync();
+        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Enviada')")).ToBeVisibleAsync();
 
         await Page.Locator("form[action*='Account/Logout'] button[type=submit]").ClickAsync();
 

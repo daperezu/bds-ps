@@ -2,6 +2,7 @@ using System.Security.Claims;
 using FundingPlatform.Application.DTOs;
 using FundingPlatform.Application.Services;
 using FundingPlatform.Application.SignedUploads.Queries;
+using FundingPlatform.Web.Localization;
 using FundingPlatform.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,15 +15,18 @@ public class ReviewController : Controller
     private readonly ReviewService _reviewService;
     private readonly SignedUploadService _signedUploadService;
     private readonly IReviewerQueueProjection _queueProjection;
+    private readonly IUserFacingErrorTranslator _errorTranslator;
 
     public ReviewController(
         ReviewService reviewService,
         SignedUploadService signedUploadService,
-        IReviewerQueueProjection queueProjection)
+        IReviewerQueueProjection queueProjection,
+        IUserFacingErrorTranslator errorTranslator)
     {
         _reviewService = reviewService;
         _signedUploadService = signedUploadService;
         _queueProjection = queueProjection;
+        _errorTranslator = errorTranslator;
     }
 
     [HttpGet]
@@ -123,9 +127,9 @@ public class ReviewController : Controller
     {
         var error = await _reviewService.ReviewItemAsync(id, ItemId, Decision, Comment, SelectedSupplierId, GetUserId());
         if (error is not null)
-            TempData["ErrorMessage"] = error;
+            TempData["ErrorMessage"] = _errorTranslator.Translate(error);
         else
-            TempData["SuccessMessage"] = "Item decision recorded.";
+            TempData["SuccessMessage"] = "Decisión del ítem registrada.";
 
         return RedirectToAction(nameof(Review), new { id });
     }
@@ -137,11 +141,11 @@ public class ReviewController : Controller
     {
         var error = await _reviewService.FlagTechnicalEquivalenceAsync(id, ItemId, IsNotEquivalent, GetUserId());
         if (error is not null)
-            TempData["ErrorMessage"] = error;
+            TempData["ErrorMessage"] = _errorTranslator.Translate(error);
         else
             TempData["SuccessMessage"] = IsNotEquivalent
-                ? "Item flagged as not technically equivalent."
-                : "Technical equivalence flag cleared.";
+                ? "Ítem marcado como no técnicamente equivalente."
+                : "Marca de equivalencia técnica eliminada.";
 
         return RedirectToAction(nameof(Review), new { id });
     }
@@ -154,11 +158,11 @@ public class ReviewController : Controller
         var error = await _reviewService.SendBackAsync(id, GetUserId());
         if (error is not null)
         {
-            TempData["ErrorMessage"] = error;
+            TempData["ErrorMessage"] = _errorTranslator.Translate(error);
             return RedirectToAction(nameof(Review), new { id });
         }
 
-        TempData["SuccessMessage"] = "Application sent back to applicant.";
+        TempData["SuccessMessage"] = "Solicitud devuelta al solicitante.";
         return RedirectToAction(nameof(Index));
     }
 
@@ -171,7 +175,7 @@ public class ReviewController : Controller
 
         if (error is not null)
         {
-            TempData["ErrorMessage"] = error;
+            TempData["ErrorMessage"] = _errorTranslator.Translate(error);
             return RedirectToAction(nameof(Review), new { id });
         }
 
@@ -187,7 +191,7 @@ public class ReviewController : Controller
             return View(nameof(Review), viewModel);
         }
 
-        TempData["SuccessMessage"] = "Review finalized. Application resolved.";
+        TempData["SuccessMessage"] = "Revisión finalizada. Solicitud resuelta.";
         return RedirectToAction(nameof(Index));
     }
 

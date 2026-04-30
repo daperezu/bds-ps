@@ -7,7 +7,7 @@
 {
     if (Model.ShowEmptyMessage)
     {
-        <div class="fl-text-secondary fl-type-meta" data-testid="event-timeline-empty" data-scope="@scopeAttr">No events yet.</div>
+        <div class="fl-text-secondary fl-type-meta" data-testid="event-timeline-empty" data-scope="@scopeAttr">Aún no hay eventos.</div>
     }
 }
 else
@@ -22,7 +22,7 @@ else
                     </div>
                     <div>
                         <div class="fw-bold fl-type-meta">@ev.Action</div>
-                        <div class="fl-text-secondary fl-type-meta">@ev.Actor &middot; @ev.At.LocalDateTime.ToString("yyyy-MM-dd HH:mm")</div>
+                        <div class="fl-text-secondary fl-type-meta">@ev.Actor &middot; @ev.At.LocalDateTime.ToString("dd/MM/yyyy HH:mm")</div>
                         @if (!string.IsNullOrWhiteSpace(ev.Detail))
                         {
                             <div class="mt-1 fl-type-body">@ev.Detail</div>

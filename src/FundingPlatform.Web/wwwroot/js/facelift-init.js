@@ -5,10 +5,10 @@
   'use strict';
 
   function init() {
-    if (window.ForgeMotion) {
-      window.ForgeMotion.mountTickers(document);
-      window.ForgeMotion.mountJourney(document);
-      window.ForgeMotion.bindJourneyEventClicks(document);
+    if (window.PlatformMotion) {
+      window.PlatformMotion.mountTickers(document);
+      window.PlatformMotion.mountJourney(document);
+      window.PlatformMotion.bindJourneyEventClicks(document);
     }
 
     // Filter chip strip (US4, FR-054). Click → fetch QueueRows partial → swap tbody.
@@ -32,8 +32,8 @@
             if (!res.ok) return;
             const html = await res.text();
             target.innerHTML = html;
-            if (window.ForgeMotion) {
-              window.ForgeMotion.mountJourney(target);
+            if (window.PlatformMotion) {
+              window.PlatformMotion.mountJourney(target);
             }
           } catch { /* network error — keep current rows */ }
         });
@@ -51,10 +51,10 @@
 
     // Ceremony hooks if present
     const ceremony = document.querySelector('[data-ceremony-config]');
-    if (ceremony && window.ForgeMotion) {
+    if (ceremony && window.PlatformMotion) {
       try {
         const opts = JSON.parse(ceremony.getAttribute('data-ceremony-config'));
-        window.ForgeMotion.mountCeremony(opts);
+        window.PlatformMotion.mountCeremony(opts);
       } catch { /* malformed — skip */ }
     }
   }

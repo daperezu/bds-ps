@@ -1,42 +1,42 @@
 @{
-    ViewData["Title"] = "Home";
+    ViewData["Title"] = "Inicio";
 }
 
 <div class="empty">
     <div class="empty-icon">
         <i class="ti ti-coin icon-empty-state"></i>
     </div>
-    <p class="empty-title">Funding Request Platform</p>
-    <p class="empty-subtitle text-secondary">Submit and manage your funding applications.</p>
+    <p class="empty-title">Plataforma de solicitudes de financiamiento</p>
+    <p class="empty-subtitle text-secondary">Envíe y administre sus solicitudes de financiamiento.</p>
     <div class="empty-action">
         @if (User.Identity?.IsAuthenticated != true)
         {
             <a asp-controller="Account" asp-action="Register" class="btn btn-primary me-2">
-                <i class="ti ti-user-plus me-1"></i>Register
+                <i class="ti ti-user-plus me-1"></i>Crear cuenta
             </a>
             <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary">
-                <i class="ti ti-login me-1"></i>Login
+                <i class="ti ti-login me-1"></i>Iniciar sesión
             </a>
         }
         else if (User.IsInRole("Admin"))
         {
             <a asp-controller="Admin" asp-action="Index" class="btn btn-primary me-2">
-                <i class="ti ti-settings me-1"></i>Admin Dashboard
+                <i class="ti ti-settings me-1"></i>Panel de administración
             </a>
             <a asp-controller="Review" asp-action="Index" class="btn btn-outline-primary">
-                <i class="ti ti-clipboard-check me-1"></i>Review Queue
+                <i class="ti ti-clipboard-check me-1"></i>Cola de revisión
             </a>
         }
         else if (User.IsInRole("Reviewer"))
         {
             <a asp-controller="Review" asp-action="Index" class="btn btn-primary">
-                <i class="ti ti-clipboard-check me-1"></i>Review Queue
+                <i class="ti ti-clipboard-check me-1"></i>Cola de revisión
             </a>
         }
         else
         {
             <a asp-controller="Application" asp-action="Index" class="btn btn-primary">
-                <i class="ti ti-files me-1"></i>My Applications
+                <i class="ti ti-files me-1"></i>Mis solicitudes
             </a>
         }
     </div>

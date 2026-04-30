@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using FundingPlatform.Tests.E2E.Constants;
 using FundingPlatform.Tests.E2E.Fixtures;
 using FundingPlatform.Tests.E2E.PageObjects;
 using Microsoft.Playwright;
@@ -32,7 +33,7 @@ public class ItemManagementTests : AuthenticatedTestBase
         Assert.That(appIdMatch.Success, Is.True, "Should be on application details page with ID");
 
         // Verify application was created with Draft status
-        var statusBadge = Page.Locator("[data-testid=status-pill]:has-text('Draft')");
+        var statusBadge = Page.Locator("[data-testid=status-pill]:has-text('Borrador')");
         await Expect(statusBadge).ToBeVisibleAsync();
 
         // Add an item
@@ -73,7 +74,7 @@ public class ItemManagementTests : AuthenticatedTestBase
         await itemPage.AddItemAsync(appId, "Original Product", 0, "Original specs", BaseUrl);
 
         // Find the edit button for the item and click it
-        var editButton = Page.Locator("a:has-text('Edit')").First;
+        var editButton = Page.Locator("a:has-text('Editar')").First;
         await editButton.ClickAsync();
 
         // Edit the item
@@ -125,7 +126,7 @@ public class ItemManagementTests : AuthenticatedTestBase
 
         // Click delete button and handle confirmation dialog
         Page.Dialog += (_, dialog) => dialog.AcceptAsync();
-        var deleteButton = Page.Locator("button:has-text('Delete')").First;
+        var deleteButton = Page.Locator($"button:has-text('{UiCopy.Delete}')").First;
         await deleteButton.ClickAsync();
 
         // Should redirect back to application details

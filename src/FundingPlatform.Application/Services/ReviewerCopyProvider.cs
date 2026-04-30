@@ -17,24 +17,24 @@ public interface IReviewerCopyProvider
 
 public sealed class ReviewerCopyProvider : IReviewerCopyProvider
 {
-    public string WelcomeHeadline(string firstName) => $"Good to see you, {firstName}.";
-    public string WelcomeSubhead() => "Here's what's on your plate today.";
+    public string WelcomeHeadline(string firstName) => $"Buen día, {firstName}.";
+    public string WelcomeSubhead() => "Esto es lo que tiene en su agenda hoy.";
 
     public string FilterLabel(ReviewerFilter filter) => filter switch
     {
-        ReviewerFilter.All        => "All",
-        ReviewerFilter.AwaitingMe => "Awaiting me",
-        ReviewerFilter.Aging      => "Aging",
-        ReviewerFilter.SentBack   => "Sent back",
-        ReviewerFilter.Appealing  => "Appealing",
-        _                         => "All",
+        ReviewerFilter.All        => "Todas",
+        ReviewerFilter.AwaitingMe => "Pendientes para mí",
+        ReviewerFilter.Aging      => "Antiguas",
+        ReviewerFilter.SentBack   => "Devueltas",
+        ReviewerFilter.Appealing  => "En apelación",
+        _                         => "Todas",
     };
 
-    public string EmptyHeadline() => "All clear";
-    public string EmptyBody()     => "Nothing's awaiting your review.";
+    public string EmptyHeadline() => "Todo en orden";
+    public string EmptyBody()     => "No tiene revisiones pendientes.";
 
-    public string KpiAwaiting()              => "Awaiting your review";
-    public string KpiInProgress()            => "In progress";
-    public string KpiAging(int days)         => $"Aging > {days} days";
-    public string KpiDecidedThisMonth()      => "Decided this month";
+    public string KpiAwaiting()              => "Pendientes de su revisión";
+    public string KpiInProgress()            => "En proceso";
+    public string KpiAging(int days)         => $"Antiguas > {days} días";
+    public string KpiDecidedThisMonth()      => "Decididas este mes";
 }

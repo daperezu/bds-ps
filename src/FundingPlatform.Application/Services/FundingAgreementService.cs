@@ -1,4 +1,5 @@
 using FundingPlatform.Application.DTOs;
+using FundingPlatform.Application.Errors;
 using FundingPlatform.Application.FundingAgreements.Commands;
 using FundingPlatform.Application.FundingAgreements.Queries;
 using FundingPlatform.Domain.Entities;
@@ -11,7 +12,7 @@ namespace FundingPlatform.Application.Services;
 public record GenerateFundingAgreementResult(
     bool Success,
     FundingAgreementDto? Agreement,
-    IReadOnlyList<string> Errors,
+    IReadOnlyList<UserFacingError> Errors,
     bool ConflictDetected);
 
 public record GetPanelResult(
@@ -110,14 +111,16 @@ public class FundingAgreementService
                 "Funding agreement generated. applicationId={ApplicationId} actingUserId={UserId} fileSize={FileSize}",
                 application.Id, userId, agreement.Size);
 
-            return new GenerateFundingAgreementResult(true, dto, Array.Empty<string>(), false);
+            return new GenerateFundingAgreementResult(true, dto, Array.Empty<UserFacingError>(), false);
         }
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex,
                 "Funding agreement generation rejected. applicationId={ApplicationId} actingUserId={UserId} failureReason={Reason}",
                 application.Id, userId, ex.Message);
-            return new GenerateFundingAgreementResult(false, null, new[] { ex.Message }, false);
+            return new GenerateFundingAgreementResult(false, null,
+                new[] { UserFacingError.From(UserFacingErrorCode.OperationRejected, ex.Message) },
+                false);
         }
         catch (Exception ex) when (ex.GetType().Name == "DbUpdateConcurrencyException")
         {
@@ -125,7 +128,7 @@ public class FundingAgreementService
                 "Funding agreement generation concurrency conflict. applicationId={ApplicationId}",
                 application.Id);
             return new GenerateFundingAgreementResult(false, null,
-                new[] { "This agreement has been modified by another user. Please refresh and try again." },
+                new[] { UserFacingError.From(UserFacingErrorCode.ConcurrentAgreementModification) },
                 true);
         }
     }

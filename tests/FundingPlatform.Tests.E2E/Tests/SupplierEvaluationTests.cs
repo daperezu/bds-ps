@@ -46,7 +46,7 @@ public class SupplierEvaluationTests : AuthenticatedTestBase
         await itemPage.AddItemAsync(appId, "Compliance Test Item", 0, "Test specs", BaseUrl);
 
         // Add supplier with CCSS and Hacienda checked but NOT SICOP
-        var addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        var addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
 
         var supplierPage = new SupplierPage(Page);
@@ -178,7 +178,7 @@ public class SupplierEvaluationTests : AuthenticatedTestBase
         await reviewPage.ItemSubmitButton(itemId).ClickAsync();
 
         await Expect(Page.Locator(".alert-success")).ToBeVisibleAsync();
-        await Expect(reviewPage.ItemReviewStatusBadge(itemId)).ToContainTextAsync("Approved");
+        await Expect(reviewPage.ItemReviewStatusBadge(itemId)).ToContainTextAsync("Aprobado");
     }
 
     [Test]
@@ -211,7 +211,7 @@ public class SupplierEvaluationTests : AuthenticatedTestBase
         await reviewPage.GotoAsync(BaseUrl, appId);
 
         // Verify the override persists (approved status still shown, not reverted)
-        await Expect(reviewPage.ItemReviewStatusBadge(itemId)).ToContainTextAsync("Approved");
+        await Expect(reviewPage.ItemReviewStatusBadge(itemId)).ToContainTextAsync("Aprobado");
     }
 
     private async Task<int> SetupSubmittedApplicationWithThreeSuppliersAsync()
@@ -236,7 +236,7 @@ public class SupplierEvaluationTests : AuthenticatedTestBase
         var supplierPage = new SupplierPage(Page);
 
         // Supplier 1: All compliant, e-invoice, highest price -> score 4/5
-        var addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        var addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
         await supplierPage.FillSupplierFormAsync($"SE1-{_uniqueId}", "Full Compliance Corp", 1500m, "2027-12-31", _testFilePath,
             isCompliantCCSS: true, isCompliantHacienda: true, isCompliantSICOP: true);
@@ -244,20 +244,20 @@ public class SupplierEvaluationTests : AuthenticatedTestBase
         await supplierPage.SubmitAsync();
 
         // Supplier 2: Partial compliance, no e-invoice, lowest price -> score 3/5
-        addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
         await supplierPage.FillSupplierFormAsync($"SE2-{_uniqueId}", "Cheap Partial Supplier", 500m, "2027-12-31", _testFilePath,
             isCompliantCCSS: true, isCompliantHacienda: true, isCompliantSICOP: false);
         await supplierPage.SubmitAsync();
 
         // Supplier 3: No compliance, no e-invoice, mid price -> score 0/5
-        addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
         await supplierPage.FillSupplierFormAsync($"SE3-{_uniqueId}", "Bare Minimum Supplier", 1000m, "2027-12-31", _testFilePath);
         await supplierPage.SubmitAsync();
 
         // Set impact assessment
-        var impactButton = Page.Locator("a:has-text('Impact')").First;
+        var impactButton = Page.Locator("a:has-text('Impacto')").First;
         await impactButton.ClickAsync();
         await PickFirstImpactTemplateAsync();
         var paramInputs = Page.Locator(".parameter-field input.form-control");
@@ -268,12 +268,12 @@ public class SupplierEvaluationTests : AuthenticatedTestBase
             var inputType = await input.GetAttributeAsync("type");
             await input.FillAsync(inputType == "number" ? "100" : inputType == "date" ? "2026-12-31" : "Test value");
         }
-        await Page.Locator("button[type=submit]:has-text('Save Impact')").ClickAsync();
+        await Page.Locator("button[type=submit]:has-text('Guardar impacto')").ClickAsync();
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
         // Submit the application
-        await Page.Locator("button[type=submit]:has-text('Submit Application')").ClickAsync();
-        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Submitted')")).ToBeVisibleAsync();
+        await Page.Locator("button[type=submit]:has-text('Enviar solicitud')").ClickAsync();
+        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Enviada')")).ToBeVisibleAsync();
 
         await Page.Locator("form[action*='Account/Logout'] button[type=submit]").ClickAsync();
 
@@ -302,20 +302,20 @@ public class SupplierEvaluationTests : AuthenticatedTestBase
         var supplierPage = new SupplierPage(Page);
 
         // Two suppliers with identical compliance and same price -> tied scores
-        var addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        var addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
         await supplierPage.FillSupplierFormAsync($"TIE1-{_uniqueId}", "Tied Supplier Alpha", 1000m, "2027-12-31", _testFilePath,
             isCompliantCCSS: true, isCompliantHacienda: true, isCompliantSICOP: false);
         await supplierPage.SubmitAsync();
 
-        addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
         await supplierPage.FillSupplierFormAsync($"TIE2-{_uniqueId}", "Tied Supplier Beta", 1000m, "2027-12-31", _testFilePath,
             isCompliantCCSS: true, isCompliantHacienda: true, isCompliantSICOP: false);
         await supplierPage.SubmitAsync();
 
         // Set impact and submit
-        var impactButton = Page.Locator("a:has-text('Impact')").First;
+        var impactButton = Page.Locator("a:has-text('Impacto')").First;
         await impactButton.ClickAsync();
         await PickFirstImpactTemplateAsync();
         var paramInputs = Page.Locator(".parameter-field input.form-control");
@@ -326,11 +326,11 @@ public class SupplierEvaluationTests : AuthenticatedTestBase
             var inputType = await input.GetAttributeAsync("type");
             await input.FillAsync(inputType == "number" ? "100" : inputType == "date" ? "2026-12-31" : "Test value");
         }
-        await Page.Locator("button[type=submit]:has-text('Save Impact')").ClickAsync();
+        await Page.Locator("button[type=submit]:has-text('Guardar impacto')").ClickAsync();
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
-        await Page.Locator("button[type=submit]:has-text('Submit Application')").ClickAsync();
-        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Submitted')")).ToBeVisibleAsync();
+        await Page.Locator("button[type=submit]:has-text('Enviar solicitud')").ClickAsync();
+        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Enviada')")).ToBeVisibleAsync();
 
         await Page.Locator("form[action*='Account/Logout'] button[type=submit]").ClickAsync();
 
@@ -358,20 +358,20 @@ public class SupplierEvaluationTests : AuthenticatedTestBase
 
         // Add only one supplier — it should automatically get the price point
         var supplierPage = new SupplierPage(Page);
-        var addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        var addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
         await supplierPage.FillSupplierFormAsync($"SING-{_uniqueId}", "Solo Supplier", 750m, "2027-12-31", _testFilePath,
             isCompliantCCSS: true, isCompliantHacienda: false, isCompliantSICOP: false);
         await supplierPage.SubmitAsync();
 
         // Need a second supplier for minimum quotation requirement
-        addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
         await supplierPage.FillSupplierFormAsync($"SING2-{_uniqueId}", "Second Solo Supplier", 900m, "2027-12-31", _testFilePath);
         await supplierPage.SubmitAsync();
 
         // Set impact and submit
-        var impactButton = Page.Locator("a:has-text('Impact')").First;
+        var impactButton = Page.Locator("a:has-text('Impacto')").First;
         await impactButton.ClickAsync();
         await PickFirstImpactTemplateAsync();
         var paramInputs = Page.Locator(".parameter-field input.form-control");
@@ -382,11 +382,11 @@ public class SupplierEvaluationTests : AuthenticatedTestBase
             var inputType = await input.GetAttributeAsync("type");
             await input.FillAsync(inputType == "number" ? "100" : inputType == "date" ? "2026-12-31" : "Test value");
         }
-        await Page.Locator("button[type=submit]:has-text('Save Impact')").ClickAsync();
+        await Page.Locator("button[type=submit]:has-text('Guardar impacto')").ClickAsync();
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
-        await Page.Locator("button[type=submit]:has-text('Submit Application')").ClickAsync();
-        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Submitted')")).ToBeVisibleAsync();
+        await Page.Locator("button[type=submit]:has-text('Enviar solicitud')").ClickAsync();
+        await Expect(Page.Locator("[data-testid=status-pill]:has-text('Enviada')")).ToBeVisibleAsync();
 
         await Page.Locator("form[action*='Account/Logout'] button[type=submit]").ClickAsync();
 

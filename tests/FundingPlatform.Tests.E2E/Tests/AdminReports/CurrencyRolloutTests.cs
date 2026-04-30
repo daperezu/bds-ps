@@ -49,7 +49,7 @@ public class CurrencyRolloutTests : AuthenticatedTestBase
         var itemPage = new ItemPage(Page);
         await itemPage.AddItemAsync(appId, "Currency Test Item", 0, "Test specs", BaseUrl);
 
-        var addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        var addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
 
         var currencyValue = await Page.Locator("[name=Currency]").InputValueAsync();
@@ -75,7 +75,7 @@ public class CurrencyRolloutTests : AuthenticatedTestBase
         var itemPage = new ItemPage(Page);
         await itemPage.AddItemAsync(appId, "Currency Reject Item", 0, "Specs", BaseUrl);
 
-        var addSupplierLink = Page.Locator("a:has-text('Add Supplier')").First;
+        var addSupplierLink = Page.Locator("a:has-text('Agregar proveedor')").First;
         await addSupplierLink.ClickAsync();
 
         var supplierPage = new SupplierPage(Page);

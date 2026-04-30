@@ -1,6 +1,6 @@
 # Brainstorm Overview
 
-Last updated: 2026-04-27
+Last updated: 2026-04-29
 
 ## Sessions
 
@@ -17,6 +17,7 @@ Last updated: 2026-04-27
 | 09 | 2026-04-25 | admin-area | spec-created | 009 |
 | 10 | 2026-04-26 | admin-reports | spec-created | 010 |
 | 11 | 2026-04-27 | warm-modern-facelift | spec-created | 011 |
+| 12 | 2026-04-29 | es-cr-localization | spec-created | 012 |
 
 ## Open Threads
 
@@ -34,7 +35,6 @@ Last updated: 2026-04-27
 - Funder identity shape: single configuration block vs. richer `Funder` aggregate for multi-funder scenarios (from #05)
 - Reviewer regeneration rights on the Funding Agreement — revalidate during planning when full role-scope is visible (from #05)
 - Syncfusion HTML-to-PDF license acquisition and cost — planning/ops coordination prerequisite (from #05)
-- Specific default locale code for LatAm formatting (e.g., `es-CO`, `es-MX`) — to be pinned during planning (from #05)
 - Formal audit retention policy for generated Funding Agreement PDFs — deferred to a later compliance-driven spec (from #05)
 - Side-by-side view of generated agreement vs. signed upload to aid reviewer visual verification (from #06)
 - Execution banner or cover page on executed signed PDF (from #06)
@@ -54,7 +54,6 @@ Last updated: 2026-04-27
 - Whether `_ConfirmDialog` for every destructive action (including draft-item deletes) is the right baseline, or whether specific exceptions should be enumerated (from #08)
 - Future spec 009 (communication surface — unified messaging panel) needs its own brainstorm before any implementation (from #08)
 - Future spec 010 (notifications & inbox) needs its own brainstorm — likely SignalR (from #08)
-- Future spec 011 (localization layer) — when it lands, partials must be checked to ensure no UI copy was embedded during the 008 sweep (from #08)
 - Future spec 012 (admin/configuration surface polish) — likely needed once the 008 sweep lands (from #08)
 - Applicant demotion in-flight applications: when an Applicant is demoted, what should the original applicant see for their existing applications? Most likely read-only, pin during planning (from #09)
 - `ADMIN_DEFAULT_PASSWORD` configuration key shape and Aspire/user-secret wiring — settle precise key path during planning (from #09)
@@ -75,7 +74,6 @@ Last updated: 2026-04-27
 - Whether the absence of a read-only Auditor sub-role is acceptable for v1 — future spec can add Auditor without breaking 010 (from #10)
 - ISO 4217 enforcement of currency codes — deferred; future spec (from #10)
 - Historical snapshotting of supplier display names / applicant identities on report rows — deferred; reports always render current relational state (from #10)
-- Display brand name selection — Forge / Ascent / keep FundingPlatform — user sign-off gate (from #11)
 - Exact hex values for the warm forest green primary + warm amber accent + warm neutrals + warm-retuned status palette — pinned during planning by designer pass (from #11)
 - 8 px spacing scale ratios and full type-scale ramp — pinned during planning after density audit on densest surfaces (from #11)
 - Tabler `--tblr-*` CSS-variable bridge aggressiveness — inventory pinned during planning (from #11)
@@ -94,16 +92,28 @@ Last updated: 2026-04-27
 - Login/Register tone — clean single-CTA vs. light marketing hero — defaults to "clean" (from #11)
 - Schema-unchanged constraint escape-hatch protocol via speckit-spex-evolve — protocol established; specific trigger not anticipated (from #11)
 - Performance baseline (LCP / TBT) capture timing — must run as planning day-1 task before any code lands (from #11)
-- Future spec 012 (notifications & inbox / SignalR) needs its own brainstorm — spec 011 deliberately excludes real-time push (from #11)
-- Future spec 013 (communication surface — unified messaging panel) still pending its own brainstorm (from #11; carries forward from #08)
-- Future spec 014 (localization layer) — voice-guide rewrites in spec 011 must keep copy out of partials' code paths (from #11; carries forward from #08)
-- Future spec 015 (public marketing surface) — distinct workstream; this brainstorm explicitly chose authenticated-only for spec 011 (from #11)
+- Future notifications & inbox / SignalR spec needs its own brainstorm — spec 011 deliberately excludes real-time push (from #11)
+- Future communication-surface (unified messaging panel) spec still pending its own brainstorm (from #11; carries forward from #08)
+- Future public marketing surface spec — distinct workstream; spec 011 and spec 012 explicitly chose authenticated-only (from #11)
+- Glossary finalization for CR-Spanish term mappings (application/review/funding agreement/send back) — voice guide owns the choice (from #12)
+- Footer tagline exact Spanish phrasing for "built for entrepreneurs" — recommended `diseñado para emprendedores` (from #12)
+- Designer SVG follow-ups — Capital Semilla wordmark rework + on-image text audit on the 9 empty-state illustrations; whether either blocks merge (from #12)
+- Tabler vendor JS string audit — whether any in-use components carry built-in copy needing override (from #12; recurring from #08)
+- Performance baseline (LCP/TBT) capture — pin if spec 011's planning-day-1 baseline wasn't taken (from #12; recurring from #11)
+- Voice-guide reviewer — same designer/voice owner as spec 011 or new CR-region reviewer (from #12)
+- Page-title direction — `[Page] - Capital Semilla` (matches today) vs. reversed (from #12)
+- Hard-pin culture via constant in middleware vs. config-overridable hatch (from #12)
+- JS namespace rename final identifier — `PlatformMotion` recommended vs. `AppMotion` / `SeedMotion` (from #12)
 
 ## Closed Threads
 
 - Will version history be sufficient for audit needs, or will the Appeal spec need a Resolution entity? (from #02) — **Closed by #04**: no `Resolution` entity needed; appeal resolution is a state transition + audit entry.
 - Post-signature regeneration lockout on the Funding Agreement (from #05) — **Closed by #06**: resolved as "regeneration permitted until first signed upload; locked thereafter; administrative back-out explicitly out of scope for this feature."
 - Operational visibility for stuck applications with no deadlines — likely future reporting spec (from #04) — **Closed by #10**: Aging Applications report (US6) ships in spec 010, with configurable threshold (default 14 days, range 1–365) and per-row drill-in including "days in current state" and "last actor".
+- Specific default locale code for LatAm formatting (e.g., `es-CO`, `es-MX`) — to be pinned during planning (from #05) — **Closed by #12**: pinned to `es-CR` (FR-016). Funding Agreement PDF format-separator shifts from `1.234,56` (es-CO) to `1,234.56` (es-CR) per CR business convention.
+- Future localization-layer spec — partials must be checked to ensure no UI copy was embedded during the 008 sweep (from #08; reaffirmed by #11) — **Closed by #12**: executed during the localization sweep (User Story 2 + NFR-004); the partial-parameterization rule from spec 008 was preserved.
+- Future localization-layer spec — voice-guide rewrites in spec 011 must keep copy out of partials' code paths to remain compatible (from #11; carries forward from #08) — **Closed by #12**: validated during the spec 012 sweep; voice-guide rewrites in 011 stayed compatible with the inline-replace pattern.
+- Display brand name selection — Forge / Ascent / keep FundingPlatform — user sign-off gate (from #11) — **Closed by #12**: **Capital Semilla** chosen (FR-006). Display brand only; code namespaces, project names, and config keys remain `FundingPlatform`.
 
 ## Parked Ideas
 

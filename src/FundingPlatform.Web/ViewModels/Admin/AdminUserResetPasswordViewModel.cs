@@ -9,9 +9,15 @@ public class AdminUserResetPasswordViewModel
 
     public string TargetEmail { get; set; } = "";
 
-    [Required, DataType(DataType.Password), StringLength(100, MinimumLength = 6)]
+    [Required(ErrorMessage = "La nueva contraseña temporal es obligatoria.")]
+    [DataType(DataType.Password)]
+    [StringLength(100, MinimumLength = 6, ErrorMessage = "La contraseña debe tener entre {2} y {1} caracteres.")]
+    [Display(Name = "Nueva contraseña temporal")]
     public string NewTemporaryPassword { get; set; } = "";
 
-    [Required, DataType(DataType.Password), Compare(nameof(NewTemporaryPassword))]
+    [Required(ErrorMessage = "Debe confirmar la contraseña.")]
+    [DataType(DataType.Password)]
+    [Display(Name = "Confirmar contraseña")]
+    [Compare(nameof(NewTemporaryPassword), ErrorMessage = "Las contraseñas no coinciden.")]
     public string ConfirmPassword { get; set; } = "";
 }

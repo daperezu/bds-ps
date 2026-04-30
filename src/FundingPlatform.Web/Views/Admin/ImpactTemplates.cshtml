@@ -1,10 +1,10 @@
 @model FundingPlatform.Web.ViewModels.ImpactTemplateAdminViewModel
 
 @{
-    ViewData["Title"] = "Impact Templates";
+    ViewData["Title"] = "Plantillas de impacto";
     var headerActions = new[]
     {
-        new ActionItem("Create New Template", ActionClass.Primary,
+        new ActionItem("Crear nueva plantilla", ActionClass.Primary,
             Url: Url.Action("CreateTemplate"),
             Icon: "ti ti-plus"),
     };
@@ -12,11 +12,11 @@
 
 @await Html.PartialAsync("Components/_PageHeader",
     new PageHeaderViewModel(
-        Title: "Impact Templates",
+        Title: "Plantillas de impacto",
         Breadcrumbs: new[]
         {
-            new BreadcrumbItem("Admin Dashboard", Url.Action("Index")),
-            new BreadcrumbItem("Impact Templates"),
+            new BreadcrumbItem("Panel de administración", Url.Action("Index")),
+            new BreadcrumbItem("Plantillas de impacto"),
         },
         PrimaryActions: headerActions))
 
@@ -24,10 +24,10 @@
 {
     @await Html.PartialAsync("Components/_EmptyState",
         new EmptyStateViewModel(
-            Headline: "No impact templates yet",
-            Body: "Create your first impact assessment template to start collecting structured impact data on items.",
+            Headline: "Aún no hay plantillas de impacto",
+            Body: "Cree su primera plantilla de evaluación de impacto para comenzar a recopilar datos estructurados de impacto en los ítems.",
             Icon: "ti ti-template",
-            PrimaryAction: new ActionItem("Create New Template", ActionClass.Primary,
+            PrimaryAction: new ActionItem("Crear nueva plantilla", ActionClass.Primary,
                 Url: Url.Action("CreateTemplate"),
                 Icon: "ti ti-plus")))
 }
@@ -38,11 +38,11 @@ else
             <table class="table card-table table-vcenter">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Description</th>
-                        <th>Parameters</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Parámetros</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -55,16 +55,16 @@ else
                             <td>
                                 @if (template.IsActive)
                                 {
-                                    <span class="status status-green"><i class="ti ti-check"></i> Active</span>
+                                    <span class="status status-green"><i class="ti ti-check"></i> Activa</span>
                                 }
                                 else
                                 {
-                                    <span class="status status-secondary"><i class="ti ti-circle"></i> Inactive</span>
+                                    <span class="status status-secondary"><i class="ti ti-circle"></i> Inactiva</span>
                                 }
                             </td>
                             <td>
                                 <a asp-action="EditTemplate" asp-route-id="@template.Id" class="btn btn-sm btn-outline-primary">
-                                    <i class="ti ti-edit me-1"></i>Edit
+                                    <i class="ti ti-edit me-1"></i>Editar
                                 </a>
                             </td>
                         </tr>

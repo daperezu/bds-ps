@@ -10,25 +10,25 @@
     <div class="row g-3 mt-4" data-testid="kpi-strip" role="list">
         <div class="col-12 col-sm-6 col-lg-3" role="listitem">
             <div class="fl-kpi-tile" data-testid="kpi-active">
-                <div class="fl-kpi-label">Active applications</div>
+                <div class="fl-kpi-label">Solicitudes activas</div>
                 <div class="fl-kpi-value" data-ticker-target="@Model.Kpis.Active">@Model.Kpis.Active</div>
             </div>
         </div>
         <div class="col-12 col-sm-6 col-lg-3" role="listitem">
             <div class="fl-kpi-tile" data-testid="kpi-in-review">
-                <div class="fl-kpi-label">In review</div>
+                <div class="fl-kpi-label">En revisión</div>
                 <div class="fl-kpi-value" data-ticker-target="@Model.Kpis.InReview">@Model.Kpis.InReview</div>
             </div>
         </div>
         <div class="col-12 col-sm-6 col-lg-3" role="listitem">
             <div class="fl-kpi-tile" data-testid="kpi-awaiting">
-                <div class="fl-kpi-label">Awaiting your action</div>
+                <div class="fl-kpi-label">Pendientes de su acción</div>
                 <div class="fl-kpi-value" data-ticker-target="@Model.Kpis.AwaitingApplicantAction">@Model.Kpis.AwaitingApplicantAction</div>
             </div>
         </div>
         <div class="col-12 col-sm-6 col-lg-3" role="listitem">
             <div class="fl-kpi-tile" data-testid="kpi-funded">
-                <div class="fl-kpi-label">Funded</div>
+                <div class="fl-kpi-label">Financiadas</div>
                 <div class="fl-kpi-value" data-ticker-target="@Model.Kpis.Funded">@Model.Kpis.Funded</div>
             </div>
         </div>
@@ -36,7 +36,7 @@
 
     @if (Model.AwaitingAction is { } action)
     {
-        <div class="fl-awaiting mt-4" data-testid="awaiting-action" role="region" aria-label="Action required">
+        <div class="fl-awaiting mt-4" data-testid="awaiting-action" role="region" aria-label="Acción requerida">
             <div class="fl-awaiting-msg">@action.SingleSentenceMessage</div>
             <a class="btn btn-primary" href="@action.PrimaryCtaHref" data-testid="awaiting-action-cta">@action.PrimaryCtaLabel</a>
         </div>

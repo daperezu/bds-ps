@@ -2,20 +2,33 @@
 @using FundingPlatform.Web.Models
 @model AdminUsersListViewModel
 @{
-    ViewData["Title"] = "Users";
+    ViewData["Title"] = "Usuarios";
     var roles = new[] { "Applicant", "Reviewer", "Admin" };
     var statuses = new[] { "Active", "Disabled" };
+    string RoleLabel(string r) => r switch
+    {
+        "Applicant" => "Solicitante",
+        "Reviewer" => "Revisor",
+        "Admin" => "Administrador",
+        _ => r,
+    };
+    string StatusLabel(string s) => s switch
+    {
+        "Active" => "Activo",
+        "Disabled" => "Inhabilitado",
+        _ => s,
+    };
 }
 
 <div data-testid="admin-area">
     @await Html.PartialAsync("Components/_PageHeader",
         new PageHeaderViewModel(
-            Title: "Users",
-            Subtitle: "Manage platform user accounts.",
+            Title: "Usuarios",
+            Subtitle: "Administre las cuentas de usuarios de la plataforma.",
             PrimaryActions: new[]
             {
                 new ActionItem(
-                    Label: "Create user",
+                    Label: "Crear usuario",
                     Class: ActionClass.Primary,
                     Url: Url.Action("Create", "AdminUsers"),
                     Icon: "ti ti-user-plus")
@@ -31,34 +44,34 @@
     }
 
     <form method="get" asp-action="Index" class="mb-3 d-flex gap-2 flex-wrap" data-testid="admin-users-filter-form">
-        <input type="search" name="search" value="@Model.Search" placeholder="Search name or email"
+        <input type="search" name="search" value="@Model.Search" placeholder="Buscar por nombre o correo"
                class="form-control admin-users-filter-search" data-testid="admin-users-search" />
         <select name="roleFilter" class="form-select admin-users-filter-select" data-testid="admin-users-role-filter">
-            <option value="">All roles</option>
+            <option value="">Todos los roles</option>
             @foreach (var r in roles)
             {
-                <option value="@r" selected="@(Model.RoleFilter == r)">@r</option>
+                <option value="@r" selected="@(Model.RoleFilter == r)">@RoleLabel(r)</option>
             }
         </select>
         <select name="statusFilter" class="form-select admin-users-filter-select" data-testid="admin-users-status-filter">
-            <option value="">All statuses</option>
+            <option value="">Todos los estados</option>
             @foreach (var s in statuses)
             {
-                <option value="@s" selected="@(Model.StatusFilter == s)">@s</option>
+                <option value="@s" selected="@(Model.StatusFilter == s)">@StatusLabel(s)</option>
             }
         </select>
-        <button type="submit" class="btn btn-secondary" data-testid="admin-users-filter-submit">Apply</button>
+        <button type="submit" class="btn btn-secondary" data-testid="admin-users-filter-submit">Aplicar</button>
     </form>
 
     @if (Model.Rows.Count == 0)
     {
         @await Html.PartialAsync("Components/_EmptyState",
             new EmptyStateViewModel(
-                Headline: "No users match the current filters",
-                Body: "Try clearing the filters or creating a new user.",
+                Headline: "Ningún usuario coincide con los filtros actuales",
+                Body: "Pruebe quitar los filtros o crear un nuevo usuario.",
                 Icon: "ti ti-users",
                 PrimaryAction: new ActionItem(
-                    Label: "Create user",
+                    Label: "Crear usuario",
                     Class: ActionClass.Primary,
                     Url: Url.Action("Create", "AdminUsers"),
                     Icon: "ti ti-user-plus")))
@@ -70,11 +83,11 @@
                 <table class="table card-table table-vcenter">
                     <thead>
                         <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th class="text-end">Actions</th>
+                            <th>Nombre</th>
+                            <th>Correo electrónico</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -84,7 +97,7 @@
                             var statusEnum = string.Equals(row.Status, "Disabled", StringComparison.OrdinalIgnoreCase)
                                 ? AdminUserStatus.Disabled : AdminUserStatus.Active;
                             <tr data-testid="admin-user-row-@row.Email">
-                                <td>@row.FullName @(row.IsSelf ? Html.Raw("<span class=\"badge bg-purple-lt ms-1\">You</span>") : null)</td>
+                                <td>@row.FullName @(row.IsSelf ? Html.Raw("<span class=\"badge bg-purple-lt ms-1\">Usted</span>") : null)</td>
                                 <td>@row.Email</td>
                                 <td>@await Html.PartialAsync("Components/_StatusPill", new StatusPillViewModel(roleEnum))</td>
                                 <td>@await Html.PartialAsync("Components/_StatusPill", new StatusPillViewModel(statusEnum))</td>
@@ -93,24 +106,24 @@
                                         <a class="btn btn-sm btn-outline-secondary"
                                            data-testid="row-action-edit"
                                            href="@Url.Action("Edit", "AdminUsers", new { id = row.Id })">
-                                            <i class="ti ti-edit"></i> Edit
+                                            <i class="ti ti-edit"></i> Editar
                                         </a>
                                         @if (!row.IsSelf)
                                         {
                                             <a class="btn btn-sm btn-outline-secondary"
                                                data-testid="row-action-reset-password"
                                                href="@Url.Action("ResetPassword", "AdminUsers", new { id = row.Id })">
-                                                <i class="ti ti-key"></i> Reset
+                                                <i class="ti ti-key"></i> Restablecer
                                             </a>
                                             if (statusEnum == AdminUserStatus.Active)
                                             {
                                                 <form method="post" asp-action="Disable" asp-controller="AdminUsers"
                                                       asp-route-id="@row.Id" class="d-inline"
-                                                      onsubmit="return confirm('Disable @row.Email? This signs them out.');">
+                                                      onsubmit="return confirm('¿Inhabilitar a @row.Email? Esto cierra la sesión del usuario.');">
                                                     @Html.AntiForgeryToken()
                                                     <button type="submit" class="btn btn-sm btn-outline-danger"
                                                             data-testid="row-action-disable">
-                                                        <i class="ti ti-ban"></i> Disable
+                                                        <i class="ti ti-ban"></i> Inhabilitar
                                                     </button>
                                                 </form>
                                             }
@@ -121,7 +134,7 @@
                                                     @Html.AntiForgeryToken()
                                                     <button type="submit" class="btn btn-sm btn-outline-success"
                                                             data-testid="row-action-enable">
-                                                        <i class="ti ti-circle-check"></i> Enable
+                                                        <i class="ti ti-circle-check"></i> Habilitar
                                                     </button>
                                                 </form>
                                             }
@@ -137,19 +150,19 @@
 
         @if (Model.TotalPages > 1)
         {
-            <nav class="mt-3" data-testid="admin-users-pagination" aria-label="Pagination">
+            <nav class="mt-3" data-testid="admin-users-pagination" aria-label="Paginación">
                 <ul class="pagination">
                     <li class="page-item @(Model.HasPreviousPage ? null : "disabled")">
                         <a class="page-link"
                            href="@Url.Action("Index", new { roleFilter = Model.RoleFilter, statusFilter = Model.StatusFilter, search = Model.Search, page = Model.Page - 1, pageSize = Model.PageSize })">
-                            Previous
+                            Anterior
                         </a>
                     </li>
                     <li class="page-item active"><span class="page-link">@Model.Page / @Model.TotalPages</span></li>
                     <li class="page-item @(Model.HasNextPage ? null : "disabled")">
                         <a class="page-link"
                            href="@Url.Action("Index", new { roleFilter = Model.RoleFilter, statusFilter = Model.StatusFilter, search = Model.Search, page = Model.Page + 1, pageSize = Model.PageSize })">
-                            Next
+                            Siguiente
                         </a>
                     </li>
                 </ul>

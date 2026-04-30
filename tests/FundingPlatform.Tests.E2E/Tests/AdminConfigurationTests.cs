@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using FundingPlatform.Tests.E2E.Constants;
 using FundingPlatform.Tests.E2E.Fixtures;
 using FundingPlatform.Tests.E2E.PageObjects;
 using Microsoft.Playwright;
@@ -49,7 +50,7 @@ public class AdminConfigurationTests : AuthenticatedTestBase
         await Expect(Page).ToHaveURLAsync(new Regex("/Admin/Configuration"));
 
         // The page should load without errors
-        var heading = Page.Locator("h2:has-text('System Configuration')");
+        var heading = Page.Locator($"h2:has-text('{UiCopy.SystemConfiguration}')");
         await Expect(heading).ToBeVisibleAsync();
     }
 

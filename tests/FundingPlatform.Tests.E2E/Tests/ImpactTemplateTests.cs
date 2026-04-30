@@ -38,11 +38,11 @@ public class ImpactTemplateTests : AuthenticatedTestBase
         await Expect(itemRow).ToBeVisibleAsync();
 
         // Verify impact badge shows "Pending"
-        var pendingBadge = itemRow.Locator(".status:has-text('Pending')");
+        var pendingBadge = itemRow.Locator(".status:has-text('Pendiente')");
         await Expect(pendingBadge).ToBeVisibleAsync();
 
         // Click Impact button
-        var impactButton = itemRow.Locator("a:has-text('Impact')");
+        var impactButton = itemRow.Locator("a:has-text('Impacto')");
         await impactButton.ClickAsync();
 
         // Should be on impact page
@@ -88,15 +88,15 @@ public class ImpactTemplateTests : AuthenticatedTestBase
         }
 
         // Submit
-        var submitButton = Page.Locator("button[type=submit]:has-text('Save Impact')");
+        var submitButton = Page.Locator("button[type=submit]:has-text('Guardar impacto')");
         await submitButton.ClickAsync();
 
         // Should redirect back to application details
         await Expect(Page).ToHaveURLAsync(new Regex(@"/Application/Details/\d+"));
 
-        // Verify impact badge now shows "Complete"
+        // Verify impact badge now shows "Completo"
         var updatedItemRow = Page.Locator("table tbody tr:has-text('Impact Test Laptop')");
-        var completeBadge = updatedItemRow.Locator(".status:has-text('Complete')");
+        var completeBadge = updatedItemRow.Locator(".status:has-text('Completo')");
         await Expect(completeBadge).ToBeVisibleAsync();
     }
 
@@ -126,7 +126,7 @@ public class ImpactTemplateTests : AuthenticatedTestBase
 
         // Click Impact button
         var itemRow = Page.Locator("table tbody tr:has-text('Validation Test Item')");
-        var impactButton = itemRow.Locator("a:has-text('Impact')");
+        var impactButton = itemRow.Locator("a:has-text('Impacto')");
         await impactButton.ClickAsync();
 
         // Select a template
@@ -143,7 +143,7 @@ public class ImpactTemplateTests : AuthenticatedTestBase
         // Do NOT fill in any parameters — leave them empty
 
         // Try to submit the form
-        var submitButton = Page.Locator("button[type=submit]:has-text('Save Impact')");
+        var submitButton = Page.Locator("button[type=submit]:has-text('Guardar impacto')");
         await submitButton.ClickAsync();
 
         // The browser's built-in validation should prevent submission for required fields.

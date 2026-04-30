@@ -1,21 +1,24 @@
 @model FundingPlatform.Web.ViewModels.FundingAgreementDocumentViewModel
 @{
-    var culture = System.Globalization.CultureInfo.GetCultureInfo(Model.LocaleCode);
+    // Spec 012 / FR-017 / SC-005: PDF must render 1,234.56 (period decimal, comma
+    // thousands). Raw es-CR CultureInfo returns '1 234,56'; the factory applies the
+    // spec's required overrides.
+    var culture = FundingPlatform.Web.Localization.EsCrCultureFactory.Build();
     string Money(string currency, decimal value)
     {
         return $"{currency} {value.ToString("N2", culture)}";
     }
 }
 
-<h2>Funded Items</h2>
+<h2>Ítems financiados</h2>
 <table class="items">
     <thead>
         <tr>
-            <th>Product</th>
-            <th>Category</th>
-            <th>Supplier</th>
-            <th class="amount">Unit Price</th>
-            <th class="amount">Line Total</th>
+            <th>Producto</th>
+            <th>Categoría</th>
+            <th>Proveedor</th>
+            <th class="amount">Precio unitario</th>
+            <th class="amount">Total de la línea</th>
         </tr>
     </thead>
     <tbody>
