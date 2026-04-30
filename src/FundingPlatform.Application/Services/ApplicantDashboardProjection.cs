@@ -33,7 +33,7 @@ public sealed class ApplicantDashboardProjection : IApplicantDashboardProjection
 
     public async Task<ApplicantDashboardDto> GetForUserAsync(int applicantId, string firstName, CancellationToken ct)
     {
-        var apps = await _applications.GetByApplicantIdAsync(applicantId);
+        var apps = await _applications.GetForApplicantDashboardAsync(applicantId);
         var now = DateTimeOffset.UtcNow;
 
         // KPI counts

@@ -72,6 +72,18 @@ public class ApplicationRepository : IApplicationRepository
             .ToListAsync();
     }
 
+    public async Task<List<AppEntity>> GetForApplicantDashboardAsync(int applicantId)
+    {
+        return await _context.Applications
+            .Include(a => a.Items)
+            .Include(a => a.VersionHistory)
+            .Include(a => a.Appeals)
+            .Include(a => a.FundingAgreement)
+            .Where(a => a.ApplicantId == applicantId)
+            .OrderByDescending(a => a.UpdatedAt)
+            .ToListAsync();
+    }
+
     public async Task<(List<AppEntity> Items, int TotalCount)> GetByStatePagedAsync(
         Domain.Enums.ApplicationState state, int page, int pageSize)
     {
